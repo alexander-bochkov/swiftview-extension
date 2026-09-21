@@ -4,5 +4,11 @@
   "private": true,
   "license": "MIT",
   "type": "module",
-  "scripts": {}
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.2.3",
+    "husky": "9.1.7"
+  }
 }
