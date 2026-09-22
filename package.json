@@ -1,15 +1,15 @@
 {
-  "name": "swiftview-extension",
-  "version": "0.1.0",
-  "private": true,
-  "license": "MIT",
-  "type": "module",
-  "scripts": {
-    "prepare": "husky"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.5.14",
-    "@commitlint/cli": "21.2.3",
-    "husky": "9.1.7"
-  }
+	"name": "swiftview-extension",
+	"version": "0.1.0",
+	"private": true,
+	"license": "MIT",
+	"type": "module",
+	"scripts": {
+		"prepare": "husky"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.14",
+		"@commitlint/cli": "21.2.3",
+		"husky": "9.1.7"
+	}
 }
