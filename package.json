@@ -10,6 +10,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.5.14",
 		"@commitlint/cli": "21.2.3",
-		"husky": "9.1.7"
+		"husky": "9.1.7",
+		"typescript": "7.0.2"
 	}
 }
