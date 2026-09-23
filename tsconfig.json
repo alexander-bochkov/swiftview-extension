@@ -15,6 +15,7 @@
 
 		/* Modules */
 		"moduleResolution": "bundler",
+		"types": ["vite/client"],
 
 		/* Type Checking */
 		"noFallthroughCasesInSwitch": true,
