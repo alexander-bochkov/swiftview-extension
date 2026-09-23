@@ -18,6 +18,22 @@ jobs:
         uses: biomejs/setup-biome@v2
       - name: Check
         run: biome ci
+  typescript:
+    name: Types
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Install Packages
+        run: npm install --save-dev typescript
+      - name: Check
+        run: npx --no -- tsc
   commitlint:
     name: Commit Message
     runs-on: ubuntu-latest
