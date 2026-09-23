@@ -5,7 +5,9 @@
 	"license": "MIT",
 	"type": "module",
 	"scripts": {
-		"prepare": "husky"
+		"build": "tsc && vite build",
+		"prepare": "husky",
+		"start": "vite build --watch"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.14",
