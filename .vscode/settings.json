@@ -1,3 +1,12 @@
 {
-	"editor.rulers": [80]
+	"biome.suggestInstallingGlobally": false,
+
+	"editor.codeActionsOnSave": {
+		"source.fixAll.biome": "explicit"
+	},
+	"editor.rulers": [80],
+
+	"[css][javascript][json][jsonc][typescript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	}
 }
