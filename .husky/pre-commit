@@ -1,2 +1,2 @@
-npx @biomejs/biome check --staged --no-errors-on-unmatched
-tsc
+npx --no -- biome check --no-errors-on-unmatched --staged
+npx --no -- tsc
