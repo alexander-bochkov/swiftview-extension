@@ -1,5 +1,35 @@
 {
 	"$schema": "node_modules/@biomejs/biome/configuration_schema.json",
+	"assist": {
+		"actions": {
+			"source": {
+				"noDuplicateClasses": "on",
+				"organizeImports": "on",
+				"useSortedAttributes": "on",
+				"useSortedInterfaceMembers": "on",
+				"useSortedKeys": "on",
+				"useSortedPackageJson": "on",
+				"useSortedProperties": "on"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"assist": {
+				"actions": {
+					"source": {
+						"useSortedKeys": "off"
+					}
+				}
+			},
+			"includes": [
+				".vscode/settings.json",
+				"public/manifest.json",
+				"package.json",
+				"tsconfig.json"
+			]
+		}
+	],
 	"vcs": {
 		"clientKind": "git",
 		"enabled": true,
