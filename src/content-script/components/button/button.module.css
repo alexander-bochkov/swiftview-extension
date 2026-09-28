@@ -1,0 +1,36 @@
+.button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	cursor: pointer;
+	outline: none;
+	background-color: rgb(110 110 110 / 50%);
+	border: none;
+	border-radius: 50%;
+
+	svg {
+		width: 24px;
+		height: 24px;
+		fill: rgb(255 255 255 / 50%);
+	}
+
+	&:hover {
+		background-color: rgb(110 110 110 / 90%);
+
+		svg {
+			fill: rgb(255 255 255 / 90%);
+		}
+	}
+
+	&:active {
+		background-color: rgb(110 110 110 / 70%);
+		transform: scale(90%);
+
+		svg {
+			fill: rgb(255 255 255 / 70%);
+		}
+	}
+}
