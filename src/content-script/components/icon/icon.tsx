@@ -19,7 +19,7 @@ type IconProps = SVGProps<SVGSVGElement> & {
 		| "flip-vertical"
 		| "rotate-left"
 		| "rotate-right"
-		| "xmark";
+		| "x-mark";
 };
 
 export const Icon = ({ name, ...props }: IconProps) => {

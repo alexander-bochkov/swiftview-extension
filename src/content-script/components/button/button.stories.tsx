@@ -31,7 +31,7 @@ export const WithAllIcons: Story = {
 			</Button>
 			<br />
 			<Button>
-				<Icon name="xmark" />
+				<Icon name="x-mark" />
 			</Button>
 		</>
 	),
