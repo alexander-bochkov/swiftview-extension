@@ -5,32 +5,26 @@
 	width: 36px;
 	height: 36px;
 	padding: 0;
+	color: rgb(255 255 255 / 50%);
 	cursor: pointer;
 	outline: none;
 	background-color: rgb(110 110 110 / 50%);
 	border: none;
 	border-radius: 50%;
 
-	svg {
-		width: 24px;
-		height: 24px;
-		fill: rgb(255 255 255 / 50%);
-	}
-
 	&:hover {
+		color: rgb(255 255 255 / 90%);
 		background-color: rgb(110 110 110 / 90%);
-
-		svg {
-			fill: rgb(255 255 255 / 90%);
-		}
 	}
 
 	&:active {
+		color: rgb(255 255 255 / 70%);
 		background-color: rgb(110 110 110 / 70%);
 		transform: scale(90%);
+	}
 
-		svg {
-			fill: rgb(255 255 255 / 70%);
-		}
+	svg {
+		width: 24px;
+		height: 24px;
 	}
 }

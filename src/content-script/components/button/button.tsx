@@ -6,5 +6,5 @@ export const Button = ({
 	className,
 	...props
 }: ButtonHTMLAttributes<HTMLButtonElement>) => (
-	<button {...props} className={clsx(styles.button, className)} type="button" />
+	<button {...props} className={clsx(styles.button, className)} />
 );
