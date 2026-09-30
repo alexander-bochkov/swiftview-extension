@@ -16,6 +16,9 @@
 
 		/* Modules */
 		"moduleResolution": "bundler",
+		"paths": {
+			"@shared/*": ["./src/shared/*"]
+		},
 		"types": ["vite/client"]
 	}
 }
