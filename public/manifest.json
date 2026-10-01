@@ -11,8 +11,9 @@
 
 	"content_scripts": [
 		{
+			"js": ["content-script.js"],
 			"matches": ["<all_urls>"],
-			"js": ["content-script.js"]
+			"run_at": "document_start"
 		}
 	]
 }
