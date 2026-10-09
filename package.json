@@ -8,7 +8,8 @@
 		"build": "tsc && vite build",
 		"prepare": "husky",
 		"start": "vite build --watch",
-		"storybook": "storybook dev"
+		"storybook": "storybook dev",
+		"test": "vitest"
 	},
 	"dependencies": {
 		"clsx": "2.1.1",
@@ -23,10 +24,12 @@
 		"@types/react-dom": "19.3.0",
 		"@vitejs/plugin-react": "6.1.2",
 		"husky": "9.1.7",
+		"jsdom": "30.1.2",
 		"storybook": "10.6.1",
 		"typescript": "7.0.2",
 		"vite": "8.3.4",
 		"vite-plugin-css-injected-by-js": "5.0.2",
-		"vite-plugin-svgr": "5.2.0"
+		"vite-plugin-svgr": "5.2.0",
+		"vitest": "5.0.3"
 	}
 }
