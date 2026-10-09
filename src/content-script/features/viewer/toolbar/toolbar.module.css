@@ -1,0 +1,20 @@
+.toolbar {
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	bottom: 16px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	pointer-events: none;
+
+	button {
+		pointer-events: auto;
+	}
+}
+
+.tools {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
