@@ -1,6 +1,6 @@
 import { KEY_CODE } from "@shared/constants";
 import { type KeyboardEvent, type MouseEvent, useEffect, useRef } from "react";
-import { Button, Icon } from "../../components";
+import { Toolbar } from "./toolbar";
 import styles from "./viewer.module.css";
 
 type ViewerProps = {
@@ -31,9 +31,11 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 			onKeyDown={handleKeyDown}
 			ref={ref}
 		>
-			<Button className={styles.close} onClick={onClose}>
-				<Icon name="x-mark" />
-			</Button>
+			<Toolbar
+				onClose={onClose}
+				onFlip={(direction) => console.log(direction)}
+				onRotate={(direction) => console.log(direction)}
+			/>
 			<img alt="" className={styles.image} draggable={false} src={url} />
 		</dialog>
 	);
