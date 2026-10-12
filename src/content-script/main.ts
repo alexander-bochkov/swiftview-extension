@@ -1,6 +1,7 @@
 import {
 	AnchorElementUrlExtractor,
 	Detector,
+	EventBlocker,
 	ImageElementUrlExtractor,
 	LongPressRecognizer,
 	ViewerHost,
@@ -8,16 +9,18 @@ import {
 
 const HOLD_DELAY = 300;
 
-const detector = new Detector([
+const extractors = [
 	new AnchorElementUrlExtractor(),
 	new ImageElementUrlExtractor(),
-]);
+];
 
+const blocker = new EventBlocker();
+const detector = new Detector(extractors);
 const viewerHost = new ViewerHost();
 
-const recognizer = new LongPressRecognizer({
+const recognizer = new LongPressRecognizer(blocker, {
 	delay: HOLD_DELAY,
-	onLongPress: (x, y) => {
+	onLongPress: ({ x, y }) => {
 		const url = detector.detectUrl(x, y);
 		if (url) viewerHost.open(url);
 	},
