@@ -1,5 +1,5 @@
 import { POINTER_BUTTON, POINTER_TYPE } from "@shared/constants";
-import type { Nullable } from "@shared/types";
+import type { Nullable, Point } from "@shared/types";
 import type { EventBlocker } from "../event-blocker";
 
 const BLOCKED_EVENTS = [
@@ -17,11 +17,6 @@ type LongPressRecognizerOptions = {
 	readonly delay: number;
 	readonly onLongPress: (point: Point) => void;
 	readonly shouldIgnore: () => boolean;
-};
-
-type Point = {
-	readonly x: number;
-	readonly y: number;
 };
 
 export class LongPressRecognizer {
