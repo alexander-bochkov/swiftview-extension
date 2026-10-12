@@ -1,4 +1,4 @@
-import type { Nullable } from "@shared/types";
+import type { Nullable, Point } from "@shared/types";
 import type { UrlExtractor } from "../url-extractors";
 
 export class Detector {
@@ -8,7 +8,7 @@ export class Detector {
 		this.extractors = extractors;
 	}
 
-	detectUrl(x: number, y: number): Nullable<string> {
+	detectUrl({ x, y }: Point): Nullable<string> {
 		const elements = document.elementsFromPoint(x, y);
 
 		for (const extractor of this.extractors) {

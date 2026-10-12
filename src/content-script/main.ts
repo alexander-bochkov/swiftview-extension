@@ -20,8 +20,8 @@ const viewerHost = new ViewerHost();
 
 const recognizer = new LongPressRecognizer(blocker, {
 	delay: HOLD_DELAY,
-	onLongPress: ({ x, y }) => {
-		const url = detector.detectUrl(x, y);
+	onLongPress: (point) => {
+		const url = detector.detectUrl(point);
 		if (url) viewerHost.open(url);
 	},
 	shouldIgnore: () => viewerHost.isOpen,
