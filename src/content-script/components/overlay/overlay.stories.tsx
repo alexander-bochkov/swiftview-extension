@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useRef } from "react";
-import { Modal } from "./modal";
+import { Overlay } from "./overlay";
 
-type Metadata = Meta<typeof Modal>;
+type Metadata = Meta<typeof Overlay>;
 type Story = StoryObj<Metadata>;
 
 export default {
-	component: Modal,
-	title: "Modal",
+	component: Overlay,
+	title: "Overlay",
 } satisfies Metadata;
 
 export const WithActivationButton: Story = {
@@ -25,9 +25,13 @@ export const WithActivationButton: Story = {
 		return (
 			<>
 				<button onClick={handleOpen} type="button">
-					Open Modal
+					Open Overlay
 				</button>
-				<Modal onClose={handleClose} ref={ref} />
+				<Overlay ref={ref}>
+					<button onClick={handleClose} type="button">
+						Close Overlay
+					</button>
+				</Overlay>
 			</>
 		);
 	},
