@@ -14,21 +14,21 @@ export class ViewerHost {
 	open(url: string): void {
 		this.close();
 
-		this.host = document.createElement("swiftview-root");
-		document.documentElement.appendChild(this.host);
+		// Rendering errors arrive in onUncaughtError, this catch covers the
+		// synchronous ones.
+		try {
+			this.host = document.createElement("swiftview-root");
+			document.documentElement.append(this.host);
 
-		const shadowRoot = this.host.attachShadow({ mode: "closed" });
+			const shadowRoot = this.host.attachShadow({ mode: "closed" });
 
-		injectCSS({ target: shadowRoot });
+			injectCSS({ target: shadowRoot });
 
-		this.root = createRoot(shadowRoot, {
-			onUncaughtError: (error) => {
-				console.error(error);
-				this.close();
-			},
-		});
-
-		this.root.render(<Viewer onClose={() => this.close()} url={url} />);
+			this.root = createRoot(shadowRoot, { onUncaughtError: this.handleError });
+			this.root.render(<Viewer onClose={() => this.close()} url={url} />);
+		} catch (error) {
+			this.handleError(error);
+		}
 	}
 
 	close(): void {
@@ -38,4 +38,9 @@ export class ViewerHost {
 		this.root = null;
 		this.host = null;
 	}
+
+	private handleError = (error: unknown): void => {
+		console.error(error);
+		this.close();
+	};
 }
