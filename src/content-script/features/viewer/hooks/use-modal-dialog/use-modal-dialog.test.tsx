@@ -39,13 +39,18 @@ describe("useModalDialog", () => {
 		render(<TestDialog onClose={onClose} />);
 
 		expect(showModal).toHaveBeenCalledOnce();
-		expect(screen.getByRole("dialog")).toBeDefined();
 	});
 
 	it("does not call showModal for a dialog that is already open", () => {
 		render(<TestDialog onClose={onClose} open />);
 
 		expect(showModal).not.toHaveBeenCalled();
+	});
+
+	it("disables native closing of the dialog", () => {
+		render(<TestDialog onClose={onClose} />);
+
+		expect(screen.getByRole("dialog").getAttribute("closedby")).toBe("none");
 	});
 
 	it("closes on a click on the dialog itself", async () => {

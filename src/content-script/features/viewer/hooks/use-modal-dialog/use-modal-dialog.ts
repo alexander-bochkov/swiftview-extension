@@ -1,11 +1,18 @@
 import { KEY_CODE } from "@shared/constants";
-import { type KeyboardEvent, type MouseEvent, useEffect, useRef } from "react";
+import { type ComponentProps, useEffect, useRef } from "react";
 
 type UseModalDialogOptions = {
 	onClose: () => void;
 };
 
-export const useModalDialog = ({ onClose }: UseModalDialogOptions) => {
+type UseModalDialogReturn = Pick<
+	ComponentProps<"dialog">,
+	"closedby" | "onClick" | "onKeyDown" | "ref"
+>;
+
+export const useModalDialog = ({
+	onClose,
+}: UseModalDialogOptions): UseModalDialogReturn => {
 	const ref = useRef<HTMLDialogElement>(null);
 
 	useEffect(() => {
@@ -13,13 +20,15 @@ export const useModalDialog = ({ onClose }: UseModalDialogOptions) => {
 		if (dialog && !dialog.open) dialog.showModal();
 	}, []);
 
-	const handleClick = ({ currentTarget, target }: MouseEvent) => {
-		if (target === currentTarget) onClose();
+	return {
+		// The dialog is closed through `onClose` only, never natively.
+		closedby: "none",
+		onClick: ({ currentTarget, target }) => {
+			if (target === currentTarget) onClose();
+		},
+		onKeyDown: ({ code }) => {
+			if (code === KEY_CODE.ESCAPE) onClose();
+		},
+		ref,
 	};
-
-	const handleKeyDown = ({ code }: KeyboardEvent) => {
-		if (code === KEY_CODE.ESCAPE) onClose();
-	};
-
-	return { onClick: handleClick, onKeyDown: handleKeyDown, ref } as const;
 };
