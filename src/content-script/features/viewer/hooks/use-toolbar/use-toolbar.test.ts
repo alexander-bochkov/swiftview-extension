@@ -1,6 +1,6 @@
 import { cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Viewer } from "../../types";
+import type { Viewer } from "../use-viewer";
 import { useToolbar } from "./use-toolbar";
 
 describe("useToolbar", () => {
@@ -9,7 +9,7 @@ describe("useToolbar", () => {
 
 	const viewer: Viewer = {
 		dispatch,
-		state: { flipX: 1, flipY: 1, rotation: 0 },
+		state: { rotation: 0, scaleX: 1, scaleY: 1 },
 	};
 
 	// Vitest globals are off, so Testing Library can't register this itself.
