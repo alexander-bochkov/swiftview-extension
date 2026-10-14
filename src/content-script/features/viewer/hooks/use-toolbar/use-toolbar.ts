@@ -1,4 +1,6 @@
-import type { FlipDirection, RotateDirection, Viewer } from "../../types";
+import type { ComponentProps } from "react";
+import type { Toolbar } from "../../toolbar";
+import type { Viewer } from "../../types";
 
 type UseToolbarOptions = {
 	onClose: () => void;
@@ -8,13 +10,8 @@ type UseToolbarOptions = {
 export const useToolbar = ({
 	onClose,
 	viewer: { dispatch },
-}: UseToolbarOptions) =>
-	({
-		onClose,
-		onFlip: (direction: FlipDirection) => {
-			dispatch({ payload: direction, type: "FLIP" });
-		},
-		onRotate: (direction: RotateDirection) => {
-			dispatch({ payload: direction, type: "ROTATE" });
-		},
-	}) as const;
+}: UseToolbarOptions): ComponentProps<typeof Toolbar> => ({
+	onClose,
+	onFlip: (direction) => dispatch({ payload: direction, type: "FLIP" }),
+	onRotate: (direction) => dispatch({ payload: direction, type: "ROTATE" }),
+});
