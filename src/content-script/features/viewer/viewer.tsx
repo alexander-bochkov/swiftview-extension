@@ -1,5 +1,5 @@
 import { Overlay } from "../../components";
-import { useImage, useModalDialog, useToolbar, useViewer } from "./hooks";
+import { useImage, useModalDialog, useToolbar, useViewerStore } from "./hooks";
 import { Toolbar } from "./toolbar";
 import styles from "./viewer.module.css";
 
@@ -9,11 +9,11 @@ type ViewerProps = {
 };
 
 export const Viewer = ({ onClose, url }: ViewerProps) => {
-	const viewer = useViewer();
+	const store = useViewerStore();
 
 	const dialog = useModalDialog({ onClose });
-	const toolbar = useToolbar({ onClose, viewer });
-	const image = useImage({ viewer });
+	const toolbar = useToolbar({ onClose, store });
+	const image = useImage({ store });
 
 	return (
 		<Overlay className={styles.viewer} {...dialog}>

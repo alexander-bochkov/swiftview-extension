@@ -1,13 +1,13 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { Viewer } from "../use-viewer";
+import type { ViewerStore } from "../use-viewer-store";
 import { useImage } from "./use-image";
 
 describe("useImage", () => {
-	const renderImage = (state: Viewer["state"]) => {
-		const viewer: Viewer = { dispatch: vi.fn(), state };
+	const renderImage = (state: ViewerStore["state"]) => {
+		const store: ViewerStore = { dispatch: vi.fn(), state };
 
-		return renderHook(() => useImage({ viewer })).result.current;
+		return renderHook(() => useImage({ store })).result.current;
 	};
 
 	it("does not transform the image in the initial state", () => {
