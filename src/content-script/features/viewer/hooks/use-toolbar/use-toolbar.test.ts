@@ -1,13 +1,13 @@
 import { cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Viewer } from "../use-viewer";
+import type { ViewerStore } from "../use-viewer-store";
 import { useToolbar } from "./use-toolbar";
 
 describe("useToolbar", () => {
 	const dispatch = vi.fn();
 	const onClose = vi.fn();
 
-	const viewer: Viewer = {
+	const store: ViewerStore = {
 		dispatch,
 		state: { rotation: 0, scaleX: 1, scaleY: 1 },
 	};
@@ -19,7 +19,7 @@ describe("useToolbar", () => {
 	});
 
 	const renderToolbar = () =>
-		renderHook(() => useToolbar({ onClose, viewer })).result.current;
+		renderHook(() => useToolbar({ onClose, store })).result.current;
 
 	it("passes onClose through", () => {
 		expect(renderToolbar().onClose).toBe(onClose);

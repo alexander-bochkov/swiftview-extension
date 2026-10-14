@@ -1,14 +1,14 @@
 import type { ComponentProps } from "react";
-import type { Viewer } from "../use-viewer";
+import type { ViewerStore } from "../use-viewer-store";
 
 type UseImageOptions = {
-	viewer: Viewer;
+	store: ViewerStore;
 };
 
 type UseImageReturn = Pick<ComponentProps<"img">, "style">;
 
 export const useImage = ({
-	viewer: {
+	store: {
 		state: { rotation, scaleX, scaleY },
 	},
 }: UseImageOptions): UseImageReturn => ({

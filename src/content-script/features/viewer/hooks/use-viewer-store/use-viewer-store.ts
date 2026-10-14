@@ -3,22 +3,22 @@ import type { FlipDirection, RotateDirection } from "../../types";
 
 type FlipScale = 1 | -1;
 
-type ViewerAction =
+type Action =
 	| { type: "FLIP"; payload: FlipDirection }
 	| { type: "ROTATE"; payload: RotateDirection };
 
-type ViewerState = {
+type State = {
 	readonly rotation: number;
 	readonly scaleX: FlipScale;
 	readonly scaleY: FlipScale;
 };
 
-export type Viewer = {
-	dispatch: ActionDispatch<[ViewerAction]>;
-	state: ViewerState;
+export type ViewerStore = {
+	dispatch: ActionDispatch<[Action]>;
+	state: State;
 };
 
-const INITIAL_STATE: ViewerState = {
+const INITIAL_STATE: State = {
 	rotation: 0,
 	scaleX: 1,
 	scaleY: 1,
@@ -28,10 +28,7 @@ const QUARTER_TURN = 90;
 
 const toggle = (scale: FlipScale): FlipScale => (scale === 1 ? -1 : 1);
 
-const reducer: Reducer<ViewerState, ViewerAction> = (
-	state,
-	{ payload, type },
-) => {
+const reducer: Reducer<State, Action> = (state, { payload, type }) => {
 	switch (type) {
 		case "FLIP":
 			return payload === "horizontal"
@@ -51,7 +48,7 @@ const reducer: Reducer<ViewerState, ViewerAction> = (
 	}
 };
 
-export const useViewer = (): Viewer => {
+export const useViewerStore = (): ViewerStore => {
 	const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 	return useMemo(() => ({ dispatch, state }), [state]);
 };
