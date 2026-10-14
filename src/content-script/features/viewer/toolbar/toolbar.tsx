@@ -1,10 +1,11 @@
 import { Button, Icon } from "../../../components";
+import type { FlipDirection, RotateDirection } from "../types";
 import styles from "./toolbar.module.css";
 
 type ToolbarProps = {
 	onClose: () => void;
-	onFlip: (direction: "horizontal" | "vertical") => void;
-	onRotate: (direction: "left" | "right") => void;
+	onFlip: (direction: FlipDirection) => void;
+	onRotate: (direction: RotateDirection) => void;
 };
 
 export const Toolbar = ({ onClose, onFlip, onRotate }: ToolbarProps) => (
