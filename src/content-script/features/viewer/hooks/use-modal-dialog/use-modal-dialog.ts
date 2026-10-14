@@ -21,5 +21,5 @@ export const useModalDialog = ({ onClose }: UseModalDialogOptions) => {
 		if (code === KEY_CODE.ESCAPE) onClose();
 	};
 
-	return { onClick: handleClick, onKeyDown: handleKeyDown, ref };
+	return { onClick: handleClick, onKeyDown: handleKeyDown, ref } as const;
 };
