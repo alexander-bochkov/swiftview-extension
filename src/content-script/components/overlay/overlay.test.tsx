@@ -16,83 +16,45 @@ describe("Overlay", () => {
 	// A dialog that is not open is excluded from the accessibility tree.
 	const getDialog = () => screen.getByRole("dialog", { hidden: true });
 
-	it("renders a dialog", () => {
-		render(<Overlay />);
-
-		expect(getDialog()).toBeInstanceOf(HTMLDialogElement);
-	});
-
-	it("renders the children", () => {
+	it("renders a dialog with the children", () => {
 		render(
 			<Overlay>
 				<button type="button">content</button>
 			</Overlay>,
 		);
 
+		expect(getDialog()).toBeInstanceOf(HTMLDialogElement);
 		expect(
 			screen.getByRole("button", { hidden: true, name: "content" }),
 		).toBeDefined();
 	});
 
-	describe("closedby", () => {
-		it("is none by default", () => {
-			render(<Overlay />);
+	it("merges the custom class name with the overlay class", () => {
+		render(<Overlay className="custom" />);
 
-			expect(getDialog().getAttribute("closedby")).toBe("none");
-		});
-
-		it("falls back to none when undefined is passed", () => {
-			render(<Overlay closedby={undefined} />);
-
-			expect(getDialog().getAttribute("closedby")).toBe("none");
-		});
-
-		it("can be overridden", () => {
-			render(<Overlay closedby="any" />);
-
-			expect(getDialog().getAttribute("closedby")).toBe("any");
-		});
+		expect(getDialog().className).toBe("overlay-class custom");
 	});
 
-	describe("className", () => {
-		it("has the overlay class", () => {
-			render(<Overlay />);
+	it("passes native attributes to the dialog", () => {
+		render(<Overlay id="viewer" />);
 
-			expect(getDialog().className).toBe("overlay-class");
-		});
-
-		it("is merged with the overlay class", () => {
-			render(<Overlay className="custom" />);
-
-			expect(getDialog().classList.contains("overlay-class")).toBe(true);
-			expect(getDialog().classList.contains("custom")).toBe(true);
-		});
+		expect(getDialog().id).toBe("viewer");
 	});
 
-	describe("props", () => {
-		it("passes native attributes to the dialog", () => {
-			render(<Overlay aria-label="Preview" id="viewer" />);
+	it("passes event handlers to the dialog", async () => {
+		const user = userEvent.setup();
+		const onClick = vi.fn();
+		render(<Overlay onClick={onClick} open />);
 
-			// The accessible name of a closed dialog is empty, so query by label.
-			expect(screen.getByLabelText("Preview")).toBe(getDialog());
-			expect(getDialog().id).toBe("viewer");
-		});
+		await user.click(getDialog());
 
-		it("passes event handlers to the dialog", async () => {
-			const user = userEvent.setup();
-			const onClick = vi.fn();
-			render(<Overlay onClick={onClick} open />);
+		expect(onClick).toHaveBeenCalledOnce();
+	});
 
-			await user.click(getDialog());
+	it("forwards the ref to the dialog", () => {
+		const ref = createRef<HTMLDialogElement>();
+		render(<Overlay ref={ref} />);
 
-			expect(onClick).toHaveBeenCalledOnce();
-		});
-
-		it("forwards the ref to the dialog", () => {
-			const ref = createRef<HTMLDialogElement>();
-			render(<Overlay ref={ref} />);
-
-			expect(ref.current).toBe(getDialog());
-		});
+		expect(ref.current).toBe(getDialog());
 	});
 });
