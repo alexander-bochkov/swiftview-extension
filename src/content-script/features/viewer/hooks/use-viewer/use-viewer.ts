@@ -1,30 +1,52 @@
-import { type Reducer, useMemo, useReducer } from "react";
-import type { Flip, Viewer, ViewerAction, ViewerState } from "../../types";
+import { type ActionDispatch, type Reducer, useMemo, useReducer } from "react";
+import type { FlipDirection, RotateDirection } from "../../types";
+
+type FlipScale = 1 | -1;
+
+type ViewerAction =
+	| { type: "FLIP"; payload: FlipDirection }
+	| { type: "ROTATE"; payload: RotateDirection };
+
+type ViewerState = {
+	readonly rotation: number;
+	readonly scaleX: FlipScale;
+	readonly scaleY: FlipScale;
+};
+
+export type Viewer = {
+	dispatch: ActionDispatch<[ViewerAction]>;
+	state: ViewerState;
+};
 
 const INITIAL_STATE: ViewerState = {
-	flipX: 1,
-	flipY: 1,
 	rotation: 0,
+	scaleX: 1,
+	scaleY: 1,
 };
 
 const QUARTER_TURN = 90;
 
-const toggle = (flip: Flip): Flip => (flip === 1 ? -1 : 1);
+const toggle = (scale: FlipScale): FlipScale => (scale === 1 ? -1 : 1);
 
 const reducer: Reducer<ViewerState, ViewerAction> = (
 	state,
 	{ payload, type },
 ) => {
 	switch (type) {
-		case "FLIP": {
+		case "FLIP":
 			return payload === "horizontal"
-				? { ...state, flipX: toggle(state.flipX) }
-				: { ...state, flipY: toggle(state.flipY) };
-		}
+				? { ...state, scaleX: toggle(state.scaleX) }
+				: { ...state, scaleY: toggle(state.scaleY) };
 		case "ROTATE": {
 			const step = payload === "right" ? QUARTER_TURN : -QUARTER_TURN;
-			const mirrored = state.flipX * state.flipY === -1;
-			return { ...state, rotation: state.rotation + (mirrored ? -step : step) };
+			// A mirrored image turns the other way on screen, so the step is
+			// inverted to keep the visual direction.
+			const isMirrored = state.scaleX !== state.scaleY;
+
+			return {
+				...state,
+				rotation: state.rotation + (isMirrored ? -step : step),
+			};
 		}
 	}
 };

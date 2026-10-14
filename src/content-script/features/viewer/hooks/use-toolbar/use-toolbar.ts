@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 import type { Toolbar } from "../../toolbar";
-import type { Viewer } from "../../types";
+import type { Viewer } from "../use-viewer";
 
 type UseToolbarOptions = {
 	onClose: () => void;
