@@ -8,15 +8,3 @@
 		justify-content: center;
 	}
 }
-
-/*
- * The image is laid out at its natural size and scaled with a transform, see
- * use-image-zoom. Page styles can't reach it, but the UA defaults for <img>
- * inside a flex container would otherwise shrink it.
- */
-.image {
-	/* flex: none;
-	max-width: none;
-	max-height: none;
-	touch-action: none; */
-}
