@@ -1,5 +1,5 @@
 import { KEY_CODE } from "@shared/constants";
-import { type ComponentProps, useEffect, useRef } from "react";
+import { type ComponentProps, type RefObject, useEffect, useRef } from "react";
 
 type UseModalDialogOptions = {
 	onClose: () => void;
@@ -7,8 +7,11 @@ type UseModalDialogOptions = {
 
 type UseModalDialogReturn = Pick<
 	ComponentProps<"dialog">,
-	"closedby" | "onClick" | "onKeyDown" | "ref"
->;
+	"closedby" | "onClick" | "onKeyDown"
+> & {
+	// An object ref, so other hooks can use the dialog as their container.
+	ref: RefObject<HTMLDialogElement | null>;
+};
 
 export const useModalDialog = ({
 	onClose,

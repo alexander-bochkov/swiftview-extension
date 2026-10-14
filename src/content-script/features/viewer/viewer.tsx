@@ -13,18 +13,12 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 
 	const dialog = useModalDialog({ onClose });
 	const toolbar = useToolbar({ onClose, store });
-	const image = useImage({ store });
+	const image = useImage({ container: dialog.ref, store });
 
 	return (
 		<Overlay className={styles.viewer} {...dialog}>
 			<Toolbar {...toolbar} />
-			<img
-				alt=""
-				className={styles.image}
-				draggable={false}
-				src={url}
-				{...image}
-			/>
+			<img alt="" draggable={false} src={url} {...image} />
 		</Overlay>
 	);
 };
