@@ -5,6 +5,7 @@ import {
 	type RefObject,
 	useEffect,
 	useEffectEvent,
+	useRef,
 	useState,
 } from "react";
 import type { ViewerStore, Zoom } from "../use-viewer-store";
@@ -12,10 +13,12 @@ import {
 	getFitScale,
 	getVisualSize,
 	MAX_SCALE,
+	moveTo,
 	type Size,
 	zoomAt,
 } from "./layout";
-import { getWheelZoomFactor } from "./wheel";
+import { useDrag } from "./use-drag";
+import { getWheelGesture } from "./wheel";
 
 type UseImageOptions = {
 	container: RefObject<Nullable<HTMLElement>>;
@@ -24,7 +27,14 @@ type UseImageOptions = {
 
 type UseImageReturn = Pick<
 	ComponentProps<"img">,
-	"onClick" | "onLoad" | "style"
+	| "onClick"
+	| "onClickCapture"
+	| "onLoad"
+	| "onPointerCancel"
+	| "onPointerDown"
+	| "onPointerMove"
+	| "onPointerUp"
+	| "style"
 >;
 
 const NO_OFFSET: Point = { x: 0, y: 0 };
@@ -32,7 +42,9 @@ const NO_OFFSET: Point = { x: 0, y: 0 };
 const getCursor = (
 	zoom: Nullable<Zoom>,
 	fitScale: number,
+	isDragging: boolean,
 ): CSSProperties["cursor"] => {
+	if (isDragging) return "grabbing";
 	if (zoom) return "zoom-out";
 
 	return fitScale < 1 ? "zoom-in" : undefined;
@@ -106,12 +118,52 @@ export const useImage = ({
 		});
 	};
 
+	// A fitted image never exceeds the container, so only a zoomed one moves.
+	const moveImage = (nextOffset: Point): void => {
+		if (!zoom || !visualSize || !containerSize) return;
+
+		const moved = moveTo({
+			container: containerSize,
+			image: visualSize,
+			offset: nextOffset,
+			zoom,
+		});
+
+		if (moved.offset.x === offset.x && moved.offset.y === offset.y) return;
+
+		dispatch({ payload: moved, type: "ZOOM" });
+	};
+
+	// The drag applies its whole distance to the offset it started from.
+	const dragOriginRef = useRef(offset);
+
+	const { isDragging, ...dragProps } = useDrag({
+		onDrag: ({ x, y }) => {
+			const origin = dragOriginRef.current;
+			moveImage({ x: origin.x + x, y: origin.y + y });
+		},
+		onDragStart: () => {
+			dragOriginRef.current = offset;
+		},
+	});
+
 	const handleWheel = useEffectEvent((e: WheelEvent): void => {
 		// Also keeps the browser from zooming the page on a pinch.
 		e.preventDefault();
 
-		const factor = getWheelZoomFactor(e);
-		if (factor !== null) zoomTo(scale * factor, { x: e.clientX, y: e.clientY });
+		const gesture = getWheelGesture(e);
+
+		switch (gesture?.type) {
+			case "move":
+				moveImage({
+					x: offset.x + gesture.delta.x,
+					y: offset.y + gesture.delta.y,
+				});
+				break;
+			case "zoom":
+				zoomTo(scale * gesture.factor, { x: e.clientX, y: e.clientY });
+				break;
+		}
 	});
 
 	// A React wheel listener is passive, so it couldn't prevent the default.
@@ -130,6 +182,7 @@ export const useImage = ({
 	}, [container]);
 
 	return {
+		...dragProps,
 		onClick: ({ clientX, clientY }) => {
 			if (zoom) dispatch({ type: "RESET_ZOOM" });
 			else zoomTo(1, { x: clientX, y: clientY });
@@ -141,7 +194,7 @@ export const useImage = ({
 			});
 		},
 		style: {
-			cursor: getCursor(zoom, fitScale),
+			cursor: getCursor(zoom, fitScale, isDragging),
 
 			// The `translate` and `scale` properties are applied together with
 			// `transform`, in this order: `translate`, `scale`, `transform`. So the

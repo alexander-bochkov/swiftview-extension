@@ -1,4 +1,4 @@
-import type { Nullable } from "@shared/types";
+import type { Nullable, Point } from "@shared/types";
 
 // Per notch of a mouse wheel.
 const WHEEL_STEP = 1.25;
@@ -9,6 +9,12 @@ const NOTCH_DELTA = 120;
 
 // Non-standard, but available in Chromium, Firefox and Safari.
 type LegacyWheelEvent = WheelEvent & { readonly wheelDeltaY?: number };
+
+export type WheelGesture =
+	// The factor to multiply the scale by.
+	| { readonly factor: number; readonly type: "zoom" }
+	// The distance to move the image by, in px.
+	| { readonly delta: Point; readonly type: "move" };
 
 // A mouse wheel scrolls by lines in Firefox, and by whole notches of the
 // legacy delta in Chromium and Safari. A trackpad scrolls by px in uneven
@@ -21,15 +27,23 @@ const isMouseWheel = (e: LegacyWheelEvent): boolean => {
 	return e.deltaX === 0 && wheelDeltaY !== 0 && wheelDeltaY % NOTCH_DELTA === 0;
 };
 
-// The factor to multiply the scale by, or null when the wheel doesn't zoom.
-export const getWheelZoomFactor = (e: WheelEvent): Nullable<number> => {
-	if (e.deltaY === 0) return null;
+// A mouse wheel and a trackpad pinch zoom, scrolling with a trackpad moves.
+export const getWheelGesture = (e: WheelEvent): Nullable<WheelGesture> => {
+	if (isMouseWheel(e)) {
+		if (e.deltaY === 0) return null;
 
-	if (isMouseWheel(e)) return e.deltaY < 0 ? WHEEL_STEP : 1 / WHEEL_STEP;
+		return { factor: e.deltaY < 0 ? WHEEL_STEP : 1 / WHEEL_STEP, type: "zoom" };
+	}
 
 	// Browsers report a trackpad pinch as a wheel with the Ctrl key.
-	if (e.ctrlKey) return Math.exp(-e.deltaY * PINCH_SENSITIVITY);
+	if (e.ctrlKey) {
+		if (e.deltaY === 0) return null;
 
-	// Scrolling with a trackpad is left for moving the image.
-	return null;
+		return { factor: Math.exp(-e.deltaY * PINCH_SENSITIVITY), type: "zoom" };
+	}
+
+	if (e.deltaX === 0 && e.deltaY === 0) return null;
+
+	// Scrolling down shows what is below, so the image moves up.
+	return { delta: { x: -e.deltaX, y: -e.deltaY }, type: "move" };
 };
