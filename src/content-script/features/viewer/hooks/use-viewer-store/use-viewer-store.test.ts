@@ -1,15 +1,59 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { useViewerStore } from "./use-viewer-store";
+import { useViewerStore, type Zoom } from "./use-viewer-store";
 
 describe("useViewerStore", () => {
 	// Vitest globals are off, so Testing Library can't register this itself.
 	afterEach(cleanup);
 
-	it("starts without flips and rotation", () => {
+	const ZOOM: Zoom = { offset: { x: 10, y: -20 }, scale: 2 };
+
+	const renderZoomed = () => {
+		const rendered = renderHook(() => useViewerStore());
+
+		act(() =>
+			rendered.result.current.dispatch({ payload: ZOOM, type: "ZOOM" }),
+		);
+
+		return rendered;
+	};
+
+	it("starts without flips, rotation and zoom", () => {
 		const { result } = renderHook(() => useViewerStore());
 
-		expect(result.current.state).toEqual({ rotation: 0, scaleX: 1, scaleY: 1 });
+		expect(result.current.state).toEqual({
+			rotation: 0,
+			scaleX: 1,
+			scaleY: 1,
+			zoom: null,
+		});
+	});
+
+	describe("ZOOM", () => {
+		it("stores the zoom", () => {
+			const { result } = renderZoomed();
+
+			expect(result.current.state.zoom).toEqual(ZOOM);
+		});
+	});
+
+	describe("RESET_ZOOM", () => {
+		it("fits the image again", () => {
+			const { result } = renderZoomed();
+
+			act(() => result.current.dispatch({ type: "RESET_ZOOM" }));
+
+			expect(result.current.state.zoom).toBeNull();
+		});
+
+		it("keeps the store when the image is already fitted", () => {
+			const { result } = renderHook(() => useViewerStore());
+			const first = result.current;
+
+			act(() => result.current.dispatch({ type: "RESET_ZOOM" }));
+
+			expect(result.current).toBe(first);
+		});
 	});
 
 	describe("FLIP", () => {
@@ -41,6 +85,17 @@ describe("useViewerStore", () => {
 
 			expect(result.current.state.scaleX).toBe(1);
 		});
+
+		it.each(["horizontal", "vertical"] as const)(
+			"resets the zoom on a %s flip",
+			(payload) => {
+				const { result } = renderZoomed();
+
+				act(() => result.current.dispatch({ payload, type: "FLIP" }));
+
+				expect(result.current.state.zoom).toBeNull();
+			},
+		);
 	});
 
 	describe("ROTATE", () => {
@@ -81,6 +136,14 @@ describe("useViewerStore", () => {
 			});
 
 			expect(result.current.state.rotation).toBe(90);
+		});
+
+		it("resets the zoom", () => {
+			const { result } = renderZoomed();
+
+			act(() => result.current.dispatch({ payload: "left", type: "ROTATE" }));
+
+			expect(result.current.state.zoom).toBeNull();
 		});
 	});
 

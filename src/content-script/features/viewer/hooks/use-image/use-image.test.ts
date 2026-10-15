@@ -1,19 +1,31 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
-import type { RefObject, SyntheticEvent } from "react";
+import type { MouseEvent, RefObject, SyntheticEvent } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ViewerStore } from "../use-viewer-store";
+import type { ViewerStore, Zoom } from "../use-viewer-store";
 import { useImage } from "./use-image";
 
 type Size = { height: number; width: number };
 
 describe("useImage", () => {
 	const disconnect = vi.fn();
+	const dispatch = vi.fn();
 	const observe = vi.fn();
+	// Covers the viewport from 0, 0 to 500, 100, like the setup below.
+	let element: HTMLElement;
 	let notify: (size: Size) => void;
 
-	// jsdom doesn't implement ResizeObserver, so capture the callback and let
-	// the tests report the container size themselves.
 	beforeEach(() => {
+		element = document.createElement("div");
+
+		vi.spyOn(element, "getBoundingClientRect").mockReturnValue({
+			height: 100,
+			left: 0,
+			top: 0,
+			width: 500,
+		} as DOMRect);
+
+		// jsdom doesn't implement ResizeObserver, so capture the callback and
+		// let the tests report the container size themselves.
 		vi.stubGlobal(
 			"ResizeObserver",
 			class {
@@ -40,13 +52,11 @@ describe("useImage", () => {
 
 	const renderImage = (
 		state: Partial<ViewerStore["state"]> = {},
-		container: RefObject<HTMLElement | null> = {
-			current: document.createElement("div"),
-		},
+		container: RefObject<HTMLElement | null> = { current: element },
 	) => {
 		const store: ViewerStore = {
-			dispatch: vi.fn(),
-			state: { rotation: 0, scaleX: 1, scaleY: 1, ...state },
+			dispatch,
+			state: { rotation: 0, scaleX: 1, scaleY: 1, zoom: null, ...state },
 		};
 
 		return renderHook(() => useImage({ container, store }));
@@ -143,6 +153,193 @@ describe("useImage", () => {
 			const result = setup({ scaleX: -1 });
 
 			expect(result.current.style?.transform).toBe("scale(-1, 1) rotate(0deg)");
+		});
+	});
+
+	describe("zoom", () => {
+		const ZOOM: Zoom = { offset: { x: 10, y: -20 }, scale: 2 };
+
+		const click = (result: Rendered, clientX: number, clientY: number) => {
+			act(() => {
+				result.current.onClick?.({
+					clientX,
+					clientY,
+				} as MouseEvent<HTMLImageElement>);
+			});
+		};
+
+		const wheel = (init: WheelEventInit): WheelEvent => {
+			const e = new WheelEvent("wheel", {
+				cancelable: true,
+				deltaMode: WheelEvent.DOM_DELTA_LINE,
+				...init,
+			});
+
+			act(() => {
+				element.dispatchEvent(e);
+			});
+
+			return e;
+		};
+
+		const getZoomActions = () =>
+			dispatch.mock.calls.filter(([action]) => action.type === "ZOOM");
+
+		it("applies the scale and the offset of the zoom", () => {
+			const result = setup({ zoom: ZOOM });
+
+			expect(result.current.style).toMatchObject({
+				scale: 2,
+				translate: "10px -20px",
+			});
+		});
+
+		it("does not offset the fitted image", () => {
+			const result = setup();
+
+			expect(result.current.style?.translate).toBe("0px 0px");
+		});
+
+		it("resets the zoom when the container is resized", () => {
+			setup();
+			dispatch.mockClear();
+
+			act(() => notify({ height: 50, width: 500 }));
+
+			expect(dispatch).toHaveBeenCalledExactlyOnceWith({ type: "RESET_ZOOM" });
+		});
+
+		describe("click", () => {
+			it("opens a shrunk image in its natural size under the cursor", () => {
+				const result = setup();
+
+				// 40, 10 from the center. At twice the scale that point of the
+				// image moves to 80, 20, so the image shifts by -40, -10. The image
+				// is narrower than the container, so it stays centered horizontally.
+				click(result, 290, 60);
+
+				expect(dispatch).toHaveBeenCalledWith({
+					payload: { offset: { x: 0, y: -10 }, scale: 1 },
+					type: "ZOOM",
+				});
+			});
+
+			it("fits a zoomed image again", () => {
+				const result = setup({ zoom: ZOOM });
+
+				click(result, 290, 60);
+
+				expect(dispatch).toHaveBeenCalledWith({ type: "RESET_ZOOM" });
+				expect(getZoomActions()).toHaveLength(0);
+			});
+
+			it("does not zoom an image shown in its natural size", () => {
+				const result = setup({}, { height: 50, width: 100 });
+
+				click(result, 290, 60);
+
+				expect(getZoomActions()).toHaveLength(0);
+			});
+
+			it("does nothing before the image is loaded", () => {
+				const { result } = renderImage();
+
+				click(result, 290, 60);
+
+				expect(dispatch).not.toHaveBeenCalled();
+			});
+		});
+
+		describe("wheel", () => {
+			it("zooms in by a step at the cursor", () => {
+				setup();
+
+				wheel({ clientX: 250, clientY: 50, deltaY: -3 });
+
+				expect(dispatch).toHaveBeenCalledWith({
+					payload: { offset: { x: 0, y: 0 }, scale: 0.625 },
+					type: "ZOOM",
+				});
+			});
+
+			it("zooms out from the current zoom", () => {
+				setup({ zoom: { offset: { x: 0, y: 0 }, scale: 2 } });
+
+				wheel({ clientX: 250, clientY: 50, deltaY: 3 });
+
+				expect(dispatch).toHaveBeenCalledWith({
+					payload: { offset: { x: 0, y: 0 }, scale: 1.6 },
+					type: "ZOOM",
+				});
+			});
+
+			it("fits the image when zooming out below the fit", () => {
+				setup();
+				dispatch.mockClear();
+
+				wheel({ deltaY: 3 });
+
+				expect(dispatch).toHaveBeenCalledExactlyOnceWith({
+					type: "RESET_ZOOM",
+				});
+			});
+
+			it("stops at 400%", () => {
+				setup({ zoom: { offset: { x: 0, y: 0 }, scale: 3.5 } });
+
+				wheel({ clientX: 250, clientY: 50, deltaY: -3 });
+
+				expect(dispatch).toHaveBeenCalledWith({
+					payload: { offset: { x: 0, y: 0 }, scale: 4 },
+					type: "ZOOM",
+				});
+			});
+
+			it("does nothing at 400%", () => {
+				setup({ zoom: { offset: { x: 0, y: 0 }, scale: 4 } });
+
+				wheel({ deltaY: -3 });
+
+				expect(getZoomActions()).toHaveLength(0);
+			});
+
+			it("prevents the default action", () => {
+				setup();
+
+				expect(wheel({ deltaY: -3 }).defaultPrevented).toBe(true);
+			});
+
+			it("does not zoom on a trackpad scroll", () => {
+				setup();
+
+				const e = wheel({ deltaMode: WheelEvent.DOM_DELTA_PIXEL, deltaY: 10 });
+
+				expect(e.defaultPrevented).toBe(true);
+				expect(getZoomActions()).toHaveLength(0);
+			});
+
+			it("stops listening on unmount", () => {
+				const { unmount } = renderImage();
+				unmount();
+
+				expect(wheel({ deltaY: -3 }).defaultPrevented).toBe(false);
+			});
+		});
+
+		describe("cursor", () => {
+			it("offers to zoom in a shrunk image", () => {
+				expect(setup().current.style?.cursor).toBe("zoom-in");
+			});
+
+			it("offers to zoom out a zoomed image", () => {
+				expect(setup({ zoom: ZOOM }).current.style?.cursor).toBe("zoom-out");
+			});
+
+			it("keeps the default cursor on an image in its natural size", () => {
+				const result = setup({}, { height: 50, width: 100 });
+
+				expect(result.current.style?.cursor).toBeUndefined();
+			});
 		});
 	});
 
