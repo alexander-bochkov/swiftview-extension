@@ -46,6 +46,25 @@ export const clampOffset = (
 	y: clampAxis(offset.y, size.height, container.height),
 });
 
+type MoveToOptions = {
+	readonly container: Size;
+	// The visual size of the image at the natural scale.
+	readonly image: Size;
+	readonly offset: Point;
+	readonly zoom: Zoom;
+};
+
+// Moves the image to `offset`, as far as the edges allow.
+export const moveTo = ({
+	container,
+	image,
+	offset,
+	zoom,
+}: MoveToOptions): Zoom => ({
+	offset: clampOffset(offset, scaleSize(image, zoom.scale), container),
+	scale: zoom.scale,
+});
+
 type ZoomAtOptions = {
 	readonly container: Size;
 	// The visual size of the image at the natural scale.

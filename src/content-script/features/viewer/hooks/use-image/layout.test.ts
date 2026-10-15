@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { clampOffset, getFitScale, getVisualSize, zoomAt } from "./layout";
+import {
+	clampOffset,
+	getFitScale,
+	getVisualSize,
+	moveTo,
+	zoomAt,
+} from "./layout";
 
 describe("layout", () => {
 	describe("getFitScale", () => {
@@ -65,6 +71,25 @@ describe("layout", () => {
 			);
 
 			expect(Object.is(y, 0)).toBe(true);
+		});
+	});
+
+	describe("moveTo", () => {
+		const container = { height: 500, width: 500 };
+		// At twice the scale it's 700x200 on screen: larger on the x axis only.
+		const image = { height: 100, width: 350 };
+		const zoom = { offset: { x: 0, y: 0 }, scale: 2 };
+
+		it("moves along the axis on which the image is larger", () => {
+			expect(
+				moveTo({ container, image, offset: { x: 60, y: 40 }, zoom }),
+			).toEqual({ offset: { x: 60, y: 0 }, scale: 2 });
+		});
+
+		it("stops the edges at the borders", () => {
+			expect(
+				moveTo({ container, image, offset: { x: -300, y: 0 }, zoom }),
+			).toEqual({ offset: { x: -100, y: 0 }, scale: 2 });
 		});
 	});
 

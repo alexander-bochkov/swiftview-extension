@@ -1,5 +1,10 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
-import type { MouseEvent, RefObject, SyntheticEvent } from "react";
+import type {
+	MouseEvent,
+	PointerEvent,
+	RefObject,
+	SyntheticEvent,
+} from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ViewerStore, Zoom } from "../use-viewer-store";
 import { useImage } from "./use-image";
@@ -323,6 +328,115 @@ describe("useImage", () => {
 				unmount();
 
 				expect(wheel({ deltaY: -3 }).defaultPrevented).toBe(false);
+			});
+		});
+
+		describe("move", () => {
+			// At 100% the image is 400x200 in the container of 500x100: it's larger
+			// on the y axis only, and moves by up to 50 px up and down.
+			const NATURAL: Zoom = { offset: { x: 0, y: 0 }, scale: 1 };
+
+			const scroll = (deltaX: number, deltaY: number) =>
+				wheel({ deltaMode: WheelEvent.DOM_DELTA_PIXEL, deltaX, deltaY });
+
+			const pointer = (clientX: number, clientY: number) =>
+				({
+					button: 0,
+					clientX,
+					clientY,
+					currentTarget: { setPointerCapture: vi.fn() },
+					isPrimary: true,
+					pointerId: 1,
+					pointerType: "mouse",
+				}) as unknown as PointerEvent<HTMLImageElement>;
+
+			describe("trackpad", () => {
+				it("moves a zoomed image along the axis on which it's larger", () => {
+					setup({ zoom: NATURAL });
+
+					scroll(10, 30);
+
+					expect(dispatch).toHaveBeenCalledWith({
+						payload: { offset: { x: 0, y: -30 }, scale: 1 },
+						type: "ZOOM",
+					});
+				});
+
+				it("stops the edges at the borders", () => {
+					setup({ zoom: NATURAL });
+
+					scroll(0, 300);
+
+					expect(dispatch).toHaveBeenCalledWith({
+						payload: { offset: { x: 0, y: -50 }, scale: 1 },
+						type: "ZOOM",
+					});
+				});
+
+				it("does nothing when the image is already at the border", () => {
+					setup({ zoom: { offset: { x: 0, y: -50 }, scale: 1 } });
+
+					scroll(0, 30);
+
+					expect(getZoomActions()).toHaveLength(0);
+				});
+
+				it("does not move a fitted image", () => {
+					setup();
+
+					scroll(10, 30);
+
+					expect(getZoomActions()).toHaveLength(0);
+				});
+			});
+
+			describe("mouse", () => {
+				it("moves a zoomed image with the pointer", () => {
+					const result = setup({ zoom: NATURAL });
+
+					act(() => result.current.onPointerDown?.(pointer(100, 50)));
+					act(() => result.current.onPointerMove?.(pointer(120, 20)));
+
+					expect(dispatch).toHaveBeenCalledWith({
+						payload: { offset: { x: 0, y: -30 }, scale: 1 },
+						type: "ZOOM",
+					});
+				});
+
+				it("moves from the offset where the drag started", () => {
+					const result = setup({ zoom: { offset: { x: 0, y: 10 }, scale: 1 } });
+
+					act(() => result.current.onPointerDown?.(pointer(100, 50)));
+					act(() => result.current.onPointerMove?.(pointer(100, 30)));
+					act(() => result.current.onPointerMove?.(pointer(100, 10)));
+
+					expect(getZoomActions().map(([action]) => action.payload)).toEqual([
+						{ offset: { x: 0, y: -10 }, scale: 1 },
+						{ offset: { x: 0, y: -30 }, scale: 1 },
+					]);
+				});
+
+				it("shows the grabbing cursor while dragging", () => {
+					const result = setup({ zoom: NATURAL });
+
+					act(() => result.current.onPointerDown?.(pointer(100, 50)));
+					act(() => result.current.onPointerMove?.(pointer(100, 30)));
+
+					expect(result.current.style?.cursor).toBe("grabbing");
+
+					act(() => result.current.onPointerUp?.(pointer(100, 30)));
+
+					expect(result.current.style?.cursor).toBe("zoom-out");
+				});
+
+				it("does not move a fitted image", () => {
+					const result = setup();
+
+					act(() => result.current.onPointerDown?.(pointer(100, 50)));
+					act(() => result.current.onPointerMove?.(pointer(100, 30)));
+
+					expect(getZoomActions()).toHaveLength(0);
+				});
 			});
 		});
 
