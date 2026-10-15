@@ -1,42 +1,48 @@
-import type { Nullable } from "@shared/types";
+import type { Nullable, Point } from "@shared/types";
 import {
 	type ComponentProps,
+	type CSSProperties,
 	type RefObject,
 	useEffect,
+	useEffectEvent,
 	useState,
 } from "react";
-import type { ViewerStore } from "../use-viewer-store";
-
-type Size = {
-	readonly height: number;
-	readonly width: number;
-};
+import type { ViewerStore, Zoom } from "../use-viewer-store";
+import {
+	getFitScale,
+	getVisualSize,
+	MAX_SCALE,
+	type Size,
+	zoomAt,
+} from "./layout";
+import { getWheelZoomFactor } from "./wheel";
 
 type UseImageOptions = {
 	container: RefObject<Nullable<HTMLElement>>;
 	store: ViewerStore;
 };
 
-type UseImageReturn = Pick<ComponentProps<"img">, "onLoad" | "style">;
+type UseImageReturn = Pick<
+	ComponentProps<"img">,
+	"onClick" | "onLoad" | "style"
+>;
 
-const getFitScale = (image: Size, container: Size): number => {
-	const scaleX = container.width / image.width;
-	const scaleY = container.height / image.height;
+const NO_OFFSET: Point = { x: 0, y: 0 };
 
-	return Math.min(scaleX, scaleY, 1);
-};
+const getCursor = (
+	zoom: Nullable<Zoom>,
+	fitScale: number,
+): CSSProperties["cursor"] => {
+	if (zoom) return "zoom-out";
 
-const getVisualSize = (size: Size, isSideways: boolean): Size => {
-	const height = isSideways ? size.width : size.height;
-	const width = isSideways ? size.height : size.width;
-
-	return { height, width };
+	return fitScale < 1 ? "zoom-in" : undefined;
 };
 
 export const useImage = ({
 	container,
 	store: {
-		state: { rotation, scaleX, scaleY },
+		dispatch,
+		state: { rotation, scaleX, scaleY, zoom },
 	},
 }: UseImageOptions): UseImageReturn => {
 	const [containerSize, setContainerSize] = useState<Nullable<Size>>(null);
@@ -51,12 +57,13 @@ export const useImage = ({
 
 			const { height, width } = entry.contentRect;
 			setContainerSize({ height, width });
+			dispatch({ type: "RESET_ZOOM" });
 		});
 
 		observer.observe(element);
 
 		return () => observer.disconnect();
-	}, [container]);
+	}, [container, dispatch]);
 
 	const isSideways = rotation % 180 !== 0;
 	const visualSize = naturalSize && getVisualSize(naturalSize, isSideways);
@@ -64,7 +71,69 @@ export const useImage = ({
 	const fitScale =
 		visualSize && containerSize ? getFitScale(visualSize, containerSize) : 1;
 
+	const scale = zoom?.scale ?? fitScale;
+	const offset = zoom?.offset ?? NO_OFFSET;
+
+	// Zooms to `nextScale` around a point of the viewport.
+	const zoomTo = (nextScale: number, { x, y }: Point): void => {
+		const element = container.current;
+		if (!element || !visualSize || !containerSize) return;
+
+		const clampedScale = Math.min(nextScale, MAX_SCALE);
+
+		if (clampedScale <= fitScale) {
+			dispatch({ type: "RESET_ZOOM" });
+			return;
+		}
+
+		if (clampedScale === scale) return;
+
+		const rect = element.getBoundingClientRect();
+		const point = {
+			x: x - rect.left - rect.width / 2,
+			y: y - rect.top - rect.height / 2,
+		};
+
+		dispatch({
+			payload: zoomAt({
+				container: containerSize,
+				image: visualSize,
+				point,
+				scale: clampedScale,
+				zoom: { offset, scale },
+			}),
+			type: "ZOOM",
+		});
+	};
+
+	const handleWheel = useEffectEvent((e: WheelEvent): void => {
+		// Also keeps the browser from zooming the page on a pinch.
+		e.preventDefault();
+
+		const factor = getWheelZoomFactor(e);
+		if (factor !== null) zoomTo(scale * factor, { x: e.clientX, y: e.clientY });
+	});
+
+	// A React wheel listener is passive, so it couldn't prevent the default.
+	useEffect(() => {
+		const element = container.current;
+		if (!element) return;
+
+		const controller = new AbortController();
+
+		element.addEventListener("wheel", (e) => handleWheel(e), {
+			passive: false,
+			signal: controller.signal,
+		});
+
+		return () => controller.abort();
+	}, [container]);
+
 	return {
+		onClick: ({ clientX, clientY }) => {
+			if (zoom) dispatch({ type: "RESET_ZOOM" });
+			else zoomTo(1, { x: clientX, y: clientY });
+		},
 		onLoad: ({ currentTarget }) => {
 			setNaturalSize({
 				height: currentTarget.naturalHeight,
@@ -72,15 +141,20 @@ export const useImage = ({
 			});
 		},
 		style: {
-			// The `scale` property is applied together with `transform` (after
-			// `translate` and `rotate`), so the fit never interferes with the flips
-			// and the rotation below.
-			scale: fitScale,
+			cursor: getCursor(zoom, fitScale),
+
+			// The `translate` and `scale` properties are applied together with
+			// `transform`, in this order: `translate`, `scale`, `transform`. So the
+			// zoom never interferes with the flips and the rotation below, and the
+			// offset stays in screen px.
+			scale,
 
 			// `scale()` must come before `rotate()`: each function transforms the
 			// coordinate space left to right, so the flip happens along the screen
 			// axes. In the opposite order it would follow the rotated image axes.
 			transform: `scale(${scaleX}, ${scaleY}) rotate(${rotation}deg)`,
+
+			translate: `${offset.x}px ${offset.y}px`,
 		},
 	};
 };

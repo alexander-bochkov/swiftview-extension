@@ -9,7 +9,7 @@ describe("useToolbar", () => {
 
 	const store: ViewerStore = {
 		dispatch,
-		state: { rotation: 0, scaleX: 1, scaleY: 1 },
+		state: { rotation: 0, scaleX: 1, scaleY: 1, zoom: null },
 	};
 
 	// Vitest globals are off, so Testing Library can't register this itself.
