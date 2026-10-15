@@ -12,6 +12,7 @@ import {
 	type MockInstance,
 	vi,
 } from "vitest";
+import { PageLock } from "../page-lock";
 import { ViewerHost } from "./viewer-host";
 
 type ViewerProps = {
@@ -40,6 +41,7 @@ const FakeViewer = (): null => {
 
 describe("ViewerHost", () => {
 	let consoleError: MockInstance<typeof console.error>;
+	let pageLock: PageLock;
 	let viewerHost: ViewerHost;
 
 	const getHosts = () =>
@@ -69,7 +71,8 @@ describe("ViewerHost", () => {
 		consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 		mocks.Viewer.mockImplementation(FakeViewer);
 
-		viewerHost = new ViewerHost();
+		pageLock = new PageLock();
+		viewerHost = new ViewerHost(pageLock);
 	});
 
 	afterEach(() => {
@@ -129,6 +132,15 @@ describe("ViewerHost", () => {
 			expect(getViewerProps().url).toBe("https://example.com/other.png");
 		});
 
+		it("locks the page with the host", () => {
+			const lock = vi.spyOn(pageLock, "lock");
+
+			open();
+
+			expect(lock).toHaveBeenCalledExactlyOnceWith(getHosts()[0]);
+			expect(pageLock.isLocked).toBe(true);
+		});
+
 		it("replaces the previous viewer when opened again", () => {
 			open();
 			const first = getHosts()[0];
@@ -148,6 +160,13 @@ describe("ViewerHost", () => {
 			close();
 
 			expect(getHosts()).toHaveLength(0);
+		});
+
+		it("unlocks the page", () => {
+			open();
+			close();
+
+			expect(pageLock.isLocked).toBe(false);
 		});
 
 		it("unmounts the React tree", () => {
@@ -226,6 +245,7 @@ describe("ViewerHost", () => {
 			expect(consoleError).toHaveBeenCalledWith(error);
 			expect(viewerHost.isOpen).toBe(false);
 			expect(getHosts()).toHaveLength(0);
+			expect(pageLock.isLocked).toBe(false);
 		});
 
 		it("can open again after a failure", () => {
