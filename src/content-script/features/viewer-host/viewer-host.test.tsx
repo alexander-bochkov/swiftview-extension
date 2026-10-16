@@ -13,6 +13,7 @@ import {
 	vi,
 } from "vitest";
 import { PageLock } from "../page-lock";
+import { ScrollbarHider } from "../scrollbar-hider";
 import { ViewerHost } from "./viewer-host";
 
 type ViewerProps = {
@@ -71,7 +72,7 @@ describe("ViewerHost", () => {
 		consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 		mocks.Viewer.mockImplementation(FakeViewer);
 
-		pageLock = new PageLock();
+		pageLock = new PageLock(new ScrollbarHider());
 		viewerHost = new ViewerHost(pageLock);
 	});
 

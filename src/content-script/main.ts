@@ -5,6 +5,7 @@ import {
 	ImageElementUrlExtractor,
 	LongPressRecognizer,
 	PageLock,
+	ScrollbarHider,
 	ViewerHost,
 } from "./features";
 
@@ -17,7 +18,7 @@ const extractors = [
 
 const blocker = new EventBlocker();
 const detector = new Detector(extractors);
-const viewerHost = new ViewerHost(new PageLock());
+const viewerHost = new ViewerHost(new PageLock(new ScrollbarHider()));
 
 const recognizer = new LongPressRecognizer(blocker, {
 	delay: HOLD_DELAY,
