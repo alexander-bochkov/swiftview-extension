@@ -1,4 +1,5 @@
-import type { Nullable, Point } from "@shared/types";
+import type { Nullable } from "@shared/types";
+import type { ScrollbarHider } from "../scrollbar-hider";
 
 type EventType = keyof WindowEventMap;
 
@@ -35,22 +36,23 @@ const BLOCKED_EVENTS = [
 	"touchstart",
 ] as const satisfies readonly EventType[];
 
-const getScrollPosition = (): Point => ({
-	x: window.scrollX,
-	y: window.scrollY,
-});
-
 // Blocks the page while the viewer is open. Events of the page are hidden
 // from it and their default action is prevented. Events of the viewer reach
 // the viewer, but not the page listeners above it, and never scroll the page.
+// The scrollbars of the page are hidden too.
 //
 // Listeners the page added to the window in the capture phase before the lock,
 // and page listeners on the document in the capture phase, still see the
 // events of the viewer: stopping those would stop them for the viewer too.
 export class PageLock {
+	private readonly scrollbarHider: ScrollbarHider;
+
 	private controller: Nullable<AbortController> = null;
 	private host: Nullable<Element> = null;
-	private scrollPosition: Point = { x: 0, y: 0 };
+
+	constructor(scrollbarHider: ScrollbarHider) {
+		this.scrollbarHider = scrollbarHider;
+	}
 
 	get isLocked(): boolean {
 		return this.controller !== null;
@@ -63,7 +65,6 @@ export class PageLock {
 
 		this.controller = new AbortController();
 		this.host = host;
-		this.scrollPosition = getScrollPosition();
 
 		const signal = this.controller.signal;
 
@@ -82,17 +83,17 @@ export class PageLock {
 			host.addEventListener(type, this.handleViewerEvent);
 		}
 
-		// Scrolling with the scrollbar can't be prevented, so it is undone.
-		window.addEventListener("scroll", this.handleScroll, {
-			capture: true,
-			signal,
-		});
+		this.scrollbarHider.hide();
 	}
 
 	unlock(): void {
-		this.controller?.abort();
+		if (!this.controller) return;
+
+		this.controller.abort();
 		this.controller = null;
 		this.host = null;
+
+		this.scrollbarHider.restore();
 	}
 
 	private handleEvent = (e: Event): void => {
@@ -109,16 +110,5 @@ export class PageLock {
 
 	private handleViewerEvent = (e: Event): void => {
 		e.stopPropagation();
-	};
-
-	private handleScroll = (e: Event): void => {
-		e.stopImmediatePropagation();
-
-		const { x, y } = this.scrollPosition;
-
-		if (window.scrollX === x && window.scrollY === y) return;
-
-		// Instant, so `scroll-behavior: smooth` of the page doesn't animate it.
-		window.scrollTo({ behavior: "instant", left: x, top: y });
 	};
 }

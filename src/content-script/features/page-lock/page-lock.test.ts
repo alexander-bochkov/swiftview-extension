@@ -1,12 +1,5 @@
-import {
-	afterEach,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	type MockInstance,
-	vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ScrollbarHider } from "../scrollbar-hider";
 import { PageLock } from "./page-lock";
 
 const TYPES = ["click", "keydown", "pointermove", "wheel"] as const;
@@ -15,7 +8,7 @@ describe("PageLock", () => {
 	let host: HTMLElement;
 	let lock: PageLock;
 	let pageController: AbortController;
-	let scrollTo: MockInstance<typeof window.scrollTo>;
+	let scrollbarHider: ScrollbarHider;
 	// Stands for the viewer: an element inside the closed shadow root.
 	let viewer: HTMLElement;
 
@@ -53,11 +46,6 @@ describe("PageLock", () => {
 	const dispatchOnPage = (type: string) => dispatch(document.body, type);
 	const dispatchOnViewer = (type: string) => dispatch(viewer, type);
 
-	const setScrollPosition = (x: number, y: number) => {
-		Object.defineProperty(window, "scrollX", { configurable: true, value: x });
-		Object.defineProperty(window, "scrollY", { configurable: true, value: y });
-	};
-
 	beforeEach(() => {
 		host = document.createElement("swiftview-root");
 		document.documentElement.append(host);
@@ -65,18 +53,15 @@ describe("PageLock", () => {
 		viewer = document.createElement("div");
 		host.attachShadow({ mode: "closed" }).append(viewer);
 
-		lock = new PageLock();
+		scrollbarHider = new ScrollbarHider();
+		lock = new PageLock(scrollbarHider);
 		pageController = new AbortController();
-		scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
-
-		setScrollPosition(0, 0);
 	});
 
 	afterEach(() => {
 		lock.unlock();
 		host.remove();
 		pageController.abort();
-		scrollTo.mockRestore();
 	});
 
 	describe("events of the page", () => {
@@ -151,35 +136,30 @@ describe("PageLock", () => {
 		});
 	});
 
-	describe("scroll", () => {
-		it("restores the scroll position of the lock", () => {
-			setScrollPosition(10, 20);
+	describe("scrollbars", () => {
+		it("hides the scrollbars on lock", () => {
+			const hide = vi.spyOn(scrollbarHider, "hide");
+
 			lock.lock(host);
 
-			setScrollPosition(10, 500);
-			dispatch(document, "scroll");
-
-			expect(scrollTo).toHaveBeenCalledExactlyOnceWith({
-				behavior: "instant",
-				left: 10,
-				top: 20,
-			});
+			expect(hide).toHaveBeenCalledOnce();
 		});
 
-		it("does not scroll when the position has not changed", () => {
-			lock.lock(host);
-			dispatch(document, "scroll");
+		it("restores the scrollbars on unlock", () => {
+			const restore = vi.spyOn(scrollbarHider, "restore");
 
-			expect(scrollTo).not.toHaveBeenCalled();
+			lock.lock(host);
+			lock.unlock();
+
+			expect(restore).toHaveBeenCalledOnce();
 		});
 
-		it("hides scroll events from the page", () => {
-			const listener = listenOnPage("scroll");
+		it("does not restore the scrollbars when it was not locked", () => {
+			const restore = vi.spyOn(scrollbarHider, "restore");
 
-			lock.lock(host);
-			dispatch(document, "scroll");
+			lock.unlock();
 
-			expect(listener).not.toHaveBeenCalled();
+			expect(restore).not.toHaveBeenCalled();
 		});
 	});
 
@@ -207,16 +187,6 @@ describe("PageLock", () => {
 
 			expect(e.defaultPrevented).toBe(false);
 			expect(listener).toHaveBeenCalledOnce();
-		});
-
-		it("stops restoring the scroll position", () => {
-			lock.lock(host);
-			lock.unlock();
-
-			setScrollPosition(0, 500);
-			dispatch(document, "scroll");
-
-			expect(scrollTo).not.toHaveBeenCalled();
 		});
 
 		it("does nothing when it was not locked", () => {
