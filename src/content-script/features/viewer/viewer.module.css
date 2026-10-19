@@ -8,3 +8,7 @@
 		justify-content: center;
 	}
 }
+
+.image {
+	transition: all 150ms ease-out;
+}
