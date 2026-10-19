@@ -18,7 +18,13 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 	return (
 		<Overlay className={styles.viewer} {...dialog}>
 			<Toolbar {...toolbar} />
-			<img alt="" draggable={false} src={url} {...image} />
+			<img
+				alt=""
+				className={styles.image}
+				draggable={false}
+				src={url}
+				{...image}
+			/>
 		</Overlay>
 	);
 };
