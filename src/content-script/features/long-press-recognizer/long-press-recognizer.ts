@@ -1,4 +1,8 @@
-import { POINTER_BUTTON, POINTER_TYPE } from "@shared/constants";
+import {
+	MOVE_THRESHOLD,
+	POINTER_BUTTON,
+	POINTER_TYPE,
+} from "@shared/constants";
 import type { Nullable, Point } from "@shared/types";
 import type { EventBlocker } from "../event-blocker";
 
@@ -9,9 +13,6 @@ const BLOCKED_EVENTS = [
 	"pointermove",
 	"pointerup",
 ] as const;
-
-// In px, per axis. Matches the smallest drag threshold of Chromium.
-const MOVE_THRESHOLD = 3;
 
 type LongPressRecognizerOptions = {
 	readonly delay: number;

@@ -1,5 +1,5 @@
 import { Overlay } from "../../components";
-import { useImage, useModalDialog, useToolbar, useViewerStore } from "./hooks";
+import { useImage, useModalDialog, useViewerStore } from "./hooks";
 import { Toolbar } from "./toolbar";
 import styles from "./viewer.module.css";
 
@@ -12,12 +12,19 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 	const store = useViewerStore();
 
 	const dialog = useModalDialog({ onClose });
-	const toolbar = useToolbar({ onClose, store });
-	const image = useImage({ container: dialog.ref, store });
+	const image = useImage({ containerRef: dialog.ref, store });
 
 	return (
 		<Overlay className={styles.viewer} {...dialog}>
-			<Toolbar {...toolbar} />
+			<Toolbar
+				onClose={onClose}
+				onFlip={(direction) =>
+					store.dispatch({ payload: direction, type: "FLIP" })
+				}
+				onRotate={(direction) =>
+					store.dispatch({ payload: direction, type: "ROTATE" })
+				}
+			/>
 			<img
 				alt=""
 				className={styles.image}
