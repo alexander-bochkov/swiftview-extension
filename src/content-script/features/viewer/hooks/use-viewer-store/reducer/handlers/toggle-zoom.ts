@@ -1,18 +1,27 @@
 import type { Point } from "@shared/types";
 import type { ViewerState } from "../../types";
-import { clampOffset, getToggledScale, scaleSize, zoomOffset } from "./utils";
+import {
+	clampOffset,
+	getRotatedSize,
+	getToggledScale,
+	scaleSize,
+	zoomOffset,
+} from "./utils";
 
 export const toggleZoom = (state: ViewerState, point: Point): ViewerState => {
 	if (
 		!state.container.height ||
 		!state.container.width ||
-		!state.image.height ||
-		!state.image.width
+		!state.image.naturalHeight ||
+		!state.image.naturalWidth
 	) {
 		return state;
 	}
 
-	const imageSize = { height: state.image.height, width: state.image.width };
+	const imageSize = getRotatedSize(
+		{ height: state.image.naturalHeight, width: state.image.naturalWidth },
+		state.image.rotation,
+	);
 	const containerSize = {
 		height: state.container.height,
 		width: state.container.width,

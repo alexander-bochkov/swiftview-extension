@@ -1,27 +1,29 @@
 import type { Size, ViewerState } from "../../types";
-import { getFitScale } from "./utils";
+import { getFitScale, getRotatedSize } from "./utils";
 
 export const load = (state: ViewerState, naturalSize: Size): ViewerState => {
+	const image = {
+		...state.image,
+		naturalHeight: naturalSize.height,
+		naturalWidth: naturalSize.width,
+	};
+
 	if (!state.container.height || !state.container.width) {
-		return {
-			...state,
-			image: {
-				...state.image,
-				...naturalSize,
-			},
-		};
+		return { ...state, image };
 	}
 
-	const fitScale = getFitScale(naturalSize, {
-		height: state.container.height,
-		width: state.container.width,
-	});
+	const fitScale = getFitScale(
+		getRotatedSize(naturalSize, state.image.rotation),
+		{
+			height: state.container.height,
+			width: state.container.width,
+		},
+	);
 
 	return {
 		...state,
 		image: {
-			...state.image,
-			...naturalSize,
+			...image,
 			scale: fitScale,
 		},
 	};

@@ -29,12 +29,12 @@ export type ViewerState = Readonly<{
 	image: Readonly<{
 		flipX: 1 | -1;
 		flipY: 1 | -1;
-		height: Nullable<number>;
+		naturalHeight: Nullable<number>;
+		naturalWidth: Nullable<number>;
 		offsetX: number;
 		offsetY: number;
 		rotation: number;
 		scale: number;
-		width: Nullable<number>;
 	}>;
 }>;
 

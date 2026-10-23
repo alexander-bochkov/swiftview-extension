@@ -1,6 +1,6 @@
 import type { RotateDirection } from "../../../../types";
 import type { ViewerState } from "../../types";
-import { getFitScale } from "./utils";
+import { getFitScale, getRotatedSize } from "./utils";
 
 const QUARTER_TURN = 90;
 
@@ -11,8 +11,8 @@ export const rotate = (
 	if (
 		!state.container.height ||
 		!state.container.width ||
-		!state.image.height ||
-		!state.image.width
+		!state.image.naturalHeight ||
+		!state.image.naturalWidth
 	) {
 		return state;
 	}
@@ -23,24 +23,26 @@ export const rotate = (
 	// to keep the visual direction.
 	const isMirrored = state.image.flipX !== state.image.flipY;
 
-	const rotatedSize = {
-		height: state.image.width,
-		width: state.image.height,
-	};
+	const rotation = state.image.rotation + (isMirrored ? -step : step);
 
-	const fitScale = getFitScale(rotatedSize, {
-		height: state.container.height,
-		width: state.container.width,
-	});
+	const fitScale = getFitScale(
+		getRotatedSize(
+			{ height: state.image.naturalHeight, width: state.image.naturalWidth },
+			rotation,
+		),
+		{
+			height: state.container.height,
+			width: state.container.width,
+		},
+	);
 
 	return {
 		...state,
 		image: {
 			...state.image,
-			...rotatedSize,
 			offsetX: 0,
 			offsetY: 0,
-			rotation: state.image.rotation + (isMirrored ? -step : step),
+			rotation,
 			scale: fitScale,
 		},
 	};

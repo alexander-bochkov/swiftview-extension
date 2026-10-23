@@ -1,19 +1,22 @@
 import type { Point } from "@shared/types";
 import type { ViewerState } from "../../types";
-import { clampOffset, scaleSize } from "./utils";
+import { clampOffset, getRotatedSize, scaleSize } from "./utils";
 
 export const moveTo = (state: ViewerState, offset: Point): ViewerState => {
 	if (
 		!state.container.height ||
 		!state.container.width ||
-		!state.image.height ||
-		!state.image.width
+		!state.image.naturalHeight ||
+		!state.image.naturalWidth
 	) {
 		return state;
 	}
 
 	const visualSize = scaleSize(
-		{ height: state.image.height, width: state.image.width },
+		getRotatedSize(
+			{ height: state.image.naturalHeight, width: state.image.naturalWidth },
+			state.image.rotation,
+		),
 		state.image.scale,
 	);
 

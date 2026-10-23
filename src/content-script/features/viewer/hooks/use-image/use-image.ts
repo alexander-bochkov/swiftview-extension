@@ -1,6 +1,10 @@
 import type { Nullable } from "@shared/types";
 import type { ComponentProps, RefObject } from "react";
-import { selectIsReady, type ViewerStore } from "../use-viewer-store";
+import {
+	selectImageTranslate,
+	selectIsReady,
+	type ViewerStore,
+} from "../use-viewer-store";
 import { useContainerResize } from "./use-container-resize";
 import { useImageDrag } from "./use-image-drag";
 import { useImageZoom } from "./use-image-zoom";
@@ -23,10 +27,12 @@ export const useImage = ({
 	const dragProps = useImageDrag({ store });
 	const zoomProps = useImageZoom({ containerRef, store });
 
-	const { flipX, flipY, offsetX, offsetY, rotation, scale } = store.state.image;
+	const { flipX, flipY, rotation, scale } = store.state.image;
 
 	const scaleX = scale * flipX;
 	const scaleY = scale * flipY;
+
+	const translate = selectImageTranslate(store.state);
 
 	return {
 		...dragProps,
@@ -46,7 +52,7 @@ export const useImage = ({
 			// `scale()` must come before `rotate()`: each function transforms the
 			// coordinate space left to right, so the flip happens along the screen
 			// axes. In the opposite order it would follow the rotated image axes.
-			transform: `translate(${offsetX}px, ${offsetY}px) scale(${scaleX}, ${scaleY}) rotate(${rotation}deg)`,
+			transform: `translate(${translate.x}px, ${translate.y}px) scale(${scaleX}, ${scaleY}) rotate(${rotation}deg)`,
 		},
 	};
 };

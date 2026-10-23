@@ -12,25 +12,25 @@ const createState = (
 	image: {
 		flipX: 1,
 		flipY: 1,
-		height: 200,
+		naturalHeight: 200,
+		naturalWidth: 400,
 		offsetX: 0,
 		offsetY: 0,
 		rotation: 0,
 		scale: 0.5,
-		width: 400,
 		...image,
 	},
 });
 
 // Neither the image nor the container size is known yet.
 const EMPTY_STATE = createState(
-	{ height: null, scale: 1, width: null },
+	{ naturalHeight: null, naturalWidth: null, scale: 1 },
 	{ height: null, width: null },
 );
 
 // An image of 100x50 fits in its natural size, and fills the container at
 // 200%, limited by its height.
-const SMALL_IMAGE = { height: 50, scale: 1, width: 100 };
+const SMALL_IMAGE = { naturalHeight: 50, naturalWidth: 100, scale: 1 };
 
 describe("reducer", () => {
 	describe("FLIP", () => {
@@ -79,23 +79,29 @@ describe("reducer", () => {
 
 	describe("LOAD", () => {
 		it("stores the natural size and fits the image", () => {
-			const state = reducer(createState({ height: null, width: null }), {
-				payload: { height: 200, width: 400 },
-				type: "LOAD",
-			});
+			const state = reducer(
+				createState({ naturalHeight: null, naturalWidth: null }),
+				{
+					payload: { height: 200, width: 400 },
+					type: "LOAD",
+				},
+			);
 
 			expect(state.image).toMatchObject({
-				height: 200,
+				naturalHeight: 200,
+				naturalWidth: 400,
 				scale: 0.5,
-				width: 400,
 			});
 		});
 
 		it("keeps an image that fits in its natural size", () => {
-			const state = reducer(createState({ height: null, width: null }), {
-				payload: { height: 50, width: 100 },
-				type: "LOAD",
-			});
+			const state = reducer(
+				createState({ naturalHeight: null, naturalWidth: null }),
+				{
+					payload: { height: 50, width: 100 },
+					type: "LOAD",
+				},
+			);
 
 			expect(state.image.scale).toBe(1);
 		});
@@ -106,7 +112,11 @@ describe("reducer", () => {
 				type: "LOAD",
 			});
 
-			expect(state.image).toMatchObject({ height: 200, scale: 1, width: 400 });
+			expect(state.image).toMatchObject({
+				naturalHeight: 200,
+				naturalWidth: 400,
+				scale: 1,
+			});
 		});
 	});
 
@@ -212,18 +222,99 @@ describe("reducer", () => {
 			});
 
 			expect(state.image).toMatchObject({
-				height: 400,
 				offsetX: 0,
 				offsetY: 0,
 				scale: 0.25,
-				width: 200,
 			});
+		});
+
+		it("keeps the natural size", () => {
+			const state = reducer(createState(), {
+				payload: "right",
+				type: "ROTATE",
+			});
+
+			expect(state.image).toMatchObject({
+				naturalHeight: 200,
+				naturalWidth: 400,
+			});
+		});
+
+		it("fits the image by its natural size again after a half turn", () => {
+			const state = reducer(createState({ rotation: 90, scale: 0.25 }), {
+				payload: "right",
+				type: "ROTATE",
+			});
+
+			expect(state.image).toMatchObject({ rotation: 180, scale: 0.5 });
 		});
 
 		it("does nothing before the sizes are known", () => {
 			expect(reducer(EMPTY_STATE, { payload: "right", type: "ROTATE" })).toBe(
 				EMPTY_STATE,
 			);
+		});
+	});
+
+	// Turned a quarter, the image of 400x200 is 200x400 on screen and fits at
+	// 25%. At 100% it moves up to 150 px vertically.
+	describe("rotated image", () => {
+		const ROTATED = { rotation: 90, scale: 0.25 };
+
+		it("fits by the rotated size on LOAD", () => {
+			const state = reducer(
+				createState({ naturalHeight: null, naturalWidth: null, rotation: 90 }),
+				{ payload: { height: 200, width: 400 }, type: "LOAD" },
+			);
+
+			expect(state.image.scale).toBe(0.25);
+		});
+
+		it("fits by the rotated size on RESIZE", () => {
+			const state = reducer(createState(ROTATED), {
+				payload: { height: 200, width: 500 },
+				type: "RESIZE",
+			});
+
+			expect(state.image.scale).toBe(0.5);
+		});
+
+		it("fits by the rotated size on FLIP", () => {
+			const state = reducer(createState({ rotation: 90, scale: 1 }), {
+				payload: "horizontal",
+				type: "FLIP",
+			});
+
+			expect(state.image.scale).toBe(0.25);
+		});
+
+		it("stops the edges by the rotated size on MOVE_TO", () => {
+			const state = reducer(createState({ rotation: 90, scale: 1 }), {
+				payload: { x: 30, y: -100 },
+				type: "MOVE_TO",
+			});
+
+			expect(state.image).toMatchObject({ offsetX: 0, offsetY: -100 });
+		});
+
+		it("toggles from the rotated fitted size on TOGGLE_ZOOM", () => {
+			const state = reducer(createState(ROTATED), {
+				payload: { x: 0, y: 0 },
+				type: "TOGGLE_ZOOM",
+			});
+
+			expect(state.image.scale).toBe(1);
+		});
+
+		it("stops at the rotated fitted size on ZOOM", () => {
+			const rotated = createState(ROTATED);
+
+			expect(
+				reducer(rotated, {
+					payload: { factor: 0.5, point: { x: 0, y: 0 } },
+					type: "ZOOM",
+				}),
+			).toBe(rotated);
 		});
 	});
 

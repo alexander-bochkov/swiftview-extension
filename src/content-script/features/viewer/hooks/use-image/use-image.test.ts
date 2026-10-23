@@ -36,12 +36,12 @@ describe("useImage", () => {
 				image: {
 					flipX: 1,
 					flipY: 1,
-					height: 200,
+					naturalHeight: 200,
+					naturalWidth: 400,
 					offsetX: 0,
 					offsetY: 0,
 					rotation: 0,
 					scale: 1,
-					width: 400,
 					...image,
 				},
 			},
@@ -67,11 +67,12 @@ describe("useImage", () => {
 		});
 	});
 
-	it("does not transform the image in the initial state", () => {
+	it("centers the image from the top left corner of the container", () => {
+		// The image of 400x200 in the container of 500x100.
 		const result = renderImage();
 
 		expect(result.current.style?.transform).toBe(
-			"translate(0px, 0px) scale(1, 1) rotate(0deg)",
+			"translate(50px, -50px) scale(1, 1) rotate(0deg)",
 		);
 	});
 
@@ -84,13 +85,15 @@ describe("useImage", () => {
 			scale: 0.5,
 		});
 
+		// Turned and scaled to 100x200, offset by 10, -20: the top left corner is
+		// at 210, -70, which the layout box at 400x200 reaches by 60, -70.
 		expect(result.current.style?.transform).toBe(
-			"translate(10px, -20px) scale(-0.5, 0.5) rotate(90deg)",
+			"translate(60px, -70px) scale(-0.5, 0.5) rotate(90deg)",
 		);
 	});
 
 	it("hides the image until both sizes are known", () => {
-		const result = renderImage({ height: null, width: null });
+		const result = renderImage({ naturalHeight: null, naturalWidth: null });
 
 		expect(result.current.style?.display).toBe("none");
 	});

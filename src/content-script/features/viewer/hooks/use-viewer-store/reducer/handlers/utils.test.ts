@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	clampOffset,
 	getFitScale,
+	getRotatedSize,
 	getToggledScale,
 	scaleSize,
 	zoomOffset,
@@ -94,6 +95,19 @@ describe("getToggledScale", () => {
 
 		it("returns to the natural size from a zoom", () => {
 			expect(getToggledScale(2, SMALL, CONTAINER)).toBe(1);
+		});
+	});
+});
+
+describe("getRotatedSize", () => {
+	it.each([0, 180, -180, 360])("keeps the size at %i°", (rotation) => {
+		expect(getRotatedSize(LARGE, rotation)).toEqual(LARGE);
+	});
+
+	it.each([90, -90, 270, 450])("swaps the axes at %i°", (rotation) => {
+		expect(getRotatedSize(LARGE, rotation)).toEqual({
+			height: 400,
+			width: 200,
 		});
 	});
 });

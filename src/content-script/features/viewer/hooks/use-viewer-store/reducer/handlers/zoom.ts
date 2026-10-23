@@ -2,6 +2,7 @@ import type { ViewerState, ZoomPayload } from "../../types";
 import {
 	clampOffset,
 	getFitScale,
+	getRotatedSize,
 	MAX_SCALE,
 	scaleSize,
 	zoomOffset,
@@ -14,13 +15,16 @@ export const zoom = (
 	if (
 		!state.container.height ||
 		!state.container.width ||
-		!state.image.height ||
-		!state.image.width
+		!state.image.naturalHeight ||
+		!state.image.naturalWidth
 	) {
 		return state;
 	}
 
-	const imageSize = { height: state.image.height, width: state.image.width };
+	const imageSize = getRotatedSize(
+		{ height: state.image.naturalHeight, width: state.image.naturalWidth },
+		state.image.rotation,
+	);
 	const containerSize = {
 		height: state.container.height,
 		width: state.container.width,
