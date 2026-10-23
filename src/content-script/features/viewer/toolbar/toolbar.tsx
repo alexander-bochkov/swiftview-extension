@@ -3,29 +3,37 @@ import type { FlipDirection, RotateDirection } from "../types";
 import styles from "./toolbar.module.css";
 
 type ToolbarProps = {
+	hideTools?: boolean;
 	onClose: () => void;
 	onFlip: (direction: FlipDirection) => void;
 	onRotate: (direction: RotateDirection) => void;
 };
 
-export const Toolbar = ({ onClose, onFlip, onRotate }: ToolbarProps) => (
+export const Toolbar = ({
+	hideTools,
+	onClose,
+	onFlip,
+	onRotate,
+}: ToolbarProps) => (
 	<div className={styles.toolbar}>
 		<Button onClick={onClose}>
 			<Icon name="x-mark" />
 		</Button>
-		<div className={styles.tools}>
-			<Button onClick={() => onRotate("right")}>
-				<Icon name="rotate-right" />
-			</Button>
-			<Button onClick={() => onRotate("left")}>
-				<Icon name="rotate-left" />
-			</Button>
-			<Button onClick={() => onFlip("horizontal")}>
-				<Icon name="flip-horizontal" />
-			</Button>
-			<Button onClick={() => onFlip("vertical")}>
-				<Icon name="flip-vertical" />
-			</Button>
-		</div>
+		{!hideTools && (
+			<div className={styles.tools}>
+				<Button onClick={() => onRotate("right")}>
+					<Icon name="rotate-right" />
+				</Button>
+				<Button onClick={() => onRotate("left")}>
+					<Icon name="rotate-left" />
+				</Button>
+				<Button onClick={() => onFlip("horizontal")}>
+					<Icon name="flip-horizontal" />
+				</Button>
+				<Button onClick={() => onFlip("vertical")}>
+					<Icon name="flip-vertical" />
+				</Button>
+			</div>
+		)}
 	</div>
 );

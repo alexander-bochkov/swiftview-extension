@@ -19,9 +19,12 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 	const dialog = useModalDialog({ onClose });
 	const image = useImage({ containerRef: dialog.ref, store });
 
+	const isReady = selectIsReady(store.state);
+
 	return (
 		<Overlay className={styles.viewer} {...dialog}>
 			<Toolbar
+				hideTools={!isReady}
 				onClose={onClose}
 				onFlip={(direction) =>
 					store.dispatch({ payload: direction, type: "FLIP" })
@@ -30,9 +33,7 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 					store.dispatch({ payload: direction, type: "ROTATE" })
 				}
 			/>
-			{!selectIsReady(store.state) && (
-				<Icon className={styles.loader} name="spinner" />
-			)}
+			{!isReady && <Icon className={styles.loader} name="spinner" />}
 			<img
 				alt=""
 				className={styles.image}

@@ -20,9 +20,19 @@ describe("Toolbar", () => {
 		vi.clearAllMocks();
 	});
 
+	const renderToolbar = (hideTools = false) =>
+		render(
+			<Toolbar
+				hideTools={hideTools}
+				onClose={onClose}
+				onFlip={onFlip}
+				onRotate={onRotate}
+			/>,
+		);
+
 	const clickButton = async (name: string) => {
 		const user = userEvent.setup();
-		render(<Toolbar onClose={onClose} onFlip={onFlip} onRotate={onRotate} />);
+		renderToolbar();
 
 		await user.click(screen.getByRole("button", { name }));
 	};
@@ -49,5 +59,24 @@ describe("Toolbar", () => {
 		await clickButton(name);
 
 		expect(onFlip).toHaveBeenCalledExactlyOnceWith(direction);
+	});
+
+	describe("hidden tools", () => {
+		it("shows only the close button", () => {
+			renderToolbar(true);
+
+			expect(
+				screen.getAllByRole("button").map((button) => button.textContent),
+			).toEqual(["x-mark"]);
+		});
+
+		it("still closes on the close button", async () => {
+			const user = userEvent.setup();
+			renderToolbar(true);
+
+			await user.click(screen.getByRole("button", { name: "x-mark" }));
+
+			expect(onClose).toHaveBeenCalledOnce();
+		});
 	});
 });
