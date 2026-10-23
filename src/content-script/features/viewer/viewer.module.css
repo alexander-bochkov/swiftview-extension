@@ -1,22 +1,21 @@
 .viewer {
 	overflow: hidden;
 	user-select: none;
-
-	&[open] {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
 }
 
 .image {
+	position: absolute;
+	top: 0;
+	left: 0;
 	transition: all 150ms ease-out;
 }
 
 .loader {
 	position: absolute;
+	inset: 0;
 	width: 48px;
 	height: 48px;
+	margin: auto;
 	color: rgb(255 255 255 / 50%);
 	pointer-events: none;
 	animation: spin 1s linear infinite;

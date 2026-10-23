@@ -10,12 +10,12 @@ const INITIAL_STATE: ViewerState = {
 	image: {
 		flipX: 1,
 		flipY: 1,
-		height: null,
+		naturalHeight: null,
+		naturalWidth: null,
 		offsetX: 0,
 		offsetY: 0,
 		rotation: 0,
 		scale: 1,
-		width: null,
 	},
 };
 

@@ -1,11 +1,11 @@
 import type { Size, ViewerState } from "../../types";
-import { getFitScale } from "./utils";
+import { getFitScale, getRotatedSize } from "./utils";
 
 export const resize = (
 	state: ViewerState,
 	containerSize: Size,
 ): ViewerState => {
-	if (!state.image.height || !state.image.width) {
+	if (!state.image.naturalHeight || !state.image.naturalWidth) {
 		return {
 			...state,
 			container: {
@@ -16,7 +16,10 @@ export const resize = (
 	}
 
 	const fitScale = getFitScale(
-		{ height: state.image.height, width: state.image.width },
+		getRotatedSize(
+			{ height: state.image.naturalHeight, width: state.image.naturalWidth },
+			state.image.rotation,
+		),
 		containerSize,
 	);
 

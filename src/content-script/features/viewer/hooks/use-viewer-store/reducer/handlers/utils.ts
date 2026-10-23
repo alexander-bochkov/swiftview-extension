@@ -53,6 +53,11 @@ export const getToggledScale = (
 		: fitScale;
 };
 
+export const getRotatedSize = (natural: Size, rotation: number): Size =>
+	rotation % 180 === 0
+		? natural
+		: { height: natural.width, width: natural.height };
+
 export const scaleSize = ({ height, width }: Size, scale: number): Size => ({
 	height: height * scale,
 	width: width * scale,

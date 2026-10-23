@@ -1,6 +1,6 @@
 import type { FlipDirection } from "../../../../types";
 import type { ViewerState } from "../../types";
-import { getFitScale } from "./utils";
+import { getFitScale, getRotatedSize } from "./utils";
 
 export const flip = (
 	state: ViewerState,
@@ -9,14 +9,17 @@ export const flip = (
 	if (
 		!state.container.height ||
 		!state.container.width ||
-		!state.image.height ||
-		!state.image.width
+		!state.image.naturalHeight ||
+		!state.image.naturalWidth
 	) {
 		return state;
 	}
 
 	const fitScale = getFitScale(
-		{ height: state.image.height, width: state.image.width },
+		getRotatedSize(
+			{ height: state.image.naturalHeight, width: state.image.naturalWidth },
+			state.image.rotation,
+		),
 		{
 			height: state.container.height,
 			width: state.container.width,
