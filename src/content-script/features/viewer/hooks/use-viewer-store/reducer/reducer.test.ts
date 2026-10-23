@@ -61,19 +61,49 @@ describe("reducer", () => {
 			expect(state.image.flipX).toBe(1);
 		});
 
-		it("fits the image again", () => {
-			const state = reducer(createState({ offsetY: -30, scale: 1 }), {
+		it("keeps the zoom", () => {
+			const state = reducer(createState({ scale: 2 }), {
 				payload: "horizontal",
 				type: "FLIP",
 			});
 
-			expect(state.image).toMatchObject({ offsetX: 0, offsetY: 0, scale: 0.5 });
+			expect(state.image.scale).toBe(2);
 		});
 
-		it("does nothing before the sizes are known", () => {
-			expect(
-				reducer(EMPTY_STATE, { payload: "horizontal", type: "FLIP" }),
-			).toBe(EMPTY_STATE);
+		it("keeps the same part in view on a horizontal flip", () => {
+			const state = reducer(
+				createState({ offsetX: 100, offsetY: -30, scale: 2 }),
+				{ payload: "horizontal", type: "FLIP" },
+			);
+
+			expect(state.image).toMatchObject({ offsetX: -100, offsetY: -30 });
+		});
+
+		it("keeps the same part in view on a vertical flip", () => {
+			const state = reducer(
+				createState({ offsetX: 100, offsetY: -30, scale: 2 }),
+				{ payload: "vertical", type: "FLIP" },
+			);
+
+			expect(state.image).toMatchObject({ offsetX: 100, offsetY: 30 });
+		});
+
+		it("keeps a centered image centered", () => {
+			const state = reducer(createState(), {
+				payload: "horizontal",
+				type: "FLIP",
+			});
+
+			expect(Object.is(state.image.offsetX, 0)).toBe(true);
+		});
+
+		it("flips before the sizes are known", () => {
+			const state = reducer(EMPTY_STATE, {
+				payload: "horizontal",
+				type: "FLIP",
+			});
+
+			expect(state.image.flipX).toBe(-1);
 		});
 	});
 
@@ -277,15 +307,6 @@ describe("reducer", () => {
 			});
 
 			expect(state.image.scale).toBe(0.5);
-		});
-
-		it("fits by the rotated size on FLIP", () => {
-			const state = reducer(createState({ rotation: 90, scale: 1 }), {
-				payload: "horizontal",
-				type: "FLIP",
-			});
-
-			expect(state.image.scale).toBe(0.25);
 		});
 
 		it("stops the edges by the rotated size on MOVE_TO", () => {
