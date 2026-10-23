@@ -10,6 +10,7 @@ const ICONS: Array<ComponentPropsWithoutRef<typeof Icon>["name"]> = [
 	"flip-vertical",
 	"rotate-left",
 	"rotate-right",
+	"spinner",
 	"x-mark",
 ];
 
