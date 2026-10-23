@@ -1,5 +1,10 @@
-import { Overlay } from "../../components";
-import { useImage, useModalDialog, useViewerStore } from "./hooks";
+import { Icon, Overlay } from "../../components";
+import {
+	selectIsReady,
+	useImage,
+	useModalDialog,
+	useViewerStore,
+} from "./hooks";
 import { Toolbar } from "./toolbar";
 import styles from "./viewer.module.css";
 
@@ -25,6 +30,9 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 					store.dispatch({ payload: direction, type: "ROTATE" })
 				}
 			/>
+			{!selectIsReady(store.state) && (
+				<Icon className={styles.loader} name="spinner" />
+			)}
 			<img
 				alt=""
 				className={styles.image}

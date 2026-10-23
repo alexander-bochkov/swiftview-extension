@@ -1,6 +1,6 @@
 import type { Nullable } from "@shared/types";
 import type { ComponentProps, RefObject } from "react";
-import type { ViewerStore } from "../use-viewer-store";
+import { selectIsReady, type ViewerStore } from "../use-viewer-store";
 import { useContainerResize } from "./use-container-resize";
 import { useImageDrag } from "./use-image-drag";
 import { useImageZoom } from "./use-image-zoom";
@@ -41,6 +41,8 @@ export const useImage = ({
 			});
 		},
 		style: {
+			// Hidden by `display`, so the image appears fitted without a transition.
+			display: selectIsReady(store.state) ? undefined : "none",
 			// `scale()` must come before `rotate()`: each function transforms the
 			// coordinate space left to right, so the flip happens along the screen
 			// axes. In the opposite order it would follow the rotated image axes.
