@@ -19,6 +19,7 @@ type IconProps = SVGProps<SVGSVGElement> & {
 		| "flip-vertical"
 		| "rotate-left"
 		| "rotate-right"
+		| "spinner"
 		| "x-mark";
 };
 
