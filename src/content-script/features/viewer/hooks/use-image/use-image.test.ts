@@ -89,6 +89,18 @@ describe("useImage", () => {
 		);
 	});
 
+	it("hides the image until both sizes are known", () => {
+		const result = renderImage({ height: null, width: null });
+
+		expect(result.current.style?.display).toBe("none");
+	});
+
+	it("shows the image once both sizes are known", () => {
+		const result = renderImage();
+
+		expect(result.current.style?.display).toBeUndefined();
+	});
+
 	it("returns the handlers of the drag and the zoom", () => {
 		const result = renderImage();
 
