@@ -1,6 +1,6 @@
-import type { FC, SVGProps } from "react";
+import type { ComponentProps, FC } from "react";
 
-const modules = import.meta.glob<FC<SVGProps<SVGSVGElement>>>("./icons/*.svg", {
+const modules = import.meta.glob<FC<ComponentProps<"svg">>>("./icons/*.svg", {
 	eager: true,
 	import: "default",
 	query: "?react",
@@ -13,7 +13,7 @@ const icons = Object.fromEntries(
 	]),
 );
 
-type IconProps = SVGProps<SVGSVGElement> & {
+type IconProps = ComponentProps<"svg"> & {
 	name:
 		| "flip-horizontal"
 		| "flip-vertical"
