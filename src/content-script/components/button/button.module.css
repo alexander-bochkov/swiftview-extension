@@ -11,6 +11,10 @@
 	background-color: rgb(110 110 110 / 50%);
 	border: none;
 	border-radius: 50%;
+	transition:
+		background-color 100ms ease-out,
+		color 100ms ease-out,
+		transform 50ms ease-out;
 
 	&:hover {
 		color: rgb(255 255 255 / 90%);
