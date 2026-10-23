@@ -16,16 +16,16 @@ type ViewerProps = {
 export const Viewer = ({ onClose, url }: ViewerProps) => {
 	const store = useViewerStore();
 
-	const dialog = useModalDialog({ onClose });
-	const image = useImage({ containerRef: dialog.ref, store });
+	const { close, ...dialogProps } = useModalDialog({ onClose });
+	const imageProps = useImage({ containerRef: dialogProps.ref, store });
 
 	const isReady = selectIsReady(store.state);
 
 	return (
-		<Overlay className={styles.viewer} {...dialog}>
+		<Overlay {...dialogProps} className={styles.viewer}>
 			<Toolbar
 				hideTools={!isReady}
-				onClose={onClose}
+				onClose={close}
 				onFlip={(direction) =>
 					store.dispatch({ payload: direction, type: "FLIP" })
 				}
@@ -35,11 +35,11 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 			/>
 			{!isReady && <Icon className={styles.loader} name="spinner" />}
 			<img
+				{...imageProps}
 				alt=""
 				className={styles.image}
 				draggable={false}
 				src={url}
-				{...image}
 			/>
 		</Overlay>
 	);
