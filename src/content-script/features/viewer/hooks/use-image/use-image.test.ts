@@ -67,6 +67,12 @@ describe("useImage", () => {
 		});
 	});
 
+	it("sizes the layout box to the natural size", () => {
+		const result = renderImage();
+
+		expect(result.current.style).toMatchObject({ height: 200, width: 400 });
+	});
+
 	it("centers the image from the top left corner of the container", () => {
 		// The image of 400x200 in the container of 500x100.
 		const result = renderImage();
