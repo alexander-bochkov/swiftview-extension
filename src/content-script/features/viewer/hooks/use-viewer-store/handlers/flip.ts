@@ -1,5 +1,5 @@
-import type { FlipDirection } from "../../../../types";
-import type { ViewerState } from "../../types";
+import type { FlipDirection } from "../../../types";
+import type { ViewerState } from "../types";
 
 export const flip = (
 	state: ViewerState,

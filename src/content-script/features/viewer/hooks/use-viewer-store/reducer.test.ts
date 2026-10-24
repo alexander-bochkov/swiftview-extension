@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ViewerState } from "../types";
 import { reducer } from "./reducer";
+import type { ViewerState } from "./types";
 
 // An image of 400x200 in a container of 500x100 fits at 50%, limited by its
 // height. At 100% it's larger on the y axis only and moves up to 50 px.

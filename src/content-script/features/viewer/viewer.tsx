@@ -1,6 +1,7 @@
 import { Icon, Overlay } from "../../components";
 import {
 	selectIsReady,
+	useContainerResize,
 	useImage,
 	useModalDialog,
 	useViewerStore,
@@ -18,6 +19,8 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 
 	const { close, ...dialogProps } = useModalDialog({ onClose });
 	const imageProps = useImage({ containerRef: dialogProps.ref, store });
+
+	useContainerResize({ containerRef: dialogProps.ref, store });
 
 	const isReady = selectIsReady(store.state);
 

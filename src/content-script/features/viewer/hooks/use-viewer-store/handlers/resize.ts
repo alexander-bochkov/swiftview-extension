@@ -1,5 +1,5 @@
-import type { Size, ViewerState } from "../../types";
-import { getFitScale, getRotatedSize } from "./utils";
+import type { Size, ViewerState } from "../types";
+import { getFitScale, getRotatedSize } from "../utils";
 
 export const resize = (
 	state: ViewerState,

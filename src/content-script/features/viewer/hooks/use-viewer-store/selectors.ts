@@ -1,6 +1,6 @@
 import type { Point } from "@shared/types";
-import { getRotatedSize, scaleSize } from "./reducer/handlers/utils";
 import type { ViewerState } from "./types";
+import { getRotatedSize, scaleSize } from "./utils";
 
 const NO_TRANSLATE: Point = { x: 0, y: 0 };
 

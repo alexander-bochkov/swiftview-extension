@@ -1,5 +1,4 @@
 import type { Reducer } from "react";
-import type { ViewerAction, ViewerState } from "../types";
 import {
 	flip,
 	load,
@@ -9,6 +8,7 @@ import {
 	toggleZoom,
 	zoom,
 } from "./handlers";
+import type { ViewerAction, ViewerState } from "./types";
 
 export const reducer: Reducer<ViewerState, ViewerAction> = (state, action) => {
 	switch (action.type) {

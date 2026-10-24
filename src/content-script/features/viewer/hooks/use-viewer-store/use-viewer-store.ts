@@ -1,4 +1,5 @@
 import { useMemo, useReducer } from "react";
+import { NATURAL_SIZE_SCALE } from "./constants";
 import { reducer } from "./reducer";
 import type { ViewerState, ViewerStore } from "./types";
 
@@ -15,7 +16,7 @@ const INITIAL_STATE: ViewerState = {
 		offsetX: 0,
 		offsetY: 0,
 		rotation: 0,
-		scale: 1,
+		scale: NATURAL_SIZE_SCALE,
 	},
 };
 

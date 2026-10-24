@@ -1,6 +1,6 @@
 import type { Point } from "@shared/types";
-import type { ViewerState } from "../../types";
-import { clampOffset, getRotatedSize, scaleSize } from "./utils";
+import type { ViewerState } from "../types";
+import { clampOffset, getRotatedSize, scaleSize } from "../utils";
 
 export const moveTo = (state: ViewerState, offset: Point): ViewerState => {
 	if (
