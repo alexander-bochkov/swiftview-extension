@@ -1,6 +1,6 @@
-import type { RotateDirection } from "../../../../types";
-import type { ViewerState } from "../../types";
-import { getFitScale, getRotatedSize } from "./utils";
+import type { RotateDirection } from "../../../types";
+import type { ViewerState } from "../types";
+import { getFitScale, getRotatedSize } from "../utils";
 
 const QUARTER_TURN = 90;
 

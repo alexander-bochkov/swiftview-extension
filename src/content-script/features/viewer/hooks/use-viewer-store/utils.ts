@@ -1,8 +1,6 @@
 import type { Point } from "@shared/types";
-import type { Size } from "../../types";
-
-export const MAX_SCALE = 4;
-export const NATURAL_SIZE_SCALE = 1;
+import { MAX_SCALE, NATURAL_SIZE_SCALE } from "./constants";
+import type { Size } from "./types";
 
 export const clampOffset = (offset: Point, content: Size, container: Size) => {
 	const clampAxis = (

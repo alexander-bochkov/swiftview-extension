@@ -5,7 +5,6 @@ import {
 	selectIsReady,
 	type ViewerStore,
 } from "../use-viewer-store";
-import { useContainerResize } from "./use-container-resize";
 import { useImageDrag } from "./use-image-drag";
 import { useImageZoom } from "./use-image-zoom";
 
@@ -22,8 +21,6 @@ export const useImage = ({
 	containerRef,
 	store,
 }: UseImageOptions): UseImageReturn => {
-	useContainerResize({ containerRef, store });
-
 	const dragProps = useImageDrag({ store });
 	const zoomProps = useImageZoom({ containerRef, store });
 

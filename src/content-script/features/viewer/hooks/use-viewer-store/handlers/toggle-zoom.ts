@@ -1,12 +1,12 @@
 import type { Point } from "@shared/types";
-import type { ViewerState } from "../../types";
+import type { ViewerState } from "../types";
 import {
 	clampOffset,
 	getRotatedSize,
 	getToggledScale,
 	scaleSize,
 	zoomOffset,
-} from "./utils";
+} from "../utils";
 
 export const toggleZoom = (state: ViewerState, point: Point): ViewerState => {
 	if (

@@ -1,12 +1,12 @@
-import type { ViewerState, ZoomPayload } from "../../types";
+import { MAX_SCALE } from "../constants";
+import type { ViewerState, ZoomPayload } from "../types";
 import {
 	clampOffset,
 	getFitScale,
 	getRotatedSize,
-	MAX_SCALE,
 	scaleSize,
 	zoomOffset,
-} from "./utils";
+} from "../utils";
 
 export const zoom = (
 	state: ViewerState,

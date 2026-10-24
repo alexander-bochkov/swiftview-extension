@@ -1,6 +1,6 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import type { SyntheticEvent } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ViewerStore } from "../use-viewer-store";
 import { useImage } from "./use-image";
 
@@ -8,23 +8,10 @@ type ImageState = ViewerStore["state"]["image"];
 
 describe("useImage", () => {
 	const dispatch = vi.fn();
-	const observe = vi.fn();
-
-	beforeEach(() => {
-		// jsdom doesn't implement ResizeObserver, which the container size needs.
-		vi.stubGlobal(
-			"ResizeObserver",
-			class {
-				observe = observe;
-				disconnect = vi.fn();
-			},
-		);
-	});
 
 	// Vitest globals are off, so Testing Library can't register this itself.
 	afterEach(() => {
 		cleanup();
-		vi.unstubAllGlobals();
 		vi.clearAllMocks();
 	});
 
@@ -121,11 +108,5 @@ describe("useImage", () => {
 			onPointerMove: expect.any(Function),
 			onPointerUp: expect.any(Function),
 		});
-	});
-
-	it("observes the size of the container", () => {
-		renderImage();
-
-		expect(observe).toHaveBeenCalledOnce();
 	});
 });
