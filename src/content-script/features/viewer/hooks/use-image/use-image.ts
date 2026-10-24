@@ -49,9 +49,11 @@ export const useImage = ({
 		style: {
 			// Hidden by `display`, so the image appears fitted without a transition.
 			display: selectIsReady(store.state) ? undefined : "none",
-			// `scale()` must come before `rotate()`: each function transforms the
-			// coordinate space left to right, so the flip happens along the screen
-			// axes. In the opposite order it would follow the rotated image axes.
+			// Each function transforms the coordinate space left to right.
+			// `translate()` must come first, so it moves the image by screen px.
+			// After `scale()`, it would be multiplied by the scale and reversed by
+			// a flip. `scale()` must come before `rotate()`, so the flip happens
+			// along the screen axes, not the rotated image axes.
 			transform: `translate(${translate.x}px, ${translate.y}px) scale(${scaleX}, ${scaleY}) rotate(${rotation}deg)`,
 		},
 	};
