@@ -27,26 +27,37 @@ export const useImage = ({
 	const dragProps = useImageDrag({ store });
 	const zoomProps = useImageZoom({ containerRef, store });
 
-	const { flipX, flipY, rotation, scale } = store.state.image;
+	const { flipX, flipY, naturalHeight, naturalWidth, rotation, scale } =
+		store.state.image;
 
 	const scaleX = scale * flipX;
 	const scaleY = scale * flipY;
 
 	const translate = selectImageTranslate(store.state);
 
+	// The translate is calculated for the layout box in the natural size. An SVG
+	// without its own size, such as one with only a `viewBox`, gets a box of a
+	// different size from the browser, and the transform would scale it around
+	// a different center.
+	const layoutSize = {
+		height: naturalHeight ?? undefined,
+		width: naturalWidth ?? undefined,
+	};
+
 	return {
 		...dragProps,
 		...zoomProps,
-		onLoad: ({ currentTarget: { naturalHeight, naturalWidth } }) => {
+		onLoad: ({ currentTarget }) => {
 			store.dispatch({
 				payload: {
-					height: naturalHeight,
-					width: naturalWidth,
+					height: currentTarget.naturalHeight,
+					width: currentTarget.naturalWidth,
 				},
 				type: "LOAD",
 			});
 		},
 		style: {
+			...layoutSize,
 			// Hidden by `display`, so the image appears fitted without a transition.
 			display: selectIsReady(store.state) ? undefined : "none",
 			// Each function transforms the coordinate space left to right.
