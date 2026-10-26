@@ -17,7 +17,7 @@ vi.mock("../../components", async (importOriginal) => ({
 
 type Size = { height: number; width: number };
 
-const URL = "https://example.com/image.png";
+const IMAGE_URL = "https://example.com/image.png";
 
 // An image of 400x200 in a container of 500x100 fits at 50%. The layout box
 // sits at 0, 0 in the natural size, so the fitted image is moved by 50, -50.
@@ -70,7 +70,7 @@ describe("Viewer", () => {
 	});
 
 	const renderViewer = () => {
-		const { container } = render(<Viewer onClose={onClose} url={URL} />);
+		const { container } = render(<Viewer onClose={onClose} url={IMAGE_URL} />);
 
 		// The image has an empty `alt`, so it has no role to query by.
 		const image = container.querySelector("img") as HTMLImageElement;
@@ -109,7 +109,7 @@ describe("Viewer", () => {
 	it("shows the image from the url", () => {
 		const { image } = renderViewer();
 
-		expect(image.getAttribute("src")).toBe(URL);
+		expect(image.getAttribute("src")).toBe(IMAGE_URL);
 	});
 
 	describe("before the sizes are known", () => {
@@ -194,6 +194,31 @@ describe("Viewer", () => {
 
 			expect(image.style.transform).toContain("scale(1, 1)");
 			expect(onClose).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("an image that fails to load", () => {
+		beforeEach(() => {
+			vi.spyOn(console, "warn").mockImplementation(() => {});
+		});
+
+		it("warns about the image", () => {
+			const { image } = renderViewer();
+
+			fireEvent.error(image);
+
+			expect(console.warn).toHaveBeenCalledExactlyOnceWith(
+				`Failed to show the image: ${IMAGE_URL}`,
+			);
+		});
+
+		it("closes the viewer with its transition", async () => {
+			const { image } = renderViewer();
+
+			fireEvent.error(image);
+
+			expect(close).toHaveBeenCalledOnce();
+			await vi.waitFor(() => expect(onClose).toHaveBeenCalledOnce());
 		});
 	});
 

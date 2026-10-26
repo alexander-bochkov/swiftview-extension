@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Image Load Error</title>
+		<style>
+		body {
+			display: grid;
+			gap: 32px;
+			max-width: 640px;
+			margin: 32px auto;
+			font:
+				16px / 1.5 system-ui,
+				sans-serif;
+			color: #d7dbe3;
+			background: #1b1d22;
+		}
+		section {
+			display: grid;
+			gap: 8px;
+			justify-items: start;
+		}
+		h2 {
+			margin: 0;
+			font-size: 18px;
+		}
+		p {
+			margin: 0;
+			color: #9aa1ad;
+		}
+		a {
+			color: #6fa1ff;
+		}
+		img {
+			width: 220px;
+			height: 60px;
+			outline: 1px dashed #4a4f59;
+		}
+		</style>
+	</head>
+	<body>
+		<h1>Image load error</h1>
+		<p>
+			Long-press each target. The viewer should open, then close with its fade,
+			and the console should show "Failed to show the image" with the url.
+		</p>
+
+		<section>
+			<h2>1. Link to a missing image</h2>
+			<p>
+				The link looks like an image by its extension, but the file doesn't
+				exist.
+			</p>
+			<a href="missing-image.png">missing-image.png</a>
+		</section>
+
+		<section>
+			<h2>2. Broken image</h2>
+			<p>The image is broken on the page too, but still has a size to press.</p>
+			<img alt="" src="missing-image.png">
+		</section>
+
+		<section>
+			<h2>3. Image that works on the page only</h2>
+			<p>
+				The page shows the working 1x or 2x candidate, but the viewer opens the
+				largest one, 4x, which doesn't exist. On a display above 2x, the page
+				picks the 4x candidate too, and the image is broken like in 2.
+			</p>
+			<img
+				alt=""
+				src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='220'%20height='60'%20viewBox='0%200%20110%2030'%3E%3Crect%20width='110'%20height='30'%20fill='%233d7eff'/%3E%3Ccircle%20cx='15'%20cy='15'%20r='9'%20fill='%23fff'/%3E%3Cpath%20d='M33%2024%2043%206%2053%2024z'%20fill='%23ffd23f'/%3E%3C/svg%3E"
+				srcset="
+					data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='220'%20height='60'%20viewBox='0%200%20110%2030'%3E%3Crect%20width='110'%20height='30'%20fill='%233d7eff'/%3E%3Ccircle%20cx='15'%20cy='15'%20r='9'%20fill='%23fff'/%3E%3Cpath%20d='M33%2024%2043%206%2053%2024z'%20fill='%23ffd23f'/%3E%3C/svg%3E  1x,
+					data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='440'%20height='120'%20viewBox='0%200%20110%2030'%3E%3Crect%20width='110'%20height='30'%20fill='%233d7eff'/%3E%3Ccircle%20cx='15'%20cy='15'%20r='9'%20fill='%23fff'/%3E%3Cpath%20d='M33%2024%2043%206%2053%2024z'%20fill='%23ffd23f'/%3E%3C/svg%3E 2x,
+					missing-image-4x.png                                                                                                                                                                                                                                                                                                      4x
+				"
+			>
+		</section>
+
+		<section>
+			<h2>4. Corrupt image</h2>
+			<p>
+				A link to a PNG that is only its file signature, so it fails to decode.
+				Works without a network and from a file url.
+			</p>
+			<a href="data:image/png;base64,iVBORw0KGgo=">corrupt.png</a>
+		</section>
+	</body>
+</html>

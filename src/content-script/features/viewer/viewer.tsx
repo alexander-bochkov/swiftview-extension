@@ -44,6 +44,10 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 						alt=""
 						className={styles.image}
 						draggable={false}
+						onError={() => {
+							console.warn(`Failed to show the image: ${url}`);
+							onRequestClose();
+						}}
 						src={url}
 					/>
 				</>
