@@ -1,3 +1,4 @@
+import { POINTER_BUTTON } from "@shared/constants";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ScrollbarHider } from "../scrollbar-hider";
 import { PageLock } from "./page-lock";
@@ -123,6 +124,30 @@ describe("PageLock", () => {
 			const e = dispatchOnViewer("wheel");
 
 			expect(e.defaultPrevented).toBe(true);
+		});
+
+		const press = (button: number): Event => {
+			const e = new MouseEvent("mousedown", {
+				bubbles: true,
+				button,
+				cancelable: true,
+				composed: true,
+			});
+			viewer.dispatchEvent(e);
+
+			return e;
+		};
+
+		it("prevents the default action of a press of the wheel, so the page doesn't autoscroll", () => {
+			lock.lock(host);
+
+			expect(press(POINTER_BUTTON.AUXILIARY).defaultPrevented).toBe(true);
+		});
+
+		it("does not prevent the default action of a press of the main button", () => {
+			lock.lock(host);
+
+			expect(press(POINTER_BUTTON.MAIN).defaultPrevented).toBe(false);
 		});
 
 		it("keeps an event from the page when the viewer unlocks during it", () => {
