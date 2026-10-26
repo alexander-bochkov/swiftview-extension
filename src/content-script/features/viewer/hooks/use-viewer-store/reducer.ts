@@ -2,7 +2,7 @@ import type { Reducer } from "react";
 import {
 	flip,
 	load,
-	moveTo,
+	moveBy,
 	resize,
 	rotate,
 	toggleZoom,
@@ -16,8 +16,8 @@ export const reducer: Reducer<ViewerState, ViewerAction> = (state, action) => {
 			return flip(state, action.payload);
 		case "LOAD":
 			return load(state, action.payload);
-		case "MOVE_TO":
-			return moveTo(state, action.payload);
+		case "MOVE_BY":
+			return moveBy(state, action.payload);
 		case "RESIZE":
 			return resize(state, action.payload);
 		case "ROTATE":

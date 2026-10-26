@@ -41,7 +41,7 @@ describe("useViewerStore", () => {
 		const first = result.current;
 
 		act(() =>
-			result.current.dispatch({ payload: { x: 10, y: 10 }, type: "MOVE_TO" }),
+			result.current.dispatch({ payload: { x: 10, y: 10 }, type: "MOVE_BY" }),
 		);
 
 		expect(result.current).toBe(first);

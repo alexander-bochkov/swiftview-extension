@@ -15,7 +15,7 @@ export type ZoomPayload = Readonly<{
 export type ViewerAction =
 	| { type: "FLIP"; payload: FlipDirection }
 	| { type: "LOAD"; payload: Size }
-	| { type: "MOVE_TO"; payload: Point }
+	| { type: "MOVE_BY"; payload: Point }
 	| { type: "RESIZE"; payload: Size }
 	| { type: "ROTATE"; payload: RotateDirection }
 	| { type: "TOGGLE_ZOOM"; payload: Point }
