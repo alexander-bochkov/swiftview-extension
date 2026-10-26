@@ -7,6 +7,7 @@ type Story = StoryObj<Metadata>;
 const ICON_NAMES: IconName[] = [
 	"flip-horizontal",
 	"flip-vertical",
+	"no-symbol",
 	"rotate-left",
 	"rotate-right",
 	"spinner",
