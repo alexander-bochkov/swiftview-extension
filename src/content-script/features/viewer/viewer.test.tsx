@@ -146,6 +146,12 @@ describe("Viewer", () => {
 			);
 		});
 
+		it("shows the zoom of the fitted image", () => {
+			renderReadyViewer();
+
+			expect(screen.getByText("50%")).toBeDefined();
+		});
+
 		it("shows the image in the natural size for its layout box", () => {
 			const { image } = renderReadyViewer();
 
@@ -193,6 +199,7 @@ describe("Viewer", () => {
 			await user.click(image);
 
 			expect(image.style.transform).toContain("scale(1, 1)");
+			expect(screen.getByText("100%")).toBeDefined();
 			expect(onClose).not.toHaveBeenCalled();
 		});
 	});

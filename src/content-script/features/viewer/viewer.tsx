@@ -37,6 +37,7 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 						onRotate={(direction) =>
 							store.dispatch({ payload: direction, type: "ROTATE" })
 						}
+						scale={store.state.scale}
 					/>
 					{!isReady && <Icon className={styles.loader} name="spinner" />}
 					<img

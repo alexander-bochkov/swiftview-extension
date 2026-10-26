@@ -7,13 +7,18 @@ type ToolbarProps = {
 	onClose: () => void;
 	onFlip: (direction: FlipDirection) => void;
 	onRotate: (direction: RotateDirection) => void;
+	scale: number;
 };
+
+const formatZoom = (scale: number): string =>
+	`${Math.max(1, Math.round(scale * 100))}%`;
 
 export const Toolbar = ({
 	hideTools,
 	onClose,
 	onFlip,
 	onRotate,
+	scale,
 }: ToolbarProps) => (
 	<div className={styles.toolbar}>
 		<Button onClick={onClose}>
@@ -33,6 +38,7 @@ export const Toolbar = ({
 				<Button onClick={() => onFlip("vertical")}>
 					<Icon name="flip-vertical" />
 				</Button>
+				<div className={styles.zoom}>{formatZoom(scale)}</div>
 			</div>
 		)}
 	</div>
