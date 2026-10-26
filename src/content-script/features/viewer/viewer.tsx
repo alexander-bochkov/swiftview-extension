@@ -1,9 +1,9 @@
+import { useRef } from "react";
 import { Icon, Overlay } from "../../components";
 import {
 	selectIsReady,
 	useContainerResize,
 	useImage,
-	useModalDialog,
 	useViewerStore,
 } from "./hooks";
 import { Toolbar } from "./toolbar";
@@ -15,35 +15,39 @@ type ViewerProps = {
 };
 
 export const Viewer = ({ onClose, url }: ViewerProps) => {
+	const overlayRef = useRef<HTMLDialogElement>(null);
+
 	const store = useViewerStore();
 
-	const { close, ...dialogProps } = useModalDialog({ onClose });
-	const imageProps = useImage({ containerRef: dialogProps.ref, store });
-
-	useContainerResize({ containerRef: dialogProps.ref, store });
+	useContainerResize({ containerRef: overlayRef, store });
+	const imageProps = useImage({ containerRef: overlayRef, store });
 
 	const isReady = selectIsReady(store.state);
 
 	return (
-		<Overlay {...dialogProps} className={styles.viewer}>
-			<Toolbar
-				hideTools={!isReady}
-				onClose={close}
-				onFlip={(direction) =>
-					store.dispatch({ payload: direction, type: "FLIP" })
-				}
-				onRotate={(direction) =>
-					store.dispatch({ payload: direction, type: "ROTATE" })
-				}
-			/>
-			{!isReady && <Icon className={styles.loader} name="spinner" />}
-			<img
-				{...imageProps}
-				alt=""
-				className={styles.image}
-				draggable={false}
-				src={url}
-			/>
+		<Overlay className={styles.viewer} onClose={onClose} ref={overlayRef}>
+			{({ onRequestClose }) => (
+				<>
+					<Toolbar
+						hideTools={!isReady}
+						onClose={onRequestClose}
+						onFlip={(direction) =>
+							store.dispatch({ payload: direction, type: "FLIP" })
+						}
+						onRotate={(direction) =>
+							store.dispatch({ payload: direction, type: "ROTATE" })
+						}
+					/>
+					{!isReady && <Icon className={styles.loader} name="spinner" />}
+					<img
+						{...imageProps}
+						alt=""
+						className={styles.image}
+						draggable={false}
+						src={url}
+					/>
+				</>
+			)}
 		</Overlay>
 	);
 };
