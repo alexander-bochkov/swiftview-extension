@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
 	clampOffset,
 	getFitScale,
+	getOffsetLimit,
 	getRotatedSize,
 	getToggledScale,
+	normalizeSize,
 	scaleSize,
 	zoomOffset,
 } from "./utils";
@@ -18,33 +20,36 @@ describe("clampOffset", () => {
 	it("keeps an offset within the edges", () => {
 		expect(
 			clampOffset({ x: 0, y: -30 }, { height: 200, width: 400 }, CONTAINER),
-		).toEqual({ offsetX: 0, offsetY: -30 });
+		).toEqual({ x: 0, y: -30 });
 	});
 
 	it("stops the edges at the borders of the container", () => {
 		expect(
 			clampOffset({ x: 0, y: 300 }, { height: 200, width: 400 }, CONTAINER),
-		).toEqual({ offsetX: 0, offsetY: 50 });
+		).toEqual({ x: 0, y: 50 });
 
 		expect(
 			clampOffset({ x: 0, y: -300 }, { height: 200, width: 400 }, CONTAINER),
-		).toEqual({ offsetX: 0, offsetY: -50 });
+		).toEqual({ x: 0, y: -50 });
 	});
 
 	it("centers an axis on which the content is smaller", () => {
 		expect(
 			clampOffset({ x: 30, y: 0 }, { height: 200, width: 400 }, CONTAINER),
-		).toEqual({ offsetX: 0, offsetY: 0 });
+		).toEqual({ x: 0, y: 0 });
+	});
+});
+
+describe("getOffsetLimit", () => {
+	it("is half of the overflow on each axis", () => {
+		expect(getOffsetLimit({ height: 300, width: 900 }, CONTAINER)).toEqual({
+			x: 200,
+			y: 100,
+		});
 	});
 
-	it("never returns -0", () => {
-		const { offsetX } = clampOffset(
-			{ x: -30, y: 0 },
-			{ height: 200, width: 400 },
-			CONTAINER,
-		);
-
-		expect(Object.is(offsetX, 0)).toBe(true);
+	it("is 0 on an axis on which the content fits", () => {
+		expect(getOffsetLimit(LARGE, CONTAINER)).toEqual({ x: 0, y: 50 });
 	});
 });
 
@@ -115,6 +120,20 @@ describe("getRotatedSize", () => {
 describe("scaleSize", () => {
 	it("scales both axes", () => {
 		expect(scaleSize(LARGE, 0.5)).toEqual({ height: 100, width: 200 });
+	});
+});
+
+describe("normalizeSize", () => {
+	it("keeps a size with an area", () => {
+		expect(normalizeSize(LARGE)).toBe(LARGE);
+	});
+
+	it.each([
+		["width", { height: 100, width: 0 }],
+		["height", { height: 0, width: 500 }],
+		["both sides", { height: 0, width: 0 }],
+	])("drops a size without a %s", (_, size) => {
+		expect(normalizeSize(size)).toBeNull();
 	});
 });
 

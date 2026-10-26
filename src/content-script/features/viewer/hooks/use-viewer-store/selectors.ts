@@ -1,11 +1,12 @@
 import type { Point } from "@shared/types";
+import { ZERO_POINT } from "./constants";
 import type { ViewerState } from "./types";
 import { getRotatedSize, scaleSize } from "./utils";
 
-const NO_TRANSLATE: Point = { x: 0, y: 0 };
-
-export const selectIsReady = ({ container, image }: ViewerState): boolean =>
-	container.width !== null && image.naturalWidth !== null;
+export const selectIsReady = ({
+	containerSize,
+	naturalSize,
+}: ViewerState): boolean => containerSize !== null && naturalSize !== null;
 
 // Returns how far the image must move along one axis for its visible edge to
 // go from where it is to where it should be. Both distances are measured from
@@ -37,38 +38,28 @@ const getAxisTranslate = (
 };
 
 export const selectImageTranslate = ({
-	container,
-	image,
+	containerSize,
+	naturalSize,
+	offset,
+	rotation,
+	scale,
 }: ViewerState): Point => {
-	if (
-		container.height === null ||
-		container.width === null ||
-		image.naturalHeight === null ||
-		image.naturalWidth === null
-	) {
-		return NO_TRANSLATE;
-	}
+	if (!containerSize || !naturalSize) return ZERO_POINT;
 
-	const displayed = scaleSize(
-		getRotatedSize(
-			{ height: image.naturalHeight, width: image.naturalWidth },
-			image.rotation,
-		),
-		image.scale,
-	);
+	const displayed = scaleSize(getRotatedSize(naturalSize, rotation), scale);
 
 	return {
 		x: getAxisTranslate(
-			container.width,
-			image.naturalWidth,
+			containerSize.width,
+			naturalSize.width,
 			displayed.width,
-			image.offsetX,
+			offset.x,
 		),
 		y: getAxisTranslate(
-			container.height,
-			image.naturalHeight,
+			containerSize.height,
+			naturalSize.height,
 			displayed.height,
-			image.offsetY,
+			offset.y,
 		),
 	};
 };

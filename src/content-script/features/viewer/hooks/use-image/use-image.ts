@@ -24,11 +24,10 @@ export const useImage = ({
 	const dragProps = useImageDrag({ store });
 	const zoomProps = useImageZoom({ containerRef, store });
 
-	const { flipX, flipY, naturalHeight, naturalWidth, rotation, scale } =
-		store.state.image;
+	const { flip, naturalSize, rotation, scale } = store.state;
 
-	const scaleX = scale * flipX;
-	const scaleY = scale * flipY;
+	const scaleX = scale * flip.x;
+	const scaleY = scale * flip.y;
 
 	const translate = selectImageTranslate(store.state);
 
@@ -36,19 +35,16 @@ export const useImage = ({
 	// without its own size, such as one with only a `viewBox`, gets a box of a
 	// different size from the browser, and the transform would scale it around
 	// a different center.
-	const layoutSize = {
-		height: naturalHeight ?? undefined,
-		width: naturalWidth ?? undefined,
-	};
+	const layoutSize = naturalSize ?? {};
 
 	return {
 		...dragProps,
 		...zoomProps,
-		onLoad: ({ currentTarget }) => {
+		onLoad: ({ currentTarget: { naturalHeight, naturalWidth } }) => {
 			store.dispatch({
 				payload: {
-					height: currentTarget.naturalHeight,
-					width: currentTarget.naturalWidth,
+					height: naturalHeight,
+					width: naturalWidth,
 				},
 				type: "LOAD",
 			});

@@ -3,38 +3,21 @@ import type { ViewerState } from "../types";
 import { clampOffset, getRotatedSize, scaleSize } from "../utils";
 
 export const moveTo = (state: ViewerState, offset: Point): ViewerState => {
-	if (
-		!state.container.height ||
-		!state.container.width ||
-		!state.image.naturalHeight ||
-		!state.image.naturalWidth
-	) {
-		return state;
-	}
+	if (!state.containerSize || !state.naturalSize) return state;
 
 	const visualSize = scaleSize(
-		getRotatedSize(
-			{ height: state.image.naturalHeight, width: state.image.naturalWidth },
-			state.image.rotation,
-		),
-		state.image.scale,
+		getRotatedSize(state.naturalSize, state.rotation),
+		state.scale,
 	);
 
-	const { offsetX, offsetY } = clampOffset(offset, visualSize, {
-		height: state.container.height,
-		width: state.container.width,
-	});
+	const clamped = clampOffset(offset, visualSize, state.containerSize);
 
-	if (state.image.offsetX === offsetX && state.image.offsetY === offsetY) {
+	if (state.offset.x === clamped.x && state.offset.y === clamped.y) {
 		return state;
 	}
 
 	return {
 		...state,
-		image: {
-			...state.image,
-			offsetX,
-			offsetY,
-		},
+		offset: clamped,
 	};
 };

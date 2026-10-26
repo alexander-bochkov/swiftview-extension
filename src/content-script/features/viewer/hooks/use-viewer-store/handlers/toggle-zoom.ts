@@ -9,42 +9,18 @@ import {
 } from "../utils";
 
 export const toggleZoom = (state: ViewerState, point: Point): ViewerState => {
-	if (
-		!state.container.height ||
-		!state.container.width ||
-		!state.image.naturalHeight ||
-		!state.image.naturalWidth
-	) {
-		return state;
-	}
+	if (!state.containerSize || !state.naturalSize) return state;
 
-	const imageSize = getRotatedSize(
-		{ height: state.image.naturalHeight, width: state.image.naturalWidth },
-		state.image.rotation,
-	);
-	const containerSize = {
-		height: state.container.height,
-		width: state.container.width,
-	};
+	const imageSize = getRotatedSize(state.naturalSize, state.rotation);
 
-	const scale = getToggledScale(state.image.scale, imageSize, containerSize);
+	const scale = getToggledScale(state.scale, imageSize, state.containerSize);
 	const visualSize = scaleSize(imageSize, scale);
 
-	const offset = zoomOffset(
-		{ x: state.image.offsetX, y: state.image.offsetY },
-		point,
-		scale / state.image.scale,
-	);
-
-	const { offsetX, offsetY } = clampOffset(offset, visualSize, containerSize);
+	const offset = zoomOffset(state.offset, point, scale / state.scale);
 
 	return {
 		...state,
-		image: {
-			...state.image,
-			offsetX,
-			offsetY,
-			scale,
-		},
+		offset: clampOffset(offset, visualSize, state.containerSize),
+		scale,
 	};
 };

@@ -45,7 +45,8 @@ describe("Overlay", () => {
 	afterEach(() => {
 		// Vitest globals are off, so Testing Library can't register this itself.
 		cleanup();
-		vi.clearAllMocks();
+		// Also drops the transitions a test set, so the next one starts without.
+		vi.resetAllMocks();
 	});
 
 	// A closing dialog is excluded from the accessibility tree.

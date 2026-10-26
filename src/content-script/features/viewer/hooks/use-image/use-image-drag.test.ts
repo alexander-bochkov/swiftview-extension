@@ -34,7 +34,7 @@ describe("useImageDrag", () => {
 	const renderDrag = (offset = { x: 0, y: 0 }) => {
 		const store = {
 			dispatch,
-			state: { image: { offsetX: offset.x, offsetY: offset.y } },
+			state: { offset },
 		} as unknown as ViewerStore;
 
 		return renderHook(() => useImageDrag({ store })).result;

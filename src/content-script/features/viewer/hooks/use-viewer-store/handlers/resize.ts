@@ -1,39 +1,19 @@
+import { ZERO_POINT } from "../constants";
 import type { Size, ViewerState } from "../types";
-import { getFitScale, getRotatedSize } from "../utils";
+import { getFitScale, getRotatedSize, normalizeSize } from "../utils";
 
-export const resize = (
-	state: ViewerState,
-	containerSize: Size,
-): ViewerState => {
-	if (!state.image.naturalHeight || !state.image.naturalWidth) {
-		return {
-			...state,
-			container: {
-				...state.container,
-				...containerSize,
-			},
-		};
-	}
+export const resize = (state: ViewerState, size: Size): ViewerState => {
+	const containerSize = normalizeSize(size);
 
-	const fitScale = getFitScale(
-		getRotatedSize(
-			{ height: state.image.naturalHeight, width: state.image.naturalWidth },
-			state.image.rotation,
-		),
-		containerSize,
-	);
+	if (!containerSize || !state.naturalSize) return { ...state, containerSize };
 
 	return {
 		...state,
-		container: {
-			...state.container,
-			...containerSize,
-		},
-		image: {
-			...state.image,
-			offsetX: 0,
-			offsetY: 0,
-			scale: fitScale,
-		},
+		containerSize,
+		offset: ZERO_POINT,
+		scale: getFitScale(
+			getRotatedSize(state.naturalSize, state.rotation),
+			containerSize,
+		),
 	};
 };
