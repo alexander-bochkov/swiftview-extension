@@ -1,3 +1,4 @@
+import { POINTER_BUTTON } from "@shared/constants";
 import type { Nullable } from "@shared/types";
 import type { ScrollbarHider } from "../scrollbar-hider";
 
@@ -35,6 +36,11 @@ const BLOCKED_EVENTS = [
 	"touchmove",
 	"touchstart",
 ] as const satisfies readonly EventType[];
+
+const isAuxiliaryPress = (e: Event): boolean =>
+	e.type === "mousedown" &&
+	e instanceof MouseEvent &&
+	e.button === POINTER_BUTTON.AUXILIARY;
 
 // Blocks the page while the viewer is open. Events of the page are hidden
 // from it and their default action is prevented. Events of the viewer reach
@@ -98,8 +104,9 @@ export class PageLock {
 
 	private handleEvent = (e: Event): void => {
 		if (this.host && e.composedPath().includes(this.host)) {
-			// The viewer handles the wheel itself, the page must not scroll.
-			if (e.type === "wheel") e.preventDefault();
+			// The page must not scroll: the viewer handles the wheel itself, and a
+			// press of the wheel would start autoscrolling the page.
+			if (e.type === "wheel" || isAuxiliaryPress(e)) e.preventDefault();
 
 			return;
 		}

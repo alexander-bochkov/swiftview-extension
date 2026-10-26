@@ -6,6 +6,7 @@ export const KEY_CODE = {
 export const MOVE_THRESHOLD = 3;
 
 export const POINTER_BUTTON = {
+	AUXILIARY: 1,
 	MAIN: 0,
 } as const;
 
