@@ -20,13 +20,14 @@ describe("Toolbar", () => {
 		vi.clearAllMocks();
 	});
 
-	const renderToolbar = (hideTools = false) =>
+	const renderToolbar = (hideTools = false, scale = 1) =>
 		render(
 			<Toolbar
 				hideTools={hideTools}
 				onClose={onClose}
 				onFlip={onFlip}
 				onRotate={onRotate}
+				scale={scale}
 			/>,
 		);
 
@@ -61,6 +62,18 @@ describe("Toolbar", () => {
 		expect(onFlip).toHaveBeenCalledExactlyOnceWith(direction);
 	});
 
+	describe("zoom", () => {
+		it.each([
+			["in whole percents", 0.333, "33%"],
+			["above 100%", 4, "400%"],
+			["as at least 1% for a very large image", 0.004, "1%"],
+		])("shows the zoom %s", (_, scale, text) => {
+			renderToolbar(false, scale);
+
+			expect(screen.getByText(text)).toBeDefined();
+		});
+	});
+
 	describe("hidden tools", () => {
 		it("shows only the close button", () => {
 			renderToolbar(true);
@@ -68,6 +81,12 @@ describe("Toolbar", () => {
 			expect(
 				screen.getAllByRole("button").map((button) => button.textContent),
 			).toEqual(["x-mark"]);
+		});
+
+		it("hides the zoom", () => {
+			renderToolbar(true);
+
+			expect(screen.queryByText("100%")).toBeNull();
 		});
 
 		it("still closes on the close button", async () => {
