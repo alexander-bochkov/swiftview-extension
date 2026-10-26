@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Overlay } from "./overlay";
 
 type Metadata = Meta<typeof Overlay>;
@@ -12,26 +12,23 @@ export default {
 
 export const WithActivationButton: Story = {
 	render: () => {
+		const [isOpen, setIsOpen] = useState(false);
 		const ref = useRef<HTMLDialogElement>(null);
-
-		const handleOpen = () => {
-			ref.current?.showModal();
-		};
-
-		const handleClose = () => {
-			ref.current?.close();
-		};
 
 		return (
 			<>
-				<button onClick={handleOpen} type="button">
+				<button onClick={() => setIsOpen(true)} type="button">
 					Open Overlay
 				</button>
-				<Overlay ref={ref}>
-					<button onClick={handleClose} type="button">
-						Close Overlay
-					</button>
-				</Overlay>
+				{isOpen && (
+					<Overlay onClose={() => setIsOpen(false)} ref={ref}>
+						{({ onRequestClose }) => (
+							<button onClick={onRequestClose} type="button">
+								Close Overlay
+							</button>
+						)}
+					</Overlay>
+				)}
 			</>
 		);
 	},
