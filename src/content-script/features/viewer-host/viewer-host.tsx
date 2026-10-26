@@ -3,6 +3,7 @@ import type { Nullable } from "@shared/types";
 import { createRoot, type Root } from "react-dom/client";
 import type { PageLock } from "../page-lock";
 import { Viewer } from "../viewer";
+import "./viewer-host.css";
 
 export class ViewerHost {
 	private readonly pageLock: PageLock;
