@@ -1,12 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { ComponentPropsWithoutRef } from "react";
-import { Icon } from "../icon";
+import { Icon, type IconName } from "../icon";
 import { Button } from "./button";
 
 type Metadata = Meta<typeof Button>;
 type Story = StoryObj<Metadata>;
 
-const ICONS: Array<ComponentPropsWithoutRef<typeof Icon>["name"]> = [
+const ICON_NAMES: IconName[] = [
 	"flip-horizontal",
 	"flip-vertical",
 	"rotate-left",
@@ -22,7 +21,7 @@ export default {
 export const WithIcons: Story = {
 	render: () => (
 		<div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-			{ICONS.map((icon) => (
+			{ICON_NAMES.map((icon) => (
 				<Button key={icon}>
 					<Icon name={icon} />
 				</Button>
