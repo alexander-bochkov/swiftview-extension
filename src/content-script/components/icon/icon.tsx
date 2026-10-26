@@ -1,35 +1,27 @@
-import type { ComponentProps, FC } from "react";
+import type { ComponentProps } from "react";
+import FlipHorizontal from "./icons/flip-horizontal.svg?react";
+import FlipVertical from "./icons/flip-vertical.svg?react";
+import RotateLeft from "./icons/rotate-left.svg?react";
+import RotateRight from "./icons/rotate-right.svg?react";
+import Spinner from "./icons/spinner.svg?react";
+import XMark from "./icons/x-mark.svg?react";
 
-const modules = import.meta.glob<FC<ComponentProps<"svg">>>("./icons/*.svg", {
-	eager: true,
-	import: "default",
-	query: "?react",
-});
+const ICONS = {
+	"flip-horizontal": FlipHorizontal,
+	"flip-vertical": FlipVertical,
+	"rotate-left": RotateLeft,
+	"rotate-right": RotateRight,
+	spinner: Spinner,
+	"x-mark": XMark,
+};
 
-const icons = Object.fromEntries(
-	Object.entries(modules).map(([path, module]) => [
-		path.split("/").pop()?.replace(".svg", "") ?? "",
-		module,
-	]),
-);
+export type IconName = keyof typeof ICONS;
 
 type IconProps = ComponentProps<"svg"> & {
-	name:
-		| "flip-horizontal"
-		| "flip-vertical"
-		| "rotate-left"
-		| "rotate-right"
-		| "spinner"
-		| "x-mark";
+	name: IconName;
 };
 
 export const Icon = ({ name, ...props }: IconProps) => {
-	const SVG = icons[name];
-
-	if (!SVG) {
-		console.warn(`Icon "${name}" not found`);
-		return null;
-	}
-
-	return <SVG {...props} />;
+	const Svg = ICONS[name];
+	return <Svg {...props} />;
 };
