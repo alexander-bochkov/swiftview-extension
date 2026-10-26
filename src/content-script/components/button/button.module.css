@@ -16,9 +16,11 @@
 		color 100ms ease-out,
 		transform 50ms ease-out;
 
-	&:hover {
-		color: rgb(255 255 255 / 90%);
-		background-color: rgb(110 110 110 / 90%);
+	@media (hover: hover) {
+		&:hover {
+			color: rgb(255 255 255 / 90%);
+			background-color: rgb(110 110 110 / 90%);
+		}
 	}
 
 	&:active {

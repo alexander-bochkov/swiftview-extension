@@ -21,15 +21,12 @@ export default {
 
 export const WithIcons: Story = {
 	render: () => (
-		<>
+		<div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
 			{ICONS.map((icon) => (
-				<>
-					<Button>
-						<Icon name={icon} />
-					</Button>
-					<br />
-				</>
+				<Button key={icon}>
+					<Icon name={icon} />
+				</Button>
 			))}
-		</>
+		</div>
 	),
 };
