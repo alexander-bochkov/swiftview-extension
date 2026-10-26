@@ -63,6 +63,23 @@ describe("useImageZoom", () => {
 			});
 		});
 
+		it.each(["altKey", "ctrlKey", "metaKey", "shiftKey"])(
+			"does nothing with %s",
+			(key) => {
+				const { result } = renderZoom();
+
+				act(() =>
+					result.current.onClick?.({
+						clientX: 290,
+						clientY: 60,
+						[key]: true,
+					} as unknown as MouseEvent<HTMLImageElement>),
+				);
+
+				expect(dispatch).not.toHaveBeenCalled();
+			},
+		);
+
 		it("does nothing without a container element", () => {
 			const { result } = renderZoom({ current: null });
 
@@ -137,14 +154,18 @@ describe("useImageZoom", () => {
 			expect(wheel({ deltaY: -100 }).defaultPrevented).toBe(true);
 		});
 
-		it("does nothing on a pinch, but keeps the page from zooming", () => {
-			renderZoom();
+		// Ctrl also comes with a pinch, which would zoom the page.
+		it.each(["altKey", "ctrlKey", "metaKey", "shiftKey"])(
+			"does nothing with %s, but keeps the page from scrolling",
+			(key) => {
+				renderZoom();
 
-			const e = wheel({ ctrlKey: true, deltaY: -10 });
+				const e = wheel({ [key]: true, deltaY: -10 });
 
-			expect(e.defaultPrevented).toBe(true);
-			expect(dispatch).not.toHaveBeenCalled();
-		});
+				expect(e.defaultPrevented).toBe(true);
+				expect(dispatch).not.toHaveBeenCalled();
+			},
+		);
 
 		it("does nothing on a horizontal scroll", () => {
 			renderZoom();

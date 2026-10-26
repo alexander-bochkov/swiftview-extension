@@ -10,17 +10,12 @@ describe("useViewerStore", () => {
 		const { result } = renderHook(() => useViewerStore());
 
 		expect(result.current.state).toEqual({
-			container: { height: null, width: null },
-			image: {
-				flipX: 1,
-				flipY: 1,
-				naturalHeight: null,
-				naturalWidth: null,
-				offsetX: 0,
-				offsetY: 0,
-				rotation: 0,
-				scale: 1,
-			},
+			containerSize: null,
+			flip: { x: 1, y: 1 },
+			naturalSize: null,
+			offset: { x: 0, y: 0 },
+			rotation: 0,
+			scale: 1,
 		});
 	});
 
@@ -38,7 +33,7 @@ describe("useViewerStore", () => {
 			});
 		});
 
-		expect(result.current.state.image.scale).toBe(0.5);
+		expect(result.current.state.scale).toBe(0.5);
 	});
 
 	it("returns the same store when an action changes nothing", () => {

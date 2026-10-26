@@ -1,20 +1,26 @@
 import type { FlipDirection } from "../../../types";
 import type { ViewerState } from "../types";
 
+const AXIS = {
+	horizontal: "x",
+	vertical: "y",
+} as const satisfies Record<FlipDirection, keyof ViewerState["flip"]>;
+
 export const flip = (
 	state: ViewerState,
 	direction: FlipDirection,
 ): ViewerState => {
-	const { flipX, flipY, offsetX, offsetY } = state.image;
+	const axis = AXIS[direction];
 
 	return {
 		...state,
-		image: {
-			...state.image,
-			// `+ 0` turns -0 into 0.
-			...(direction === "horizontal"
-				? { flipX: flipX === 1 ? -1 : 1, offsetX: -offsetX + 0 }
-				: { flipY: flipY === 1 ? -1 : 1, offsetY: -offsetY + 0 }),
+		flip: {
+			...state.flip,
+			[axis]: state.flip[axis] === 1 ? -1 : 1,
+		},
+		offset: {
+			...state.offset,
+			[axis]: -state.offset[axis],
 		},
 	};
 };

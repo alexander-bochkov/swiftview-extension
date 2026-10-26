@@ -1,21 +1,22 @@
-import type { Point } from "@shared/types";
+import type { Nullable, Point } from "@shared/types";
 import { MAX_SCALE, NATURAL_SIZE_SCALE } from "./constants";
 import type { Size } from "./types";
 
-export const clampOffset = (offset: Point, content: Size, container: Size) => {
-	const clampAxis = (
-		offset: number,
-		content: number,
-		container: number,
-	): number => {
-		const limit = Math.max(0, (content - container) / 2);
-		// `+ 0` turns -0 into 0.
-		return Math.min(Math.max(-limit, offset), limit) + 0;
-	};
+export const getOffsetLimit = (content: Size, container: Size): Point => ({
+	x: Math.max(0, (content.width - container.width) / 2),
+	y: Math.max(0, (content.height - container.height) / 2),
+});
+
+export const clampOffset = (
+	offset: Point,
+	content: Size,
+	container: Size,
+): Point => {
+	const limit = getOffsetLimit(content, container);
 
 	return {
-		offsetX: clampAxis(offset.x, content.width, container.width),
-		offsetY: clampAxis(offset.y, content.height, container.height),
+		x: Math.min(Math.max(-limit.x, offset.x), limit.x),
+		y: Math.min(Math.max(-limit.y, offset.y), limit.y),
 	};
 };
 
@@ -51,10 +52,11 @@ export const getToggledScale = (
 		: fitScale;
 };
 
-export const getRotatedSize = (natural: Size, rotation: number): Size =>
-	rotation % 180 === 0
-		? natural
-		: { height: natural.width, width: natural.height };
+export const getRotatedSize = (size: Size, rotation: number): Size =>
+	rotation % 180 === 0 ? size : { height: size.width, width: size.height };
+
+export const normalizeSize = (size: Size): Nullable<Size> =>
+	size.height && size.width ? size : null;
 
 export const scaleSize = ({ height, width }: Size, scale: number): Size => ({
 	height: height * scale,

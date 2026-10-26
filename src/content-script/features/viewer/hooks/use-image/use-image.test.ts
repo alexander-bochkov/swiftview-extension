@@ -4,8 +4,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ViewerStore } from "../use-viewer-store";
 import { useImage } from "./use-image";
 
-type ImageState = ViewerStore["state"]["image"];
-
 describe("useImage", () => {
 	const dispatch = vi.fn();
 
@@ -15,22 +13,17 @@ describe("useImage", () => {
 		vi.clearAllMocks();
 	});
 
-	const renderImage = (image: Partial<ImageState> = {}) => {
+	const renderImage = (state: Partial<ViewerStore["state"]> = {}) => {
 		const store: ViewerStore = {
 			dispatch,
 			state: {
-				container: { height: 100, width: 500 },
-				image: {
-					flipX: 1,
-					flipY: 1,
-					naturalHeight: 200,
-					naturalWidth: 400,
-					offsetX: 0,
-					offsetY: 0,
-					rotation: 0,
-					scale: 1,
-					...image,
-				},
+				containerSize: { height: 100, width: 500 },
+				flip: { x: 1, y: 1 },
+				naturalSize: { height: 200, width: 400 },
+				offset: { x: 0, y: 0 },
+				rotation: 0,
+				scale: 1,
+				...state,
 			},
 		};
 
@@ -71,9 +64,8 @@ describe("useImage", () => {
 
 	it("applies the offset, the scale, the flips and the rotation", () => {
 		const result = renderImage({
-			flipX: -1,
-			offsetX: 10,
-			offsetY: -20,
+			flip: { x: -1, y: 1 },
+			offset: { x: 10, y: -20 },
 			rotation: 90,
 			scale: 0.5,
 		});
@@ -86,7 +78,7 @@ describe("useImage", () => {
 	});
 
 	it("hides the image until both sizes are known", () => {
-		const result = renderImage({ naturalHeight: null, naturalWidth: null });
+		const result = renderImage({ naturalSize: null });
 
 		expect(result.current.style?.display).toBe("none");
 	});

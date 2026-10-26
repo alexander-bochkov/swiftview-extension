@@ -1,4 +1,5 @@
 import type { Nullable, Point } from "@shared/types";
+import { hasModifierKey } from "@shared/utils";
 import { type ComponentProps, type RefObject, useEffect } from "react";
 import type { ViewerStore } from "../use-viewer-store";
 
@@ -41,10 +42,8 @@ export const useImageZoom = ({
 		const controller = new AbortController();
 
 		const handleWheel = (e: WheelEvent) => {
-			// Keeps the page from scrolling, and from zooming on a pinch, which
-			// Chrome reports as a wheel with the Ctrl key.
 			e.preventDefault();
-			if (e.ctrlKey || e.deltaY === 0) return;
+			if (hasModifierKey(e) || e.deltaY === 0) return;
 
 			const factor = getZoomFactor(e.deltaY);
 			const point = getContainerPoint(container, e);
@@ -62,7 +61,7 @@ export const useImageZoom = ({
 
 	return {
 		onClick: (e) => {
-			if (!containerRef.current) return;
+			if (!containerRef.current || hasModifierKey(e)) return;
 
 			const point = getContainerPoint(containerRef.current, e);
 			dispatch({ payload: point, type: "TOGGLE_ZOOM" });

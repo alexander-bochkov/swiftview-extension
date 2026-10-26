@@ -4,6 +4,7 @@ import {
 	POINTER_TYPE,
 } from "@shared/constants";
 import type { Nullable, Point } from "@shared/types";
+import { hasModifierKey } from "@shared/utils";
 import type { EventBlocker } from "../event-blocker";
 
 const BLOCKED_EVENTS = [
@@ -77,13 +78,11 @@ export class LongPressRecognizer {
 		// Currently, only the mouse is supported.
 		if (e.pointerType !== POINTER_TYPE.MOUSE) return;
 
-		const hasModifierKey = e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
-
 		if (
 			e.button !== POINTER_BUTTON.MAIN ||
 			!e.isPrimary ||
 			!e.isTrusted ||
-			hasModifierKey
+			hasModifierKey(e)
 		) {
 			return;
 		}

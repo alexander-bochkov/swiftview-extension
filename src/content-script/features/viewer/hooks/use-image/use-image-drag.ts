@@ -4,6 +4,7 @@ import {
 	POINTER_TYPE,
 } from "@shared/constants";
 import type { Nullable, Point } from "@shared/types";
+import { hasModifierKey } from "@shared/utils";
 import { type ComponentProps, useRef } from "react";
 import type { ViewerStore } from "../use-viewer-store";
 
@@ -28,9 +29,7 @@ type Press = {
 export const useImageDrag = ({
 	store: {
 		dispatch,
-		state: {
-			image: { offsetX, offsetY },
-		},
+		state: { offset },
 	},
 }: UseImageDragOptions): UseImageDragReturn => {
 	const pressRef = useRef<Nullable<Press>>(null);
@@ -53,13 +52,11 @@ export const useImageDrag = ({
 			// Currently, only the mouse is supported.
 			if (e.pointerType !== POINTER_TYPE.MOUSE) return;
 
-			const hasModifierKey = e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
-
 			if (
 				e.button !== POINTER_BUTTON.MAIN ||
 				!e.isPrimary ||
 				!e.isTrusted ||
-				hasModifierKey
+				hasModifierKey(e)
 			) {
 				return;
 			}
@@ -71,7 +68,7 @@ export const useImageDrag = ({
 			pressRef.current = {
 				isDragging: false,
 				pointerId: e.pointerId,
-				startOffset: { x: offsetX, y: offsetY },
+				startOffset: offset,
 				startPoint: { x: e.clientX, y: e.clientY },
 			};
 

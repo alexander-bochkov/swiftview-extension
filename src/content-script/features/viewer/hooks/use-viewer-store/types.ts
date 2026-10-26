@@ -22,20 +22,12 @@ export type ViewerAction =
 	| { type: "ZOOM"; payload: ZoomPayload };
 
 export type ViewerState = Readonly<{
-	container: Readonly<{
-		height: Nullable<number>;
-		width: Nullable<number>;
-	}>;
-	image: Readonly<{
-		flipX: 1 | -1;
-		flipY: 1 | -1;
-		naturalHeight: Nullable<number>;
-		naturalWidth: Nullable<number>;
-		offsetX: number;
-		offsetY: number;
-		rotation: number;
-		scale: number;
-	}>;
+	containerSize: Nullable<Size>;
+	flip: Readonly<{ x: 1 | -1; y: 1 | -1 }>;
+	naturalSize: Nullable<Size>;
+	offset: Point;
+	rotation: number;
+	scale: number;
 }>;
 
 export type ViewerStore = {
