@@ -31,11 +31,8 @@ describe("useImageDrag", () => {
 		vi.clearAllMocks();
 	});
 
-	const renderDrag = (offset = { x: 0, y: 0 }) => {
-		const store = {
-			dispatch,
-			state: { offset },
-		} as unknown as ViewerStore;
+	const renderDrag = () => {
+		const store = { dispatch } as unknown as ViewerStore;
 
 		return renderHook(() => useImageDrag({ store })).result;
 	};
@@ -87,8 +84,7 @@ describe("useImageDrag", () => {
 		return e;
 	};
 
-	const getOffsets = () =>
-		dispatch.mock.calls.map(([action]) => action.payload);
+	const getDeltas = () => dispatch.mock.calls.map(([action]) => action.payload);
 
 	describe("press", () => {
 		it("captures the pointer on the main mouse button", () => {
@@ -121,7 +117,7 @@ describe("useImageDrag", () => {
 	});
 
 	describe("move", () => {
-		it("moves the image by the distance from the start", () => {
+		it("moves the image by the distance since the previous move", () => {
 			const result = renderDrag();
 
 			down(result, { clientX: 10, clientY: 20 });
@@ -129,18 +125,9 @@ describe("useImageDrag", () => {
 			move(result, { clientX: 30, clientY: 5 });
 
 			expect(dispatch.mock.calls).toEqual([
-				[{ payload: { x: 5, y: 0 }, type: "MOVE_TO" }],
-				[{ payload: { x: 20, y: -15 }, type: "MOVE_TO" }],
+				[{ payload: { x: 5, y: 0 }, type: "MOVE_BY" }],
+				[{ payload: { x: 15, y: -15 }, type: "MOVE_BY" }],
 			]);
-		});
-
-		it("moves from the offset where the drag started", () => {
-			const result = renderDrag({ x: 10, y: -20 });
-
-			down(result);
-			move(result, { clientX: 5, clientY: 5 });
-
-			expect(getOffsets()).toEqual([{ x: 15, y: -15 }]);
 		});
 
 		it("waits until the pointer moves by 3 px", () => {
@@ -153,7 +140,8 @@ describe("useImageDrag", () => {
 
 			move(result, { clientX: 2, clientY: -3 });
 
-			expect(getOffsets()).toEqual([{ x: 2, y: -3 }]);
+			// The first move covers the distance from the press.
+			expect(getDeltas()).toEqual([{ x: 2, y: -3 }]);
 		});
 
 		it("keeps moving below 3 px once the drag started", () => {
@@ -161,11 +149,11 @@ describe("useImageDrag", () => {
 
 			down(result);
 			move(result, { clientX: 5 });
-			move(result, { clientX: 1 });
+			move(result, { clientX: 4 });
 
-			expect(getOffsets()).toEqual([
+			expect(getDeltas()).toEqual([
 				{ x: 5, y: 0 },
-				{ x: 1, y: 0 },
+				{ x: -1, y: 0 },
 			]);
 		});
 

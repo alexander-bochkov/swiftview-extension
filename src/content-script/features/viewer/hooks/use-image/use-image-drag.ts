@@ -21,16 +21,13 @@ type UseImageDragReturn = Pick<
 
 type Press = {
 	isDragging: boolean;
+	lastPoint: Point;
 	readonly pointerId: number;
-	readonly startOffset: Point;
 	readonly startPoint: Point;
 };
 
 export const useImageDrag = ({
-	store: {
-		dispatch,
-		state: { offset },
-	},
+	store: { dispatch },
 }: UseImageDragOptions): UseImageDragReturn => {
 	const pressRef = useRef<Nullable<Press>>(null);
 	const shouldStopClickRef = useRef(false);
@@ -65,38 +62,41 @@ export const useImageDrag = ({
 			// targets the click at it.
 			e.currentTarget.setPointerCapture(e.pointerId);
 
+			const point = { x: e.clientX, y: e.clientY };
+
 			pressRef.current = {
 				isDragging: false,
+				lastPoint: point,
 				pointerId: e.pointerId,
-				startOffset: offset,
-				startPoint: { x: e.clientX, y: e.clientY },
+				startPoint: point,
 			};
 
 			shouldStopClickRef.current = false;
 		},
 		onPointerMove: (e) => {
-			if (pressRef.current?.pointerId !== e.pointerId) return;
+			const press = pressRef.current;
+			if (press?.pointerId !== e.pointerId) return;
 
-			const delta = {
-				x: e.clientX - pressRef.current.startPoint.x,
-				y: e.clientY - pressRef.current.startPoint.y,
-			};
+			if (!press.isDragging) {
+				const distance = Math.max(
+					Math.abs(e.clientX - press.startPoint.x),
+					Math.abs(e.clientY - press.startPoint.y),
+				);
 
-			if (!pressRef.current.isDragging) {
-				if (Math.max(Math.abs(delta.x), Math.abs(delta.y)) < MOVE_THRESHOLD) {
-					return;
-				}
+				if (distance < MOVE_THRESHOLD) return;
 
-				pressRef.current.isDragging = true;
+				press.isDragging = true;
 			}
 
 			dispatch({
 				payload: {
-					x: pressRef.current.startOffset.x + delta.x,
-					y: pressRef.current.startOffset.y + delta.y,
+					x: e.clientX - press.lastPoint.x,
+					y: e.clientY - press.lastPoint.y,
 				},
-				type: "MOVE_TO",
+				type: "MOVE_BY",
 			});
+
+			press.lastPoint = { x: e.clientX, y: e.clientY };
 		},
 		onPointerUp: (e) => {
 			if (pressRef.current?.pointerId !== e.pointerId) return;

@@ -140,36 +140,68 @@ describe("reducer", () => {
 		});
 	});
 
-	describe("MOVE_TO", () => {
+	describe("MOVE_BY", () => {
 		it("moves a zoomed image along the axis on which it's larger", () => {
 			const state = reducer(createState({ scale: 1 }), {
 				payload: { x: 10, y: -30 },
-				type: "MOVE_TO",
+				type: "MOVE_BY",
 			});
 
 			expect(state.offset).toEqual({ x: 0, y: -30 });
 		});
 
+		it("moves from the current offset", () => {
+			const state = reducer(
+				createState({ offset: { x: 0, y: -20 }, scale: 1 }),
+				{ payload: { x: 0, y: -10 }, type: "MOVE_BY" },
+			);
+
+			expect(state.offset).toEqual({ x: 0, y: -30 });
+		});
+
+		it("adds up the moves", () => {
+			const moved = [
+				{ x: 0, y: -10 },
+				{ x: 0, y: -15 },
+			].reduce(
+				(state, payload) => reducer(state, { payload, type: "MOVE_BY" }),
+				createState({ scale: 1 }),
+			);
+
+			expect(moved.offset).toEqual({ x: 0, y: -25 });
+		});
+
 		it("stops the edges at the borders", () => {
 			const state = reducer(createState({ scale: 1 }), {
 				payload: { x: 0, y: -300 },
-				type: "MOVE_TO",
+				type: "MOVE_BY",
 			});
 
 			expect(state.offset.y).toBe(-50);
+		});
+
+		it("moves back from a border right away", () => {
+			const atBorder = createState({ offset: { x: 0, y: -50 }, scale: 1 });
+
+			const state = reducer(atBorder, {
+				payload: { x: 0, y: 10 },
+				type: "MOVE_BY",
+			});
+
+			expect(state.offset).toEqual({ x: 0, y: -40 });
 		});
 
 		it("keeps the state when the image doesn't move", () => {
 			const fitted = createState();
 
 			expect(
-				reducer(fitted, { payload: { x: 10, y: -30 }, type: "MOVE_TO" }),
+				reducer(fitted, { payload: { x: 10, y: -30 }, type: "MOVE_BY" }),
 			).toBe(fitted);
 		});
 
 		it("does nothing before the sizes are known", () => {
 			expect(
-				reducer(EMPTY_STATE, { payload: { x: 10, y: -30 }, type: "MOVE_TO" }),
+				reducer(EMPTY_STATE, { payload: { x: 10, y: -30 }, type: "MOVE_BY" }),
 			).toBe(EMPTY_STATE);
 		});
 	});
@@ -304,10 +336,10 @@ describe("reducer", () => {
 			expect(state.scale).toBe(0.5);
 		});
 
-		it("stops the edges by the rotated size on MOVE_TO", () => {
+		it("stops the edges by the rotated size on MOVE_BY", () => {
 			const state = reducer(createState({ rotation: 90, scale: 1 }), {
 				payload: { x: 30, y: -100 },
-				type: "MOVE_TO",
+				type: "MOVE_BY",
 			});
 
 			expect(state.offset).toEqual({ x: 0, y: -100 });
