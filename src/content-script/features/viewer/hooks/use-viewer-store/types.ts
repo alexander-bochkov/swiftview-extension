@@ -13,6 +13,7 @@ export type ZoomPayload = Readonly<{
 }>;
 
 export type ViewerAction =
+	| { type: "FAIL" }
 	| { type: "FLIP"; payload: FlipDirection }
 	| { type: "LOAD"; payload: Size }
 	| { type: "MOVE_BY"; payload: Point }
@@ -24,6 +25,7 @@ export type ViewerAction =
 export type ViewerState = Readonly<{
 	containerSize: Nullable<Size>;
 	flip: Readonly<{ x: 1 | -1; y: 1 | -1 }>;
+	hasImageError: boolean;
 	naturalSize: Nullable<Size>;
 	offset: Point;
 	rotation: number;

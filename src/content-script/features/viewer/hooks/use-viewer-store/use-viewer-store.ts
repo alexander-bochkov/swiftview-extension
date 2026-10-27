@@ -6,6 +6,7 @@ import type { ViewerState, ViewerStore } from "./types";
 const INITIAL_STATE: ViewerState = {
 	containerSize: null,
 	flip: { x: 1, y: 1 },
+	hasImageError: false,
 	naturalSize: null,
 	offset: ZERO_POINT,
 	rotation: 0,

@@ -12,6 +12,7 @@ describe("useViewerStore", () => {
 		expect(result.current.state).toEqual({
 			containerSize: null,
 			flip: { x: 1, y: 1 },
+			hasImageError: false,
 			naturalSize: null,
 			offset: { x: 0, y: 0 },
 			rotation: 0,

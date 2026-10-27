@@ -6,6 +6,7 @@ import type { ViewerState } from "./types";
 const createState = (state: Partial<ViewerState> = {}): ViewerState => ({
 	containerSize: { height: 100, width: 500 },
 	flip: { x: 1, y: 1 },
+	hasImageError: false,
 	naturalSize: { height: 200, width: 400 },
 	offset: { x: 0, y: 0 },
 	rotation: 0,
