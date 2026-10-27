@@ -13,6 +13,7 @@ export default defineConfig({
 				entryFileNames: "[name].js",
 			},
 		},
+		target: "chrome134",
 	},
 	plugins: [cssInjectedByJsPlugin(), react(), svgr()],
 	resolve: {
