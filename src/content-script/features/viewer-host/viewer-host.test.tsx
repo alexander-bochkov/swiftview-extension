@@ -14,6 +14,7 @@ import {
 } from "vitest";
 import { PageLock } from "../page-lock";
 import { ScrollbarHider } from "../scrollbar-hider";
+import { FONT_FAMILY } from "./fonts";
 import { ViewerHost } from "./viewer-host";
 
 type ViewerProps = {
@@ -68,9 +69,42 @@ describe("ViewerHost", () => {
 		Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
 	});
 
+	// jsdom doesn't implement fonts, so the fonts of the document are a plain
+	// set of the created faces.
+	let fonts: Set<FontFace>;
+
+	// The url of a file of the extension, as Chrome builds it.
+	const getURL = (path: string) => `chrome-extension://swiftview/${path}`;
+
 	beforeEach(() => {
 		consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 		mocks.Viewer.mockImplementation(FakeViewer);
+
+		fonts = new Set();
+		vi.stubGlobal(
+			"FontFace",
+			class {
+				descriptors: FontFaceDescriptors;
+				family: string;
+				source: string;
+
+				constructor(
+					family: string,
+					source: string,
+					descriptors: FontFaceDescriptors,
+				) {
+					this.descriptors = descriptors;
+					this.family = family;
+					this.source = source;
+				}
+			},
+		);
+		Object.defineProperty(document, "fonts", {
+			configurable: true,
+			value: fonts,
+		});
+		// The extension APIs only exist in a content script.
+		vi.stubGlobal("chrome", { runtime: { getURL } });
 
 		pageLock = new PageLock(new ScrollbarHider());
 		viewerHost = new ViewerHost(pageLock);
@@ -81,6 +115,8 @@ describe("ViewerHost", () => {
 
 		for (const host of getHosts()) host.remove();
 
+		Reflect.deleteProperty(document, "fonts");
+		vi.unstubAllGlobals();
 		vi.clearAllMocks();
 		consoleError.mockRestore();
 	});
@@ -153,6 +189,25 @@ describe("ViewerHost", () => {
 			expect(first?.isConnected).toBe(false);
 			expect(viewerHost.isOpen).toBe(true);
 		});
+
+		it("adds Inter from the files of the extension to the document", () => {
+			open();
+
+			expect([...fonts]).toEqual([
+				{
+					descriptors: { weight: "100 900" },
+					family: FONT_FAMILY,
+					source: `url(${getURL("fonts/inter-variable.woff2")}) format("woff2")`,
+				},
+			]);
+		});
+
+		it("keeps one font when opened again", () => {
+			open();
+			open();
+
+			expect(fonts.size).toBe(1);
+		});
 	});
 
 	describe("close", () => {
@@ -168,6 +223,13 @@ describe("ViewerHost", () => {
 			close();
 
 			expect(pageLock.isLocked).toBe(false);
+		});
+
+		it("removes the font from the document", () => {
+			open();
+			close();
+
+			expect(fonts.size).toBe(0);
 		});
 
 		it("unmounts the React tree", () => {
