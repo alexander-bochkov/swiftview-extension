@@ -24,12 +24,10 @@
 
 .zoom {
 	display: flex;
-	align-items: center;
 	justify-content: center;
 	width: 64px;
 	height: 18px;
 	margin-top: 8px;
-	font-family: sans-serif;
 	font-size: 14px;
 	color: rgb(255 255 255 / 70%);
 	background-color: rgb(110 110 110 / 50%);
