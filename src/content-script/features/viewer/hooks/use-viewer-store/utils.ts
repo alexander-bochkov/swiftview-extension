@@ -63,7 +63,11 @@ export const scaleSize = ({ height, width }: Size, scale: number): Size => ({
 	width: width * scale,
 });
 
-export const zoomOffset = (offset: Point, point: Point, ratio: number) => ({
+export const zoomOffset = (
+	offset: Point,
+	point: Point,
+	ratio: number,
+): Point => ({
 	x: point.x - (point.x - offset.x) * ratio,
 	y: point.y - (point.y - offset.y) * ratio,
 });
