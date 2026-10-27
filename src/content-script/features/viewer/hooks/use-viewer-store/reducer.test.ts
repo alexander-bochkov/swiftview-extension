@@ -7,6 +7,7 @@ import type { ViewerState } from "./types";
 const createState = (state: Partial<ViewerState> = {}): ViewerState => ({
 	containerSize: { height: 100, width: 500 },
 	flip: { x: 1, y: 1 },
+	hasImageError: false,
 	naturalSize: { height: 200, width: 400 },
 	offset: { x: 0, y: 0 },
 	rotation: 0,
@@ -128,15 +129,30 @@ describe("reducer", () => {
 			});
 		});
 
-		it("leaves the natural size unknown for an image without an area", () => {
+		it.each([
+			["width", { height: 50, width: 0 }],
+			["height", { height: 0, width: 100 }],
+		])("marks an image without a %s as failed", (_, payload) => {
 			const unloaded = createState({ naturalSize: null, scale: 1 });
 
-			const state = reducer(unloaded, {
-				payload: { height: 0, width: 0 },
-				type: "LOAD",
-			});
+			const state = reducer(unloaded, { payload, type: "LOAD" });
 
-			expect(state).toEqual(unloaded);
+			expect(state).toEqual({ ...unloaded, hasImageError: true });
+		});
+	});
+
+	describe("FAIL", () => {
+		it("marks the image as failed", () => {
+			const unloaded = createState({ naturalSize: null, scale: 1 });
+
+			expect(reducer(unloaded, { type: "FAIL" })).toEqual({
+				...unloaded,
+				hasImageError: true,
+			});
+		});
+
+		it("marks the image as failed before the container size is known", () => {
+			expect(reducer(EMPTY_STATE, { type: "FAIL" }).hasImageError).toBe(true);
 		});
 	});
 

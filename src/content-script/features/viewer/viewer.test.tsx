@@ -204,27 +204,39 @@ describe("Viewer", () => {
 		});
 	});
 
-	describe("an image that fails to load", () => {
-		beforeEach(() => {
-			vi.spyOn(console, "warn").mockImplementation(() => {});
+	describe("an image that can't be shown", () => {
+		const MESSAGE = "Couldn't open the image";
+
+		it.each<[string, (image: HTMLImageElement) => void]>([
+			["fails to load", (image) => fireEvent.error(image)],
+			["has no size", (image) => load(image, { height: 0, width: 0 })],
+		])("shows the error instead of the loader when it %s", (_, report) => {
+			const { image } = renderViewer();
+
+			resize(CONTAINER);
+			report(image);
+
+			expect(screen.getByText(MESSAGE)).toBeDefined();
+			expect(screen.queryByText("spinner")).toBeNull();
+			expect(getToolNames()).toEqual(["x-mark"]);
+			expect(image.style.display).toBe("none");
 		});
 
-		it("warns about the image", () => {
+		it("doesn't show the error while the image loads", () => {
+			renderViewer();
+
+			expect(screen.queryByText(MESSAGE)).toBeNull();
+		});
+
+		it("stays open until it's closed", async () => {
 			const { image } = renderViewer();
 
 			fireEvent.error(image);
 
-			expect(console.warn).toHaveBeenCalledExactlyOnceWith(
-				`Failed to show the image: ${IMAGE_URL}`,
-			);
-		});
+			expect(onClose).not.toHaveBeenCalled();
 
-		it("closes the viewer with its transition", async () => {
-			const { image } = renderViewer();
+			await clickButton("x-mark");
 
-			fireEvent.error(image);
-
-			expect(close).toHaveBeenCalledOnce();
 			await vi.waitFor(() => expect(onClose).toHaveBeenCalledOnce());
 		});
 	});

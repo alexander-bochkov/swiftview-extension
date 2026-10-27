@@ -19,6 +19,7 @@ describe("useImage", () => {
 			state: {
 				containerSize: { height: 100, width: 500 },
 				flip: { x: 1, y: 1 },
+				hasImageError: false,
 				naturalSize: { height: 200, width: 400 },
 				offset: { x: 0, y: 0 },
 				rotation: 0,
@@ -31,6 +32,16 @@ describe("useImage", () => {
 
 		return renderHook(() => useImage({ containerRef, store })).result;
 	};
+
+	it("reports an image that fails to load", () => {
+		const result = renderImage();
+
+		act(() => {
+			result.current.onError?.({} as SyntheticEvent<HTMLImageElement>);
+		});
+
+		expect(dispatch).toHaveBeenCalledExactlyOnceWith({ type: "FAIL" });
+	});
 
 	it("reports the natural size of the loaded image", () => {
 		const result = renderImage();

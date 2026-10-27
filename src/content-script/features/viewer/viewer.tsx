@@ -6,6 +6,7 @@ import {
 	useImage,
 	useViewerStore,
 } from "./hooks";
+import { ImageError } from "./image-error";
 import { Toolbar } from "./toolbar";
 import styles from "./viewer.module.css";
 
@@ -23,6 +24,7 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 	const imageProps = useImage({ containerRef: overlayRef, store });
 
 	const isReady = selectIsReady(store.state);
+	const { hasImageError } = store.state;
 
 	return (
 		<Overlay className={styles.viewer} onClose={onClose} ref={overlayRef}>
@@ -39,16 +41,15 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 						}
 						scale={store.state.scale}
 					/>
-					{!isReady && <Icon className={styles.loader} name="spinner" />}
+					{hasImageError && <ImageError />}
+					{!isReady && !hasImageError && (
+						<Icon className={styles.loader} name="spinner" />
+					)}
 					<img
 						{...imageProps}
 						alt=""
 						className={styles.image}
 						draggable={false}
-						onError={() => {
-							console.warn(`Failed to show the image: ${url}`);
-							onRequestClose();
-						}}
 						src={url}
 					/>
 				</>

@@ -15,7 +15,7 @@ type UseImageOptions = {
 
 type UseImageReturn = ReturnType<typeof useImageDrag> &
 	ReturnType<typeof useImageZoom> &
-	Pick<ComponentProps<"img">, "onLoad" | "style">;
+	Pick<ComponentProps<"img">, "onError" | "onLoad" | "style">;
 
 export const useImage = ({
 	containerRef,
@@ -40,6 +40,9 @@ export const useImage = ({
 	return {
 		...dragProps,
 		...zoomProps,
+		onError: () => {
+			store.dispatch({ type: "FAIL" });
+		},
 		onLoad: ({ currentTarget: { naturalHeight, naturalWidth } }) => {
 			store.dispatch({
 				payload: {

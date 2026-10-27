@@ -1,5 +1,6 @@
 import type { Reducer } from "react";
 import {
+	fail,
 	flip,
 	load,
 	moveBy,
@@ -12,6 +13,8 @@ import type { ViewerAction, ViewerState } from "./types";
 
 export const reducer: Reducer<ViewerState, ViewerAction> = (state, action) => {
 	switch (action.type) {
+		case "FAIL":
+			return fail(state);
 		case "FLIP":
 			return flip(state, action.payload);
 		case "LOAD":
