@@ -19,7 +19,12 @@
 		"paths": {
 			"@shared/*": ["./src/shared/*"]
 		},
-		"types": ["chrome", "vite-plugin-svgr/client", "vite/client"],
+		"types": [
+			"chrome",
+			"vite-plugin-css-injected-by-js/client",
+			"vite-plugin-svgr/client",
+			"vite/client"
+		],
 
 		/* Type Checking */
 		"noUncheckedIndexedAccess": true
