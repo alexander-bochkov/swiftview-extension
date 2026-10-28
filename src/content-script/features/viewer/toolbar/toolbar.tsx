@@ -10,8 +10,13 @@ type ToolbarProps = {
 	scale: number;
 };
 
+const formatter = new Intl.NumberFormat(chrome.i18n.getUILanguage(), {
+	maximumFractionDigits: 0,
+	style: "percent",
+});
+
 const formatZoom = (scale: number): string =>
-	`${Math.max(1, Math.round(scale * 100))}%`;
+	formatter.format(Math.max(0.01, scale));
 
 export const Toolbar = ({
 	hideTools,
