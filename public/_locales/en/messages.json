@@ -1,0 +1,14 @@
+{
+	"extDescription": {
+		"description": "Extension description in the Chrome Web Store and on the extensions page. At most 132 characters.",
+		"message": "Opens an image in a viewer on the same page when you press and hold it. Supports zoom, pan, rotate and flip."
+	},
+	"extName": {
+		"description": "Extension name in the Chrome Web Store and on the extensions page. Keep \"SwiftView\" untranslated.",
+		"message": "SwiftView - Image Viewer"
+	},
+	"imageError": {
+		"description": "Shown in the viewer in place of an image that failed to load.",
+		"message": "Couldn't open the image"
+	}
+}
