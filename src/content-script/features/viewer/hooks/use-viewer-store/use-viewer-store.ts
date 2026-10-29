@@ -7,11 +7,10 @@ const INITIAL_STATE: ViewerState = {
 	containerSize: null,
 	flip: { x: 1, y: 1 },
 	hasImageError: false,
-	isRotating: false,
 	naturalSize: null,
 	offset: ZERO_POINT,
-	pendingRotation: null,
 	rotation: 0,
+	rotationStep: null,
 	scale: NATURAL_SIZE_SCALE,
 };
 

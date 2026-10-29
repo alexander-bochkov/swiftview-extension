@@ -176,7 +176,7 @@ describe("Viewer", () => {
 		it("returns a zoomed image to the fitted size before it rotates", async () => {
 			const { promise, resolve } = Promise.withResolvers<Animation>();
 			getImageAnimations.mockReturnValueOnce([
-				{ finished: promise } as Animation,
+				{ finished: promise, transitionProperty: "transform" } as CSSTransition,
 			]);
 			const { image } = renderReadyViewer();
 
@@ -197,7 +197,7 @@ describe("Viewer", () => {
 		it("ignores the tools until the turn ends", async () => {
 			const { promise, resolve } = Promise.withResolvers<Animation>();
 			getImageAnimations.mockReturnValueOnce([
-				{ finished: promise } as Animation,
+				{ finished: promise, transitionProperty: "transform" } as CSSTransition,
 			]);
 			const { image } = renderReadyViewer();
 

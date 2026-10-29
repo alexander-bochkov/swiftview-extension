@@ -24,15 +24,20 @@ export type ViewerAction =
 	| { type: "TOGGLE_ZOOM"; payload: Point }
 	| { type: "ZOOM"; payload: ZoomPayload };
 
+// A rotation first returns a zoomed or moved image to the fitted size, then
+// turns it.
+export type RotationStep =
+	| Readonly<{ direction: RotateDirection; phase: "fitting" }>
+	| Readonly<{ phase: "turning" }>;
+
 export type ViewerState = Readonly<{
 	containerSize: Nullable<Size>;
 	flip: Readonly<{ x: 1 | -1; y: 1 | -1 }>;
 	hasImageError: boolean;
-	isRotating: boolean;
 	naturalSize: Nullable<Size>;
 	offset: Point;
-	pendingRotation: Nullable<RotateDirection>;
 	rotation: number;
+	rotationStep: Nullable<RotationStep>;
 	scale: number;
 }>;
 

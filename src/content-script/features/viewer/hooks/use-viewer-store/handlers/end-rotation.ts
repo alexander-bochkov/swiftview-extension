@@ -1,4 +1,6 @@
 import type { ViewerState } from "../types";
 
 export const endRotation = (state: ViewerState): ViewerState =>
-	state.isRotating ? { ...state, isRotating: false } : state;
+	state.rotationStep?.phase === "turning"
+		? { ...state, rotationStep: null }
+		: state;

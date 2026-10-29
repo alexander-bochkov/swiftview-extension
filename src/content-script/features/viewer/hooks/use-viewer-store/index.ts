@@ -1,3 +1,3 @@
 export * from "./selectors";
-export type { ViewerStore } from "./types";
+export type { RotationStep, ViewerStore } from "./types";
 export * from "./use-viewer-store";

@@ -24,7 +24,7 @@ const BLOCKED_BY_ROTATION: readonly ViewerAction["type"][] = [
 ];
 
 export const reducer: Reducer<ViewerState, ViewerAction> = (state, action) => {
-	if (state.isRotating && BLOCKED_BY_ROTATION.includes(action.type)) {
+	if (state.rotationStep && BLOCKED_BY_ROTATION.includes(action.type)) {
 		return state;
 	}
 
