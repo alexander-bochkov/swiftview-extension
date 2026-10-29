@@ -34,6 +34,7 @@ describe("Viewer", () => {
 		this.open = false;
 	});
 	const getAnimations = vi.fn((): Animation[] => []);
+	const getImageAnimations = vi.fn((): Animation[] => []);
 
 	beforeEach(() => {
 		// jsdom doesn't implement ResizeObserver, so capture the callback and
@@ -59,6 +60,7 @@ describe("Viewer", () => {
 		};
 		HTMLDialogElement.prototype.close = close;
 		HTMLDialogElement.prototype.getAnimations = getAnimations;
+		HTMLImageElement.prototype.getAnimations = getImageAnimations;
 	});
 
 	// Vitest globals are off, so Testing Library can't register this itself.
@@ -169,6 +171,45 @@ describe("Viewer", () => {
 			expect(image.style.transform).toBe(
 				"translate(50px, -50px) scale(0.25, 0.25) rotate(90deg)",
 			);
+		});
+
+		it("returns a zoomed image to the fitted size before it rotates", async () => {
+			const { promise, resolve } = Promise.withResolvers<Animation>();
+			getImageAnimations.mockReturnValueOnce([
+				{ finished: promise } as Animation,
+			]);
+			const { image } = renderReadyViewer();
+
+			await userEvent.setup().click(image);
+			await clickButton("rotate-right");
+
+			expect(image.style.transform).toBe(
+				"translate(50px, -50px) scale(0.5, 0.5) rotate(0deg)",
+			);
+
+			await act(async () => resolve({} as Animation));
+
+			expect(image.style.transform).toBe(
+				"translate(50px, -50px) scale(0.25, 0.25) rotate(90deg)",
+			);
+		});
+
+		it("ignores the tools until the turn ends", async () => {
+			const { promise, resolve } = Promise.withResolvers<Animation>();
+			getImageAnimations.mockReturnValueOnce([
+				{ finished: promise } as Animation,
+			]);
+			const { image } = renderReadyViewer();
+
+			await clickButton("rotate-right");
+			await clickButton("flip-horizontal");
+
+			expect(image.style.transform).toContain("scale(0.25, 0.25)");
+
+			await act(async () => resolve({} as Animation));
+			await clickButton("flip-horizontal");
+
+			expect(image.style.transform).toContain("scale(-0.25, 0.25)");
 		});
 
 		it("rotates the image left", async () => {

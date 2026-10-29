@@ -1,3 +1,5 @@
+export * from "./apply-pending-rotation";
+export * from "./end-rotation";
 export * from "./fail";
 export * from "./flip";
 export * from "./load";
