@@ -4,7 +4,7 @@ import { version } from "./package.json";
 export default defineManifest({
 	content_scripts: [
 		{
-			js: ["src/content-script/main.ts"],
+			js: ["src/content/main.ts"],
 			matches: ["<all_urls>"],
 			run_at: "document_start",
 		},
