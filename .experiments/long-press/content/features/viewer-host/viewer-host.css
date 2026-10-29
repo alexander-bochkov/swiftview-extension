@@ -1,0 +1,6 @@
+/* The shadow root keeps the selectors of the page out, but not the properties
+	the host inherits from <html>, such as line-height or letter-spacing. */
+:host {
+	all: initial;
+	font-family: "SwiftView Inter", sans-serif;
+}
