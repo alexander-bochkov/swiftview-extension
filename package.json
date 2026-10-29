@@ -7,7 +7,7 @@
 	"scripts": {
 		"build": "tsc && vite build",
 		"prepare": "husky",
-		"start": "vite build --watch",
+		"start": "vite",
 		"storybook": "storybook dev",
 		"test": "vitest"
 	},
@@ -19,6 +19,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.6.4",
 		"@commitlint/cli": "21.2.4",
+		"@crxjs/vite-plugin": "3.0.0",
 		"@storybook/react-vite": "10.6.5",
 		"@testing-library/dom": "10.4.2",
 		"@testing-library/react": "16.3.3",
