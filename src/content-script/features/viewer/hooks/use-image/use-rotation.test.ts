@@ -1,26 +1,22 @@
+import type { Nullable } from "@shared/types";
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ViewerStore } from "../use-viewer-store";
+import type { RotationStep, ViewerStore } from "../use-viewer-store";
 import { useRotation } from "./use-rotation";
 
-// A transition whose end the test controls.
-const createTransition = () => {
+// A transition of the property whose end the test controls.
+const createTransition = (transitionProperty = "transform") => {
 	const { promise, reject, resolve } = Promise.withResolvers<Animation>();
 
 	return {
 		cancel: () => reject(new DOMException("", "AbortError")),
 		end: () => resolve({} as Animation),
-		transition: { finished: promise } as Animation,
+		transition: { finished: promise, transitionProperty } as CSSTransition,
 	};
 };
 
-type RotationState = Pick<
-	ViewerStore["state"],
-	"isRotating" | "pendingRotation"
->;
-
-const RETURNING: RotationState = { isRotating: true, pendingRotation: "right" };
-const TURNING: RotationState = { isRotating: true, pendingRotation: null };
+const FITTING: RotationStep = { direction: "right", phase: "fitting" };
+const TURNING: RotationStep = { phase: "turning" };
 
 const APPLY = { type: "APPLY_PENDING_ROTATION" };
 const END = { type: "END_ROTATION" };
@@ -42,8 +38,11 @@ describe("useRotation", () => {
 		vi.resetAllMocks();
 	});
 
-	const renderRotation = (state: RotationState = RETURNING) => {
-		const store = { dispatch, state } as unknown as ViewerStore;
+	const renderRotation = (rotationStep: Nullable<RotationStep> = FITTING) => {
+		const store = {
+			dispatch,
+			state: { rotationStep },
+		} as unknown as ViewerStore;
 		const imageRef = { current: image };
 
 		return renderHook(
@@ -52,19 +51,28 @@ describe("useRotation", () => {
 		);
 	};
 
-	it("applies the pending turn once the transitions of the return end", async () => {
-		const fade = createTransition();
-		const move = createTransition();
-		getAnimations.mockReturnValueOnce([fade.transition, move.transition]);
+	it("applies the pending turn once the transition of the return ends", async () => {
+		const fit = createTransition();
+		getAnimations.mockReturnValueOnce([fit.transition]);
 		renderRotation();
 
-		await act(async () => fade.end());
+		await act(async () => {});
 
 		expect(dispatch).not.toHaveBeenCalled();
 
-		await act(async () => move.end());
+		await act(async () => fit.end());
 
 		expect(dispatch).toHaveBeenCalledExactlyOnceWith(APPLY);
+	});
+
+	it("doesn't wait for the other animations", async () => {
+		// Neither ever ends.
+		const fade = createTransition("opacity");
+		const shimmer = { finished: new Promise(() => {}) } as Animation;
+		getAnimations.mockReturnValueOnce([fade.transition, shimmer]);
+		renderRotation();
+
+		await vi.waitFor(() => expect(dispatch).toHaveBeenCalledWith(APPLY));
 	});
 
 	it("ends the rotation once the transitions of the turn end", async () => {
@@ -124,7 +132,7 @@ describe("useRotation", () => {
 	});
 
 	it("does nothing without a rotation", async () => {
-		renderRotation({ isRotating: false, pendingRotation: null });
+		renderRotation(null);
 
 		await act(async () => {});
 
