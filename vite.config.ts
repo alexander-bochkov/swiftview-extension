@@ -1,21 +1,15 @@
+import { crx } from "@crxjs/vite-plugin";
 import react from "@vitejs/plugin-react";
 import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
 import svgr from "vite-plugin-svgr";
 import { defineConfig } from "vitest/config";
+import manifest from "./manifest.config.js";
 
 export default defineConfig({
 	build: {
-		rolldownOptions: {
-			input: {
-				"content-script": "src/content-script/main.ts",
-			},
-			output: {
-				entryFileNames: "[name].js",
-			},
-		},
 		target: "chrome134",
 	},
-	plugins: [cssInjectedByJsPlugin(), react(), svgr()],
+	plugins: [crx({ manifest }), cssInjectedByJsPlugin(), react(), svgr()],
 	resolve: {
 		tsconfigPaths: true,
 	},
