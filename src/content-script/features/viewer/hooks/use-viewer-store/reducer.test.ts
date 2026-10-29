@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { reducer } from "./reducer";
-import type { ViewerState } from "./types";
+import type { ViewerAction, ViewerState } from "./types";
 
 // An image of 400x200 in a container of 500x100 fits at 50%, limited by its
 // height. At 100% it's larger on the y axis only and moves up to 50 px.
@@ -8,8 +8,10 @@ const createState = (state: Partial<ViewerState> = {}): ViewerState => ({
 	containerSize: { height: 100, width: 500 },
 	flip: { x: 1, y: 1 },
 	hasImageError: false,
+	isRotating: false,
 	naturalSize: { height: 200, width: 400 },
 	offset: { x: 0, y: 0 },
+	pendingRotation: null,
 	rotation: 0,
 	scale: 0.5,
 	...state,
@@ -30,6 +32,76 @@ const EMPTY_STATE = createState({
 const SMALL_IMAGE = { naturalSize: { height: 50, width: 100 }, scale: 1 };
 
 describe("reducer", () => {
+	describe("APPLY_PENDING_ROTATION", () => {
+		it("turns the image by the pending rotation", () => {
+			const state = reducer(
+				createState({ isRotating: true, pendingRotation: "left" }),
+				{ type: "APPLY_PENDING_ROTATION" },
+			);
+
+			expect(state).toMatchObject({
+				isRotating: true,
+				pendingRotation: null,
+				rotation: -90,
+				scale: 0.25,
+			});
+		});
+
+		it("does nothing without a pending rotation", () => {
+			const fitted = createState();
+
+			expect(reducer(fitted, { type: "APPLY_PENDING_ROTATION" })).toBe(fitted);
+		});
+	});
+
+	describe("END_ROTATION", () => {
+		it("ends the rotation", () => {
+			const state = reducer(createState({ isRotating: true, rotation: 90 }), {
+				type: "END_ROTATION",
+			});
+
+			expect(state).toMatchObject({ isRotating: false, rotation: 90 });
+		});
+
+		it("does nothing without a rotation", () => {
+			const fitted = createState();
+
+			expect(reducer(fitted, { type: "END_ROTATION" })).toBe(fitted);
+		});
+	});
+
+	describe("during a rotation", () => {
+		it.each<[string, Partial<ViewerState>]>([
+			["the return to the fitted size", { pendingRotation: "right" }],
+			["the turn", { rotation: 90, scale: 0.25 }],
+		])("ignores the image actions during %s", (_, step) => {
+			const rotating = createState({ isRotating: true, ...step });
+
+			for (const action of [
+				{ payload: "horizontal", type: "FLIP" },
+				{ payload: { x: 0, y: 10 }, type: "MOVE_BY" },
+				{ payload: "left", type: "ROTATE" },
+				{ payload: { x: 0, y: 0 }, type: "TOGGLE_ZOOM" },
+				{ payload: { factor: 2, point: { x: 0, y: 0 } }, type: "ZOOM" },
+			] satisfies ViewerAction[]) {
+				expect(reducer(rotating, action)).toBe(rotating);
+			}
+		});
+
+		it("fits the image to a new container size and keeps the turn", () => {
+			const state = reducer(
+				createState({ isRotating: true, pendingRotation: "right" }),
+				{ payload: { height: 200, width: 500 }, type: "RESIZE" },
+			);
+
+			expect(state).toMatchObject({
+				isRotating: true,
+				pendingRotation: "right",
+				scale: 1,
+			});
+		});
+	});
+
 	describe("FLIP", () => {
 		it("mirrors the image horizontally", () => {
 			const state = reducer(createState(), {
@@ -296,12 +368,31 @@ describe("reducer", () => {
 
 		it("fits the image by its rotated size", () => {
 			// Turned a quarter, 400x200 is 200x400 on screen: 100 / 400.
+			const state = reducer(createState(), {
+				payload: "right",
+				type: "ROTATE",
+			});
+
+			expect(state).toMatchObject({
+				isRotating: true,
+				pendingRotation: null,
+				scale: 0.25,
+			});
+		});
+
+		it("returns a zoomed image to the fitted size before the turn", () => {
 			const state = reducer(
 				createState({ offset: { x: 0, y: -30 }, scale: 1 }),
 				{ payload: "right", type: "ROTATE" },
 			);
 
-			expect(state).toMatchObject({ offset: { x: 0, y: 0 }, scale: 0.25 });
+			expect(state).toMatchObject({
+				isRotating: true,
+				offset: { x: 0, y: 0 },
+				pendingRotation: "right",
+				rotation: 0,
+				scale: 0.5,
+			});
 		});
 
 		it("keeps the natural size", () => {

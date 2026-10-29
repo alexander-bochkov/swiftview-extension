@@ -13,8 +13,10 @@ describe("useViewerStore", () => {
 			containerSize: null,
 			flip: { x: 1, y: 1 },
 			hasImageError: false,
+			isRotating: false,
 			naturalSize: null,
 			offset: { x: 0, y: 0 },
+			pendingRotation: null,
 			rotation: 0,
 			scale: 1,
 		});

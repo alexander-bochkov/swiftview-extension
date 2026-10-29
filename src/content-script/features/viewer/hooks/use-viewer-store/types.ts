@@ -13,6 +13,8 @@ export type ZoomPayload = Readonly<{
 }>;
 
 export type ViewerAction =
+	| { type: "APPLY_PENDING_ROTATION" }
+	| { type: "END_ROTATION" }
 	| { type: "FAIL" }
 	| { type: "FLIP"; payload: FlipDirection }
 	| { type: "LOAD"; payload: Size }
@@ -26,8 +28,10 @@ export type ViewerState = Readonly<{
 	containerSize: Nullable<Size>;
 	flip: Readonly<{ x: 1 | -1; y: 1 | -1 }>;
 	hasImageError: boolean;
+	isRotating: boolean;
 	naturalSize: Nullable<Size>;
 	offset: Point;
+	pendingRotation: Nullable<RotateDirection>;
 	rotation: number;
 	scale: number;
 }>;

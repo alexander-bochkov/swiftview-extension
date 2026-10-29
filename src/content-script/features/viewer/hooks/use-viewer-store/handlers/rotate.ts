@@ -11,6 +11,23 @@ export const rotate = (
 ): ViewerState => {
 	if (!state.containerSize || !state.naturalSize) return state;
 
+	const fitScale = getFitScale(
+		getRotatedSize(state.naturalSize, state.rotation),
+		state.containerSize,
+	);
+
+	// A zoomed or moved image returns to the fitted size first and turns when
+	// that transition ends.
+	if (state.scale !== fitScale || state.offset.x || state.offset.y) {
+		return {
+			...state,
+			isRotating: true,
+			offset: ZERO_POINT,
+			pendingRotation: direction,
+			scale: fitScale,
+		};
+	}
+
 	const step = direction === "right" ? QUARTER_TURN : -QUARTER_TURN;
 
 	// A mirrored image turns the other way on screen, so the step is inverted
@@ -21,7 +38,7 @@ export const rotate = (
 
 	return {
 		...state,
-		offset: ZERO_POINT,
+		isRotating: true,
 		rotation,
 		scale: getFitScale(
 			getRotatedSize(state.naturalSize, rotation),
