@@ -9,13 +9,21 @@ const MENU_ITEM_ID = {
 chrome.runtime.onInstalled.addListener(async () => {
 	await chrome.contextMenus.removeAll();
 
+	// Chrome doesn't run extensions on its own pages, such as settings or the
+	// new tab page, so the item is shown only where the content script runs.
+	// It still does nothing on web pages where Chrome blocks extensions too:
+	// the Chrome Web Store and sites blocked by an enterprise policy.
+	const documentUrlPatterns = ["http://*/*", "https://*/*"];
+
+	// The content script runs on local files only if the user allows access
+	// to file URLs on the extensions page.
+	if (await chrome.extension.isAllowedFileSchemeAccess()) {
+		documentUrlPatterns.push("file:///*");
+	}
+
 	chrome.contextMenus.create({
 		contexts: ["image"],
-		// Chrome doesn't run extensions on its own pages, such as settings or the
-		// new tab page, so the item is shown only where the content script runs.
-		// It still does nothing on web pages where Chrome blocks extensions too:
-		// the Chrome Web Store and sites blocked by an enterprise policy.
-		documentUrlPatterns: ["file:///*", "http://*/*", "https://*/*"],
+		documentUrlPatterns,
 		id: MENU_ITEM_ID.OPEN_IMAGE,
 		title: t("context_menu@open_image"),
 	});
