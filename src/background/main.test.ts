@@ -13,6 +13,7 @@ const PHOTO_URL = "https://example.com/photo.png";
 const TAB_ID = 7;
 
 const create = vi.fn();
+const isAllowedFileSchemeAccess = vi.fn(() => Promise.resolve(false));
 const removeAll = vi.fn(() => Promise.resolve());
 const sendMessage = vi.fn(() => Promise.resolve());
 
@@ -35,6 +36,7 @@ beforeEach(async () => {
 			},
 			removeAll,
 		},
+		extension: { isAllowedFileSchemeAccess },
 		runtime: {
 			onInstalled: {
 				addListener: (listener: InstalledListener) => {
@@ -54,15 +56,27 @@ afterEach(() => {
 });
 
 describe("on install", () => {
-	it("creates the menu item for images on web and file pages", async () => {
+	it("creates the menu item for images on web pages", async () => {
 		await onInstalled();
 
 		expect(create).toHaveBeenCalledExactlyOnceWith({
 			contexts: ["image"],
-			documentUrlPatterns: ["file:///*", "http://*/*", "https://*/*"],
+			documentUrlPatterns: ["http://*/*", "https://*/*"],
 			id: OPEN_IMAGE_ID,
 			title: "Open image with SwiftView",
 		});
+	});
+
+	it("adds local files if the user allowed access to file urls", async () => {
+		isAllowedFileSchemeAccess.mockResolvedValueOnce(true);
+
+		await onInstalled();
+
+		expect(create).toHaveBeenCalledWith(
+			expect.objectContaining({
+				documentUrlPatterns: ["http://*/*", "https://*/*", "file:///*"],
+			}),
+		);
 	});
 
 	it("removes the existing menu items first", async () => {
