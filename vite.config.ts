@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
 import svgr from "vite-plugin-svgr";
 import { configDefaults, defineConfig } from "vitest/config";
-import manifest from "./manifest.config.js";
+import manifest from "./manifest.config.ts";
 
 export default defineConfig({
 	build: {
