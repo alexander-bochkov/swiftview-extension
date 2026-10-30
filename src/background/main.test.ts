@@ -54,11 +54,12 @@ afterEach(() => {
 });
 
 describe("on install", () => {
-	it("creates the menu item for images", async () => {
+	it("creates the menu item for images on web and file pages", async () => {
 		await onInstalled();
 
 		expect(create).toHaveBeenCalledExactlyOnceWith({
 			contexts: ["image"],
+			documentUrlPatterns: ["file:///*", "http://*/*", "https://*/*"],
 			id: OPEN_IMAGE_ID,
 			title: "Open image with SwiftView",
 		});
