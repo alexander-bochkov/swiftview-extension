@@ -33,6 +33,13 @@ chrome.contextMenus.onClicked.addListener(({ menuItemId, srcUrl }, tab) => {
 			{ frameId: 0 },
 		)
 		.catch(() => {
-			// No content script in the tab, e.g. it was open before the install.
+			// No content script in the tab. Chrome adds it only to pages loaded
+			// after the extension was installed, updated or enabled, so the item
+			// does nothing in pages that were open before, until they're reloaded.
+			// To fix it, add the "activeTab" and "scripting" permissions, inject
+			// the content script here with chrome.scripting.executeScript (its
+			// file is in chrome.runtime.getManifest().content_scripts) and send the
+			// message again. The injected script loads its code asynchronously, so
+			// the message has to be retried until its listener is ready.
 		});
 });
