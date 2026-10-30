@@ -10,7 +10,7 @@ export default defineManifest({
 		},
 	],
 	default_locale: "en",
-	description: "__MSG_extDescription__",
+	description: "__MSG_extension@description__",
 	homepage_url: "https://github.com/alexander-bochkov/swiftview-extension",
 	icons: {
 		"16": "icons/icon-16.png",
@@ -20,7 +20,7 @@ export default defineManifest({
 	},
 	manifest_version: 3,
 	minimum_chrome_version: "134",
-	name: "__MSG_extName__",
+	name: "__MSG_extension@name__",
 	short_name: "SwiftView",
 	version,
 	web_accessible_resources: [
