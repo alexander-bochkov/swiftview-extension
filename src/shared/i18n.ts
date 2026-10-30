@@ -4,4 +4,5 @@ export const t = (
 	messageName: keyof typeof messages,
 	substitutions?: string | (string | number)[],
 	options?: chrome.i18n.GetMessageOptions,
-) => chrome.i18n.getMessage(messageName, substitutions, options);
+): string =>
+	chrome.i18n.getMessage(messageName, substitutions, options) || messageName;
