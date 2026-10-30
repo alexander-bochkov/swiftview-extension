@@ -1,10 +1,14 @@
 {
+	"context_menu@open_image": {
+		"description": "Context menu item on an image. Opens the image with the viewer. Keep \"SwiftView\" untranslated.",
+		"message": "Open image with SwiftView"
+	},
 	"extension@description": {
 		"description": "Extension description in the Chrome Web Store and on the extensions page. At most 132 characters.",
-		"message": "Opens an image in a viewer on the same page when you press and hold it. Supports zoom, pan, rotate and flip."
+		"message": "Opens an image in a viewer on the same page from its context menu. Supports zoom, pan, rotate and flip."
 	},
 	"extension@name": {
-		"description": "Extension name in the Chrome Web Store and on the extensions page.",
+		"description": "Extension name in the Chrome Web Store and on the extensions page. Keep \"SwiftView\" untranslated.",
 		"message": "SwiftView - Image Viewer"
 	},
 	"viewer@image_error": {

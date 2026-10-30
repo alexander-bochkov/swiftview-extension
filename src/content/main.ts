@@ -1,32 +1,11 @@
-import {
-	AnchorElementUrlExtractor,
-	Detector,
-	EventBlocker,
-	ImageElementUrlExtractor,
-	LongPressRecognizer,
-	PageLock,
-	ScrollbarHider,
-	ViewerHost,
-} from "./features";
+import { MESSAGE_TYPE } from "@shared/constants";
+import type { OpenImageMessage } from "@shared/types";
+import { PageLock, ScrollbarHider, ViewerHost } from "./features";
 
-const HOLD_DELAY = 300;
-
-const extractors = [
-	new AnchorElementUrlExtractor(),
-	new ImageElementUrlExtractor(),
-];
-
-const blocker = new EventBlocker();
-const detector = new Detector(extractors);
 const viewerHost = new ViewerHost(new PageLock(new ScrollbarHider()));
 
-const recognizer = new LongPressRecognizer(blocker, {
-	delay: HOLD_DELAY,
-	onLongPress: (point) => {
-		const url = detector.detectUrl(point);
-		if (url) viewerHost.open(url);
-	},
-	shouldIgnore: () => viewerHost.isOpen,
-});
+chrome.runtime.onMessage.addListener(({ type, url }: OpenImageMessage) => {
+	if (type !== MESSAGE_TYPE.OPEN_IMAGE || viewerHost.isOpen) return;
 
-recognizer.enable();
+	viewerHost.open(url);
+});

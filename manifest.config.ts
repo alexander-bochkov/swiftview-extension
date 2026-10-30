@@ -2,11 +2,14 @@ import { defineManifest } from "@crxjs/vite-plugin";
 import { version } from "./package.json";
 
 export default defineManifest({
+	background: {
+		service_worker: "src/background/main.ts",
+		type: "module",
+	},
 	content_scripts: [
 		{
 			js: ["src/content/main.ts"],
 			matches: ["<all_urls>"],
-			run_at: "document_start",
 		},
 	],
 	default_locale: "en",
@@ -21,6 +24,7 @@ export default defineManifest({
 	manifest_version: 3,
 	minimum_chrome_version: "134",
 	name: "__MSG_extension@name__",
+	permissions: ["contextMenus"],
 	short_name: "SwiftView",
 	version,
 	web_accessible_resources: [
