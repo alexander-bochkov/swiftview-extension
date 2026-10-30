@@ -11,6 +11,11 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 	chrome.contextMenus.create({
 		contexts: ["image"],
+		// Chrome doesn't run extensions on its own pages, such as settings or the
+		// new tab page, so the item is shown only where the content script runs.
+		// It still does nothing on web pages where Chrome blocks extensions too:
+		// the Chrome Web Store and sites blocked by an enterprise policy.
+		documentUrlPatterns: ["file:///*", "http://*/*", "https://*/*"],
 		id: MENU_ITEM_ID.OPEN_IMAGE,
 		title: t("context_menu@open_image"),
 	});
