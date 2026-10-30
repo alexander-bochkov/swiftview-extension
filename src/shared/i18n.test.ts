@@ -10,6 +10,12 @@ describe("t", () => {
 		expect(t("imageError")).toBe("Couldn't open the image");
 	});
 
+	it("returns the message name if the message is missing", () => {
+		vi.spyOn(chrome.i18n, "getMessage").mockReturnValue("");
+
+		expect(t("imageError")).toBe("imageError");
+	});
+
 	it("passes the arguments to chrome.i18n.getMessage", () => {
 		const getMessage = vi.spyOn(chrome.i18n, "getMessage");
 
