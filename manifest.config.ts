@@ -1,5 +1,5 @@
 import { defineManifest } from "@crxjs/vite-plugin";
-import { version } from "./package.json";
+import pkg from "./package.json" with { type: "json" };
 
 export default defineManifest({
 	background: {
@@ -26,7 +26,7 @@ export default defineManifest({
 	name: "__MSG_extension@name__",
 	permissions: ["contextMenus"],
 	short_name: "SwiftView",
-	version,
+	version: pkg.version,
 	web_accessible_resources: [
 		{
 			matches: ["<all_urls>"],
