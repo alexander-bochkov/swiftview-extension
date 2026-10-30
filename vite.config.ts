@@ -9,7 +9,15 @@ export default defineConfig({
 	build: {
 		target: "chrome134",
 	},
-	plugins: [crx({ manifest }), cssInjectedByJsPlugin(), react(), svgr()],
+	plugins: [
+		crx({ manifest }),
+		cssInjectedByJsPlugin({
+			jsAssetsFilterFunction: ({ facadeModuleId }) =>
+				facadeModuleId?.endsWith("/src/content/main.ts") ?? false,
+		}),
+		react(),
+		svgr(),
+	],
 	resolve: {
 		tsconfigPaths: true,
 	},
