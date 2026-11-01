@@ -9,12 +9,15 @@ export default defineManifest({
 	content_scripts: [
 		{
 			js: ["src/content/main.ts"],
+			match_about_blank: true,
 			matches: ["<all_urls>"],
+			run_at: "document_start",
 		},
 	],
 	default_locale: "en",
 	description: "__MSG_extension@description__",
 	homepage_url: "https://github.com/alexander-bochkov/swiftview-extension",
+	host_permissions: ["<all_urls>"],
 	icons: {
 		"16": "icons/icon-16.png",
 		"32": "icons/icon-32.png",
@@ -24,7 +27,7 @@ export default defineManifest({
 	manifest_version: 3,
 	minimum_chrome_version: "134",
 	name: "__MSG_extension@name__",
-	permissions: ["contextMenus"],
+	permissions: ["contextMenus", "scripting"],
 	short_name: "SwiftView",
 	version: pkg.version,
 	web_accessible_resources: [
