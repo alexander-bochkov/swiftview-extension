@@ -3,7 +3,7 @@ import { t } from "@shared/i18n";
 export const offerReload = async (tabId: number): Promise<void> => {
 	try {
 		await chrome.scripting.executeScript({
-			args: [t("notice@reload_page")],
+			args: [t("confirm_dialog@reload_page")],
 			func: (message: string) => {
 				if (confirm(message)) location.reload();
 			},

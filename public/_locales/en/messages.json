@@ -1,4 +1,8 @@
 {
+	"confirm_dialog@reload_page": {
+		"description": "Confirm dialog shown when the page was opened before the extension was installed, updated or re-enabled, so it has to be reloaded before an image can be opened. Keep \"SwiftView\" untranslated.",
+		"message": "SwiftView can't open images on this page until it's reloaded. Reload now?"
+	},
 	"context_menu@open_image": {
 		"description": "Context menu item on an image. Opens the image with the viewer. Keep \"SwiftView\" untranslated.",
 		"message": "Open image with SwiftView"
@@ -10,10 +14,6 @@
 	"extension@name": {
 		"description": "Extension name in the Chrome Web Store and on the extensions page. Keep \"SwiftView\" untranslated.",
 		"message": "SwiftView - Image Viewer"
-	},
-	"notice@reload_page": {
-		"description": "Confirm dialog shown when the page was opened before the extension was installed, updated or re-enabled, so it has to be reloaded before an image can be opened. Keep \"SwiftView\" untranslated.",
-		"message": "SwiftView can't open images on this page until it's reloaded. Reload now?"
 	},
 	"viewer@image_error": {
 		"description": "Shown in the viewer in place of an image that failed to load.",

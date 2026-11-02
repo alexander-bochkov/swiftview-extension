@@ -2,8 +2,8 @@ import { MESSAGE_TYPE } from "@shared/constants";
 import { t } from "@shared/i18n";
 import type { OpenImageMessage } from "@shared/types";
 import { MENU_ITEM_ID } from "./constants";
-import { refreshActiveTab } from "./menu-visibility";
-import { offerReload } from "./reload-notice";
+import { offerReload } from "./offer-reload";
+import { syncMenuWithActiveTab } from "./sync-menu-with-active-tab";
 
 chrome.runtime.onInstalled.addListener(async () => {
 	await chrome.contextMenus.removeAll();
@@ -15,7 +15,7 @@ chrome.runtime.onInstalled.addListener(async () => {
 			title: t("context_menu@open_image"),
 			visible: false,
 		},
-		refreshActiveTab,
+		syncMenuWithActiveTab,
 	);
 });
 
@@ -39,12 +39,12 @@ chrome.contextMenus.onClicked.addListener(
 	},
 );
 
-chrome.tabs.onActivated.addListener(() => void refreshActiveTab());
+chrome.tabs.onActivated.addListener(syncMenuWithActiveTab);
 
 chrome.tabs.onUpdated.addListener((_, { status }, { active }) => {
-	if (status && active) void refreshActiveTab();
+	if (status && active) void syncMenuWithActiveTab();
 });
 
 chrome.windows.onFocusChanged.addListener((windowId) => {
-	if (windowId !== chrome.windows.WINDOW_ID_NONE) void refreshActiveTab();
+	if (windowId !== chrome.windows.WINDOW_ID_NONE) void syncMenuWithActiveTab();
 });
