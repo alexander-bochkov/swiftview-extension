@@ -20,15 +20,15 @@ type UpdatedListener = (
 
 const mocks = vi.hoisted(() => ({
 	offerReload: vi.fn(() => Promise.resolve()),
-	refreshActiveTab: vi.fn(() => Promise.resolve()),
+	syncMenuWithActiveTab: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock("./menu-visibility", () => ({
-	refreshActiveTab: mocks.refreshActiveTab,
-}));
-
-vi.mock("./reload-notice", () => ({
+vi.mock("./offer-reload", () => ({
 	offerReload: mocks.offerReload,
+}));
+
+vi.mock("./sync-menu-with-active-tab", () => ({
+	syncMenuWithActiveTab: mocks.syncMenuWithActiveTab,
 }));
 
 const OPEN_IMAGE_ID = "open-image";
@@ -116,14 +116,14 @@ describe("on install", () => {
 		);
 	});
 
-	it("refreshes the menu item once it's created", async () => {
+	it("syncs the menu item once it's created", async () => {
 		await onInstalled();
 
-		expect(mocks.refreshActiveTab).not.toHaveBeenCalled();
+		expect(mocks.syncMenuWithActiveTab).not.toHaveBeenCalled();
 
 		create.mock.lastCall?.[1]();
 
-		expect(mocks.refreshActiveTab).toHaveBeenCalledOnce();
+		expect(mocks.syncMenuWithActiveTab).toHaveBeenCalledOnce();
 	});
 
 	it("removes the existing menu items first", async () => {
@@ -178,40 +178,40 @@ describe("on menu item click", () => {
 	});
 });
 
-describe("menu item refresh", () => {
+describe("menu item sync", () => {
 	it("happens when another tab is activated", () => {
 		onActivated();
 
-		expect(mocks.refreshActiveTab).toHaveBeenCalledOnce();
+		expect(mocks.syncMenuWithActiveTab).toHaveBeenCalledOnce();
 	});
 
 	it("happens when the loading status of the active tab changes", () => {
 		onUpdated(TAB_ID, { status: "complete" }, { active: true });
 
-		expect(mocks.refreshActiveTab).toHaveBeenCalledOnce();
+		expect(mocks.syncMenuWithActiveTab).toHaveBeenCalledOnce();
 	});
 
 	it("skips other updates of the active tab", () => {
 		onUpdated(TAB_ID, {}, { active: true });
 
-		expect(mocks.refreshActiveTab).not.toHaveBeenCalled();
+		expect(mocks.syncMenuWithActiveTab).not.toHaveBeenCalled();
 	});
 
 	it("skips updates of a background tab", () => {
 		onUpdated(TAB_ID, { status: "complete" }, { active: false });
 
-		expect(mocks.refreshActiveTab).not.toHaveBeenCalled();
+		expect(mocks.syncMenuWithActiveTab).not.toHaveBeenCalled();
 	});
 
 	it("happens when another window gets focus", () => {
 		onFocusChanged(WINDOW_ID);
 
-		expect(mocks.refreshActiveTab).toHaveBeenCalledOnce();
+		expect(mocks.syncMenuWithActiveTab).toHaveBeenCalledOnce();
 	});
 
 	it("skips the focus leaving Chrome", () => {
 		onFocusChanged(WINDOW_ID_NONE);
 
-		expect(mocks.refreshActiveTab).not.toHaveBeenCalled();
+		expect(mocks.syncMenuWithActiveTab).not.toHaveBeenCalled();
 	});
 });

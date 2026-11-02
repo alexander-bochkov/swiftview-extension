@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { offerReload } from "./reload-notice";
+import { offerReload } from "./offer-reload";
 
 type Injection = {
 	readonly args: [string];
