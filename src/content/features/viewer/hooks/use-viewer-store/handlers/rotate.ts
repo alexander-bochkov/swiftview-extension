@@ -21,8 +21,8 @@ export const rotate = (
 	if (state.scale !== fitScale || state.offset.x || state.offset.y) {
 		return {
 			...state,
+			blockingTransition: { direction, phase: "fitting" },
 			offset: ZERO_POINT,
-			rotationStep: { direction, phase: "fitting" },
 			scale: fitScale,
 		};
 	}
@@ -37,8 +37,8 @@ export const rotate = (
 
 	return {
 		...state,
+		blockingTransition: { phase: "settling" },
 		rotation,
-		rotationStep: { phase: "turning" },
 		scale: getFitScale(
 			getRotatedSize(state.naturalSize, rotation),
 			state.containerSize,

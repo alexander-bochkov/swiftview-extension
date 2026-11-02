@@ -212,6 +212,114 @@ describe("Viewer", () => {
 			expect(image.style.transform).toContain("scale(-0.25, 0.25)");
 		});
 
+		it("ignores the tools until a flip ends", async () => {
+			const { promise, resolve } = Promise.withResolvers<Animation>();
+			getImageAnimations.mockReturnValueOnce([
+				{ finished: promise, transitionProperty: "transform" } as CSSTransition,
+			]);
+			const { image } = renderReadyViewer();
+
+			await clickButton("flip-horizontal");
+			await clickButton("flip-vertical");
+			await clickButton("rotate-right");
+
+			expect(image.style.transform).toContain("scale(-0.5, 0.5) rotate(0deg)");
+
+			await act(async () => resolve({} as Animation));
+			await clickButton("flip-vertical");
+
+			expect(image.style.transform).toContain("scale(-0.5, -0.5)");
+		});
+
+		it("ignores the tools during both the return and the turn", async () => {
+			const fit = Promise.withResolvers<Animation>();
+			const turn = Promise.withResolvers<Animation>();
+			getImageAnimations
+				.mockReturnValueOnce([
+					{
+						finished: fit.promise,
+						transitionProperty: "transform",
+					} as CSSTransition,
+				])
+				.mockReturnValueOnce([
+					{
+						finished: turn.promise,
+						transitionProperty: "transform",
+					} as CSSTransition,
+				]);
+			const { image } = renderReadyViewer();
+
+			await userEvent.setup().click(image);
+			await clickButton("rotate-right");
+			await clickButton("flip-horizontal");
+
+			expect(image.style.transform).toContain("scale(0.5, 0.5) rotate(0deg)");
+
+			await act(async () => fit.resolve({} as Animation));
+			await clickButton("flip-horizontal");
+
+			expect(image.style.transform).toContain(
+				"scale(0.25, 0.25) rotate(90deg)",
+			);
+
+			await act(async () => turn.resolve({} as Animation));
+			await clickButton("flip-horizontal");
+
+			expect(image.style.transform).toContain("scale(-0.25, 0.25)");
+		});
+
+		it("ignores the tools until a resize during a flip ends", async () => {
+			const flip = Promise.withResolvers<Animation>();
+			const fit = Promise.withResolvers<Animation>();
+			getImageAnimations
+				.mockReturnValueOnce([
+					{
+						finished: flip.promise,
+						transitionProperty: "transform",
+					} as CSSTransition,
+				])
+				.mockReturnValueOnce([
+					{
+						finished: fit.promise,
+						transitionProperty: "transform",
+					} as CSSTransition,
+				]);
+			const { image } = renderReadyViewer();
+
+			await clickButton("flip-horizontal");
+			resize({ height: 200, width: 500 });
+			// The new transform replaces the transition of the flip.
+			await act(async () => flip.reject(new DOMException("", "AbortError")));
+			await clickButton("flip-vertical");
+
+			expect(image.style.transform).toContain("scale(-1, 1)");
+
+			await act(async () => fit.resolve({} as Animation));
+			await clickButton("flip-vertical");
+
+			expect(image.style.transform).toContain("scale(-1, -1)");
+		});
+
+		it("ignores the mouse until a flip ends", async () => {
+			const { promise, resolve } = Promise.withResolvers<Animation>();
+			getImageAnimations.mockReturnValueOnce([
+				{ finished: promise, transitionProperty: "transform" } as CSSTransition,
+			]);
+			const user = userEvent.setup();
+			const { image } = renderReadyViewer();
+
+			await clickButton("flip-horizontal");
+			await user.click(image);
+			fireEvent.wheel(image, { deltaY: -1000 });
+
+			expect(screen.getByText("50%")).toBeDefined();
+
+			await act(async () => resolve({} as Animation));
+			await user.click(image);
+
+			expect(screen.getByText("100%")).toBeDefined();
+		});
+
 		it("rotates the image left", async () => {
 			const { image } = renderReadyViewer();
 
@@ -242,6 +350,33 @@ describe("Viewer", () => {
 			expect(image.style.transform).toContain("scale(1, 1)");
 			expect(screen.getByText("100%")).toBeDefined();
 			expect(onClose).not.toHaveBeenCalled();
+		});
+
+		it("doesn't block anything while its transitions run", async () => {
+			// Never ends, so a blocking action would keep the next ones waiting.
+			getImageAnimations.mockReturnValue([
+				{
+					finished: new Promise(() => {}),
+					transitionProperty: "transform",
+				} as CSSTransition,
+			]);
+			const user = userEvent.setup();
+			const { image } = renderReadyViewer();
+
+			await user.click(image);
+			await user.click(image);
+
+			expect(screen.getByText("50%")).toBeDefined();
+
+			await user.click(image);
+			fireEvent.wheel(image, { deltaY: 100 });
+
+			// 100% / e^(100 * 0.001).
+			expect(screen.getByText("90%")).toBeDefined();
+
+			await clickButton("flip-horizontal");
+
+			expect(image.style.transform).toContain("scale(-");
 		});
 	});
 

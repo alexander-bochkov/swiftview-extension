@@ -4,13 +4,13 @@ import { reducer } from "./reducer";
 import type { ViewerState, ViewerStore } from "./types";
 
 const INITIAL_STATE: ViewerState = {
+	blockingTransition: null,
 	containerSize: null,
 	flip: { x: 1, y: 1 },
 	hasImageError: false,
 	naturalSize: null,
 	offset: ZERO_POINT,
 	rotation: 0,
-	rotationStep: null,
 	scale: NATURAL_SIZE_SCALE,
 };
 
