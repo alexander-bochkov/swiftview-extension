@@ -1,5 +1,4 @@
-export * from "./apply-pending-rotation";
-export * from "./end-rotation";
+export * from "./advance-blocking-transition";
 export * from "./fail";
 export * from "./flip";
 export * from "./load";

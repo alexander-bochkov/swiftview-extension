@@ -14,6 +14,7 @@ export const flip = (
 
 	return {
 		...state,
+		blockingTransition: { phase: "settling" },
 		flip: {
 			...state.flip,
 			[axis]: state.flip[axis] === 1 ? -1 : 1,

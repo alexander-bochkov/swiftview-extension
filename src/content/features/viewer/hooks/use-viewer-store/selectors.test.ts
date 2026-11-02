@@ -4,13 +4,13 @@ import type { ViewerState } from "./types";
 
 // An image of 400x200 in a container of 500x100 fits at 50%.
 const createState = (state: Partial<ViewerState> = {}): ViewerState => ({
+	blockingTransition: null,
 	containerSize: { height: 100, width: 500 },
 	flip: { x: 1, y: 1 },
 	hasImageError: false,
 	naturalSize: { height: 200, width: 400 },
 	offset: { x: 0, y: 0 },
 	rotation: 0,
-	rotationStep: null,
 	scale: 0.5,
 	...state,
 });

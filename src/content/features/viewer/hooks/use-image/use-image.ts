@@ -5,9 +5,9 @@ import {
 	selectIsReady,
 	type ViewerStore,
 } from "../use-viewer-store";
+import { useBlockingTransition } from "./use-blocking-transition";
 import { useImageDrag } from "./use-image-drag";
 import { useImageZoom } from "./use-image-zoom";
-import { useRotation } from "./use-rotation";
 
 type UseImageOptions = {
 	containerRef: RefObject<Nullable<HTMLElement>>;
@@ -24,6 +24,8 @@ export const useImage = ({
 }: UseImageOptions): UseImageReturn => {
 	const imageRef = useRef<HTMLImageElement>(null);
 
+	useBlockingTransition({ imageRef, store });
+
 	const dragProps = useImageDrag({ store });
 	const zoomProps = useImageZoom({ containerRef, store });
 
@@ -39,15 +41,6 @@ export const useImage = ({
 	// different size from the browser, and the transform would scale it around
 	// a different center.
 	const layoutSize = naturalSize ?? {};
-
-	// Each function transforms the coordinate space left to right.
-	// `translate()` must come first, so it moves the image by screen px. After
-	// `scale()`, it would be multiplied by the scale and reversed by a flip.
-	// `scale()` must come before `rotate()`, so the flip happens along the
-	// screen axes, not the rotated image axes.
-	const transform = `translate(${translate.x}px, ${translate.y}px) scale(${scaleX}, ${scaleY}) rotate(${rotation}deg)`;
-
-	useRotation({ imageRef, store, transform });
 
 	return {
 		...dragProps,
@@ -69,7 +62,12 @@ export const useImage = ({
 			...layoutSize,
 			// Hidden by `display`, so the image appears fitted without a transition.
 			display: selectIsReady(store.state) ? undefined : "none",
-			transform,
+			// Each function transforms the coordinate space left to right.
+			// `translate()` must come first, so it moves the image by screen px. After
+			// `scale()`, it would be multiplied by the scale and reversed by a flip.
+			// `scale()` must come before `rotate()`, so the flip happens along the
+			// screen axes, not the rotated image axes.
+			transform: `translate(${translate.x}px, ${translate.y}px) scale(${scaleX}, ${scaleY}) rotate(${rotation}deg)`,
 		},
 	};
 };

@@ -1,7 +1,6 @@
 import type { Reducer } from "react";
 import {
-	applyPendingRotation,
-	endRotation,
+	advanceBlockingTransition,
 	fail,
 	flip,
 	load,
@@ -13,9 +12,7 @@ import {
 } from "./handlers";
 import type { ViewerAction, ViewerState } from "./types";
 
-// During a rotation, these would undo the return to the fitted size or mix
-// with the turn, so they're ignored until it ends.
-const BLOCKED_BY_ROTATION: readonly ViewerAction["type"][] = [
+const BLOCKED_ACTIONS: readonly ViewerAction["type"][] = [
 	"FLIP",
 	"MOVE_BY",
 	"ROTATE",
@@ -24,15 +21,13 @@ const BLOCKED_BY_ROTATION: readonly ViewerAction["type"][] = [
 ];
 
 export const reducer: Reducer<ViewerState, ViewerAction> = (state, action) => {
-	if (state.rotationStep && BLOCKED_BY_ROTATION.includes(action.type)) {
+	if (state.blockingTransition && BLOCKED_ACTIONS.includes(action.type)) {
 		return state;
 	}
 
 	switch (action.type) {
-		case "APPLY_PENDING_ROTATION":
-			return applyPendingRotation(state);
-		case "END_ROTATION":
-			return endRotation(state);
+		case "ADVANCE_BLOCKING_TRANSITION":
+			return advanceBlockingTransition(state);
 		case "FAIL":
 			return fail(state);
 		case "FLIP":

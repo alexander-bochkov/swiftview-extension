@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { reducer } from "./reducer";
-import type { RotationStep, ViewerAction, ViewerState } from "./types";
+import type { BlockingTransition, ViewerAction, ViewerState } from "./types";
 
 // An image of 400x200 in a container of 500x100 fits at 50%, limited by its
 // height. At 100% it's larger on the y axis only and moves up to 50 px.
 const createState = (state: Partial<ViewerState> = {}): ViewerState => ({
+	blockingTransition: null,
 	containerSize: { height: 100, width: 500 },
 	flip: { x: 1, y: 1 },
 	hasImageError: false,
 	naturalSize: { height: 200, width: 400 },
 	offset: { x: 0, y: 0 },
 	rotation: 0,
-	rotationStep: null,
 	scale: 0.5,
 	...state,
 });
@@ -30,60 +30,50 @@ const EMPTY_STATE = createState({
 // 200%, limited by its height.
 const SMALL_IMAGE = { naturalSize: { height: 50, width: 100 }, scale: 1 };
 
-const FITTING: RotationStep = { direction: "right", phase: "fitting" };
-const TURNING: RotationStep = { phase: "turning" };
+const FITTING: BlockingTransition = { direction: "right", phase: "fitting" };
+const SETTLING: BlockingTransition = { phase: "settling" };
 
 describe("reducer", () => {
-	describe("APPLY_PENDING_ROTATION", () => {
-		it("turns the image by the pending rotation", () => {
+	describe("ADVANCE_BLOCKING_TRANSITION", () => {
+		it("turns the image after the return to the fitted size", () => {
 			const state = reducer(
-				createState({ rotationStep: { direction: "left", phase: "fitting" } }),
-				{ type: "APPLY_PENDING_ROTATION" },
+				createState({
+					blockingTransition: { direction: "left", phase: "fitting" },
+				}),
+				{ type: "ADVANCE_BLOCKING_TRANSITION" },
 			);
 
 			expect(state).toMatchObject({
+				blockingTransition: { phase: "settling" },
 				rotation: -90,
-				rotationStep: { phase: "turning" },
 				scale: 0.25,
 			});
 		});
 
-		it.each<[string, Partial<ViewerState>]>([
-			["a rotation", {}],
-			["a pending rotation during the turn", { rotationStep: TURNING }],
-		])("does nothing without %s", (_, step) => {
-			const state = createState(step);
-
-			expect(reducer(state, { type: "APPLY_PENDING_ROTATION" })).toBe(state);
-		});
-	});
-
-	describe("END_ROTATION", () => {
-		it("ends the rotation", () => {
+		it("ends the settling", () => {
 			const state = reducer(
-				createState({ rotation: 90, rotationStep: TURNING }),
-				{ type: "END_ROTATION" },
+				createState({ blockingTransition: SETTLING, rotation: 90 }),
+				{ type: "ADVANCE_BLOCKING_TRANSITION" },
 			);
 
-			expect(state).toMatchObject({ rotation: 90, rotationStep: null });
+			expect(state).toMatchObject({ blockingTransition: null, rotation: 90 });
 		});
 
-		it.each<[string, Partial<ViewerState>]>([
-			["a rotation", {}],
-			["a turn during the return", { rotationStep: FITTING }],
-		])("does nothing without %s", (_, step) => {
-			const state = createState(step);
+		it("does nothing without a blocking transition", () => {
+			const state = createState();
 
-			expect(reducer(state, { type: "END_ROTATION" })).toBe(state);
+			expect(reducer(state, { type: "ADVANCE_BLOCKING_TRANSITION" })).toBe(
+				state,
+			);
 		});
 	});
 
-	describe("during a rotation", () => {
+	describe("during the transitions of a toolbar action", () => {
 		it.each<[string, Partial<ViewerState>]>([
-			["the return to the fitted size", { rotationStep: FITTING }],
-			["the turn", { rotation: 90, rotationStep: TURNING, scale: 0.25 }],
-		])("ignores the image actions during %s", (_, step) => {
-			const rotating = createState(step);
+			["the return to the fitted size", { blockingTransition: FITTING }],
+			["the settling", { blockingTransition: SETTLING, scale: 1 }],
+		])("ignores the image actions during %s", (_, state) => {
+			const blocked = createState(state);
 
 			for (const action of [
 				{ payload: "horizontal", type: "FLIP" },
@@ -92,21 +82,42 @@ describe("reducer", () => {
 				{ payload: { x: 0, y: 0 }, type: "TOGGLE_ZOOM" },
 				{ payload: { factor: 2, point: { x: 0, y: 0 } }, type: "ZOOM" },
 			] satisfies ViewerAction[]) {
-				expect(reducer(rotating, action)).toBe(rotating);
+				expect(reducer(blocked, action)).toBe(blocked);
 			}
 		});
 
 		it("fits the image to a new container size and keeps the turn", () => {
-			const state = reducer(createState({ rotationStep: FITTING }), {
+			const state = reducer(createState({ blockingTransition: FITTING }), {
 				payload: { height: 200, width: 500 },
 				type: "RESIZE",
 			});
 
-			expect(state).toMatchObject({ rotationStep: FITTING, scale: 1 });
+			expect(state).toMatchObject({ blockingTransition: FITTING, scale: 1 });
+		});
+	});
+
+	describe("mouse actions", () => {
+		it.each<[string, ViewerAction]>([
+			["MOVE_BY", { payload: { x: 0, y: -30 }, type: "MOVE_BY" }],
+			["TOGGLE_ZOOM", { payload: { x: 0, y: 0 }, type: "TOGGLE_ZOOM" }],
+			["ZOOM", { payload: { factor: 2, point: { x: 0, y: 0 } }, type: "ZOOM" }],
+		])("blocks nothing after %s", (_, action) => {
+			const state = reducer(createState({ scale: 1 }), action);
+
+			expect(state.blockingTransition).toBeNull();
 		});
 	});
 
 	describe("FLIP", () => {
+		it("settles after the flip", () => {
+			const state = reducer(createState(), {
+				payload: "horizontal",
+				type: "FLIP",
+			});
+
+			expect(state.blockingTransition).toEqual(SETTLING);
+		});
+
 		it("mirrors the image horizontally", () => {
 			const state = reducer(createState(), {
 				payload: "horizontal",
@@ -377,7 +388,10 @@ describe("reducer", () => {
 				type: "ROTATE",
 			});
 
-			expect(state).toMatchObject({ rotationStep: TURNING, scale: 0.25 });
+			expect(state).toMatchObject({
+				blockingTransition: SETTLING,
+				scale: 0.25,
+			});
 		});
 
 		it("returns a zoomed image to the fitted size before the turn", () => {
@@ -387,9 +401,9 @@ describe("reducer", () => {
 			);
 
 			expect(state).toMatchObject({
+				blockingTransition: FITTING,
 				offset: { x: 0, y: 0 },
 				rotation: 0,
-				rotationStep: FITTING,
 				scale: 0.5,
 			});
 		});

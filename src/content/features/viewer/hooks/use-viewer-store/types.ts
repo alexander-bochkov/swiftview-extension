@@ -13,8 +13,7 @@ export type ZoomPayload = Readonly<{
 }>;
 
 export type ViewerAction =
-	| { type: "APPLY_PENDING_ROTATION" }
-	| { type: "END_ROTATION" }
+	| { type: "ADVANCE_BLOCKING_TRANSITION" }
 	| { type: "FAIL" }
 	| { type: "FLIP"; payload: FlipDirection }
 	| { type: "LOAD"; payload: Size }
@@ -24,20 +23,18 @@ export type ViewerAction =
 	| { type: "TOGGLE_ZOOM"; payload: Point }
 	| { type: "ZOOM"; payload: ZoomPayload };
 
-// A rotation first returns a zoomed or moved image to the fitted size, then
-// turns it.
-export type RotationStep =
+export type BlockingTransition =
 	| Readonly<{ direction: RotateDirection; phase: "fitting" }>
-	| Readonly<{ phase: "turning" }>;
+	| Readonly<{ phase: "settling" }>;
 
 export type ViewerState = Readonly<{
+	blockingTransition: Nullable<BlockingTransition>;
 	containerSize: Nullable<Size>;
 	flip: Readonly<{ x: 1 | -1; y: 1 | -1 }>;
 	hasImageError: boolean;
 	naturalSize: Nullable<Size>;
 	offset: Point;
 	rotation: number;
-	rotationStep: Nullable<RotationStep>;
 	scale: number;
 }>;
 

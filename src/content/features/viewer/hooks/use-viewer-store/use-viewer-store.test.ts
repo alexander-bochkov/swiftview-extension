@@ -10,13 +10,13 @@ describe("useViewerStore", () => {
 		const { result } = renderHook(() => useViewerStore());
 
 		expect(result.current.state).toEqual({
+			blockingTransition: null,
 			containerSize: null,
 			flip: { x: 1, y: 1 },
 			hasImageError: false,
 			naturalSize: null,
 			offset: { x: 0, y: 0 },
 			rotation: 0,
-			rotationStep: null,
 			scale: 1,
 		});
 	});
