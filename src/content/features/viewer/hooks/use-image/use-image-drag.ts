@@ -27,7 +27,7 @@ type Press = {
 };
 
 export const useImageDrag = ({
-	store: { dispatch },
+	store: { dispatch, state },
 }: UseImageDragOptions): UseImageDragReturn => {
 	const pressRef = useRef<Nullable<Press>>(null);
 	const shouldStopClickRef = useRef(false);
@@ -87,6 +87,10 @@ export const useImageDrag = ({
 
 				press.isDragging = true;
 			}
+
+			// Keeps the blocked distance in the next delta, so the image catches up
+			// with the pointer.
+			if (state.blockingTransition) return;
 
 			dispatch({
 				payload: {
