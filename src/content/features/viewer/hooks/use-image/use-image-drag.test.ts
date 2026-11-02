@@ -31,8 +31,21 @@ describe("useImageDrag", () => {
 		vi.clearAllMocks();
 	});
 
+	const createStore = (isBlocked = false) =>
+		({
+			dispatch,
+			state: {
+				blockingTransition: isBlocked ? { phase: "settling" } : null,
+			},
+		}) as unknown as ViewerStore;
+
+	const renderBlockedDrag = () =>
+		renderHook(({ store }) => useImageDrag({ store }), {
+			initialProps: { store: createStore(true) },
+		});
+
 	const renderDrag = () => {
-		const store = { dispatch } as unknown as ViewerStore;
+		const store = createStore();
 
 		return renderHook(() => useImageDrag({ store })).result;
 	};
@@ -173,6 +186,22 @@ describe("useImageDrag", () => {
 
 			expect(dispatch).not.toHaveBeenCalled();
 		});
+
+		it("catches up with the pointer after a blocking transition", () => {
+			const { rerender, result } = renderBlockedDrag();
+
+			down(result);
+			move(result, { clientX: 30 });
+			move(result, { clientX: 50, clientY: 10 });
+
+			expect(dispatch).not.toHaveBeenCalled();
+
+			rerender({ store: createStore() });
+			move(result, { clientX: 60, clientY: 10 });
+
+			// The first move covers the distance from the press.
+			expect(getDeltas()).toEqual([{ x: 60, y: 10 }]);
+		});
 	});
 
 	describe("release", () => {
@@ -202,6 +231,17 @@ describe("useImageDrag", () => {
 	describe("click", () => {
 		it("stops the click that ends a drag", () => {
 			const result = renderDrag();
+
+			down(result);
+			move(result, { clientX: 50 });
+			up(result, { clientX: 50 });
+			lose(result);
+
+			expect(click(result).stopPropagation).toHaveBeenCalledOnce();
+		});
+
+		it("stops the click that ends a drag during a blocking transition", () => {
+			const { result } = renderBlockedDrag();
 
 			down(result);
 			move(result, { clientX: 50 });
