@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { t } from "./i18n";
+import { t } from "./t";
 
 describe("t", () => {
 	afterEach(() => {

@@ -1,4 +1,4 @@
-import type messages from "../../public/_locales/en/messages.json";
+import type messages from "../../../public/_locales/en/messages.json";
 
 export const t = (
 	messageName: keyof typeof messages,
