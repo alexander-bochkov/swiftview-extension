@@ -25,6 +25,6 @@ export default defineConfig({
 		environment: "jsdom",
 		// Snapshots of earlier code, kept for reference and not maintained.
 		exclude: [...configDefaults.exclude, ".experiments/**"],
-		setupFiles: ["src/test-setup.ts"],
+		setupFiles: ["vitest.setup.ts"],
 	},
 });

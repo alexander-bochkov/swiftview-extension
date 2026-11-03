@@ -1,4 +1,4 @@
-import messages from "../public/_locales/en/messages.json";
+import messages from "./public/_locales/en/messages.json";
 
 type Messages = Record<string, { message: string } | undefined>;
 
