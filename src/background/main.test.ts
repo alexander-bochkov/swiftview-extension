@@ -23,11 +23,8 @@ const mocks = vi.hoisted(() => ({
 	syncMenuWithActiveTab: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock("./offer-reload", () => ({
+vi.mock("./utils", () => ({
 	offerReload: mocks.offerReload,
-}));
-
-vi.mock("./sync-menu-with-active-tab", () => ({
 	syncMenuWithActiveTab: mocks.syncMenuWithActiveTab,
 }));
 

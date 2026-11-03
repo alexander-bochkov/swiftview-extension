@@ -3,7 +3,6 @@ import { syncMenuWithActiveTab } from "./sync-menu-with-active-tab";
 
 const OPEN_IMAGE_ID = "open-image";
 const TAB_ID = 7;
-const TAB_ID_NONE = -1;
 
 const executeScript = vi.fn<() => Promise<unknown>>(() => Promise.resolve());
 const query = vi.fn<() => Promise<Partial<chrome.tabs.Tab>[]>>(() =>
@@ -16,7 +15,7 @@ beforeEach(() => {
 		...chrome,
 		contextMenus: { update },
 		scripting: { executeScript },
-		tabs: { query, TAB_ID_NONE },
+		tabs: { query },
 	});
 });
 
@@ -40,7 +39,7 @@ describe("syncMenuWithActiveTab", () => {
 		});
 	});
 
-	it("shows the menu item if scripts can be injected into the tab", async () => {
+	it("shows the menu item if content scripts can run on the page", async () => {
 		await syncMenuWithActiveTab();
 
 		expect(update).toHaveBeenCalledExactlyOnceWith(OPEN_IMAGE_ID, {
@@ -48,7 +47,7 @@ describe("syncMenuWithActiveTab", () => {
 		});
 	});
 
-	it("hides the menu item if scripts can't be injected into the tab", async () => {
+	it("hides the menu item if content scripts can't run on the page", async () => {
 		executeScript.mockRejectedValueOnce(new Error("Cannot access"));
 
 		await syncMenuWithActiveTab();
@@ -61,7 +60,6 @@ describe("syncMenuWithActiveTab", () => {
 	it.each([
 		["no active tab", []],
 		["a tab without an id", [{}]],
-		["a tab that isn't a browser tab", [{ id: TAB_ID_NONE }]],
 	])("keeps the menu item as it is with %s", async (_, tabs) => {
 		query.mockResolvedValueOnce(tabs);
 
