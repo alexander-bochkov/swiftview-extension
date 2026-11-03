@@ -4,8 +4,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Toolbar } from "./toolbar";
 
 // The buttons contain only an icon, so render its name to make them queryable.
-vi.mock("../../../components", async (importOriginal) => ({
-	...(await importOriginal<typeof import("../../../components")>()),
+vi.mock("../icon", async (importOriginal) => ({
+	...(await importOriginal<typeof import("../icon")>()),
 	Icon: ({ name }: { name: string }) => name,
 }));
 

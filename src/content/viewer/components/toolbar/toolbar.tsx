@@ -1,5 +1,6 @@
-import { Button, Icon } from "../../../components";
-import type { FlipDirection, RotateDirection } from "../types";
+import type { FlipDirection, RotateDirection } from "../../types";
+import { Button } from "../button";
+import { Icon } from "../icon";
 import styles from "./toolbar.module.css";
 
 type ToolbarProps = {

@@ -1,5 +1,5 @@
 import { t } from "@shared/i18n";
-import { Icon } from "../../../components";
+import { Icon } from "../icon";
 import styles from "./image-error.module.css";
 
 export const ImageError = () => (

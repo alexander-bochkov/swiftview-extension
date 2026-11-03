@@ -10,8 +10,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Viewer } from "./viewer";
 
 // The buttons contain only an icon, so render its name to make them queryable.
-vi.mock("../../components", async (importOriginal) => ({
-	...(await importOriginal<typeof import("../../components")>()),
+vi.mock("./components/icon", async (importOriginal) => ({
+	...(await importOriginal<typeof import("./components/icon")>()),
 	Icon: ({ name }: { name: string }) => name,
 }));
 
