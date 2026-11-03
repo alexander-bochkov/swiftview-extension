@@ -2,8 +2,7 @@ import { MESSAGE_TYPE } from "@shared/constants";
 import { t } from "@shared/i18n";
 import type { OpenImageMessage } from "@shared/types";
 import { MENU_ITEM_ID } from "./constants";
-import { offerReload } from "./offer-reload";
-import { syncMenuWithActiveTab } from "./sync-menu-with-active-tab";
+import { offerReload, syncMenuWithActiveTab } from "./utils";
 
 chrome.runtime.onInstalled.addListener(async () => {
 	await chrome.contextMenus.removeAll();
@@ -42,9 +41,9 @@ chrome.contextMenus.onClicked.addListener(
 chrome.tabs.onActivated.addListener(syncMenuWithActiveTab);
 
 chrome.tabs.onUpdated.addListener((_, { status }, { active }) => {
-	if (status && active) void syncMenuWithActiveTab();
+	if (status && active) syncMenuWithActiveTab();
 });
 
 chrome.windows.onFocusChanged.addListener((windowId) => {
-	if (windowId !== chrome.windows.WINDOW_ID_NONE) void syncMenuWithActiveTab();
+	if (windowId !== chrome.windows.WINDOW_ID_NONE) syncMenuWithActiveTab();
 });
