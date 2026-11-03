@@ -3,8 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ImageError } from "./image-error";
 
 // Render the icon's name to make it queryable.
-vi.mock("../../../components", async (importOriginal) => ({
-	...(await importOriginal<typeof import("../../../components")>()),
+vi.mock("../icon", async (importOriginal) => ({
+	...(await importOriginal<typeof import("../icon")>()),
 	Icon: ({ name }: { name: string }) => name,
 }));
 

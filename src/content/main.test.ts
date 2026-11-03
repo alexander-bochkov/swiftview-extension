@@ -8,9 +8,9 @@ const mocks = vi.hoisted(() => ({
 	open: vi.fn(),
 }));
 
-vi.mock("./features", () => ({
-	PageLock: class {},
-	ScrollbarHider: class {},
+vi.mock("./page-lock", () => ({ PageLock: class {} }));
+vi.mock("./scrollbar-hider", () => ({ ScrollbarHider: class {} }));
+vi.mock("./viewer-host", () => ({
 	ViewerHost: class {
 		get isOpen(): boolean {
 			return mocks.isOpen;

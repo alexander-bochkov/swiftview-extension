@@ -1,6 +1,8 @@
 import { MESSAGE_TYPE } from "@shared/constants";
 import type { OpenImageMessage } from "@shared/types";
-import { PageLock, ScrollbarHider, ViewerHost } from "./features";
+import { PageLock } from "./page-lock";
+import { ScrollbarHider } from "./scrollbar-hider";
+import { ViewerHost } from "./viewer-host";
 
 const viewerHost = new ViewerHost(new PageLock(new ScrollbarHider()));
 

@@ -1,13 +1,11 @@
 import { useRef } from "react";
-import { Icon, Overlay } from "../../components";
+import { Icon, ImageError, Overlay, Toolbar } from "./components";
 import {
 	selectIsReady,
 	useContainerResize,
 	useImage,
 	useViewerStore,
 } from "./hooks";
-import { ImageError } from "./image-error";
-import { Toolbar } from "./toolbar";
 import styles from "./viewer.module.css";
 
 type ViewerProps = {
