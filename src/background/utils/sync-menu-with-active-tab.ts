@@ -6,7 +6,7 @@ let latestSyncId = 0;
 // the Chrome Web Store, sites blocked by policy or the user's site access.
 const canContentScriptsRunOnPage = async (tabId: number): Promise<boolean> => {
 	try {
-		await chrome.scripting.executeScript({
+		await browser.scripting.executeScript({
 			func: () => {},
 			injectImmediately: true,
 			target: { tabId },
@@ -25,14 +25,14 @@ const updateMenuVisibility = async (tabId: number): Promise<void> => {
 	if (syncId !== latestSyncId) return;
 
 	try {
-		await chrome.contextMenus.update(MENU_ITEM_ID.OPEN_IMAGE, { visible });
+		await browser.contextMenus.update(MENU_ITEM_ID.OPEN_IMAGE, { visible });
 	} catch {
 		// The menu item hasn't yet been created by onInstalled
 	}
 };
 
 export const syncMenuWithActiveTab = async (): Promise<void> => {
-	const [tab] = await chrome.tabs.query({
+	const [tab] = await browser.tabs.query({
 		active: true,
 		lastFocusedWindow: true,
 	});

@@ -5,4 +5,4 @@ export const t = (
 	substitutions?: string | (string | number)[],
 	options?: chrome.i18n.GetMessageOptions,
 ): string =>
-	chrome.i18n.getMessage(messageName, substitutions, options) || messageName;
+	browser.i18n.getMessage(messageName, substitutions, options) || messageName;

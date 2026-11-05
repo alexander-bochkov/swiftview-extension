@@ -104,7 +104,7 @@ describe("ViewerHost", () => {
 			value: fonts,
 		});
 		// The extension APIs only exist in a content script.
-		vi.stubGlobal("chrome", { runtime: { getURL } });
+		vi.stubGlobal("browser", { runtime: { getURL } });
 
 		pageLock = new PageLock(new ScrollbarHider());
 		viewerHost = new ViewerHost(pageLock);

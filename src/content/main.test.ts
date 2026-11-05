@@ -29,8 +29,8 @@ let onMessage: MessageListener;
 beforeEach(async () => {
 	vi.resetModules();
 
-	vi.stubGlobal("chrome", {
-		...chrome,
+	vi.stubGlobal("browser", {
+		...browser,
 		runtime: {
 			onMessage: {
 				addListener: (listener: MessageListener) => {

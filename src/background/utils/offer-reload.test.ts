@@ -21,8 +21,8 @@ const executeScript = vi.fn(({ args, func }: Injection) => {
 });
 
 beforeEach(() => {
-	vi.stubGlobal("chrome", {
-		...chrome,
+	vi.stubGlobal("browser", {
+		...browser,
 		scripting: { executeScript },
 	});
 	vi.stubGlobal("confirm", confirm);

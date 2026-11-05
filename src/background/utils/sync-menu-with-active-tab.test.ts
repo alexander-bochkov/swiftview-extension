@@ -11,8 +11,8 @@ const query = vi.fn<() => Promise<Partial<chrome.tabs.Tab>[]>>(() =>
 const update = vi.fn(() => Promise.resolve());
 
 beforeEach(() => {
-	vi.stubGlobal("chrome", {
-		...chrome,
+	vi.stubGlobal("browser", {
+		...browser,
 		contextMenus: { update },
 		scripting: { executeScript },
 		tabs: { query },

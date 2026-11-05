@@ -4,10 +4,10 @@ import type { OpenImageMessage } from "@shared/types";
 import { MENU_ITEM_ID } from "./constants";
 import { offerReload, syncMenuWithActiveTab } from "./utils";
 
-chrome.runtime.onInstalled.addListener(async () => {
-	await chrome.contextMenus.removeAll();
+browser.runtime.onInstalled.addListener(async () => {
+	await browser.contextMenus.removeAll();
 
-	chrome.contextMenus.create(
+	browser.contextMenus.create(
 		{
 			contexts: ["image"],
 			id: MENU_ITEM_ID.OPEN_IMAGE,
@@ -18,12 +18,12 @@ chrome.runtime.onInstalled.addListener(async () => {
 	);
 });
 
-chrome.contextMenus.onClicked.addListener(
+browser.contextMenus.onClicked.addListener(
 	async ({ menuItemId, srcUrl }, tab) => {
 		if (menuItemId !== MENU_ITEM_ID.OPEN_IMAGE || !srcUrl || !tab?.id) return;
 
 		try {
-			await chrome.tabs.sendMessage<OpenImageMessage>(
+			await browser.tabs.sendMessage<OpenImageMessage>(
 				tab.id,
 				{ type: MESSAGE_TYPE.OPEN_IMAGE, url: srcUrl },
 				// The content script runs only in the top frame, which gives the viewer
@@ -38,12 +38,12 @@ chrome.contextMenus.onClicked.addListener(
 	},
 );
 
-chrome.tabs.onActivated.addListener(syncMenuWithActiveTab);
+browser.tabs.onActivated.addListener(syncMenuWithActiveTab);
 
-chrome.tabs.onUpdated.addListener((_, { status }, { active }) => {
+browser.tabs.onUpdated.addListener((_, { status }, { active }) => {
 	if (status && active) syncMenuWithActiveTab();
 });
 
-chrome.windows.onFocusChanged.addListener((windowId) => {
-	if (windowId !== chrome.windows.WINDOW_ID_NONE) syncMenuWithActiveTab();
+browser.windows.onFocusChanged.addListener((windowId) => {
+	if (windowId !== browser.windows.WINDOW_ID_NONE) syncMenuWithActiveTab();
 });

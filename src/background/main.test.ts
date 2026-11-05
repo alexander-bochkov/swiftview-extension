@@ -49,8 +49,8 @@ let onUpdated: UpdatedListener;
 beforeEach(async () => {
 	vi.resetModules();
 
-	vi.stubGlobal("chrome", {
-		...chrome,
+	vi.stubGlobal("browser", {
+		...browser,
 		contextMenus: {
 			create,
 			onClicked: {

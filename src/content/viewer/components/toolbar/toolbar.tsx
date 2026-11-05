@@ -11,7 +11,7 @@ type ToolbarProps = {
 	scale: number;
 };
 
-const formatter = new Intl.NumberFormat(chrome.i18n.getUILanguage(), {
+const formatter = new Intl.NumberFormat(browser.i18n.getUILanguage(), {
 	maximumFractionDigits: 0,
 	style: "percent",
 });
