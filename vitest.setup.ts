@@ -8,7 +8,7 @@ type Messages = Record<string, { message: string } | undefined>;
 Reflect.set(globalThis, "chrome", {
 	i18n: {
 		getMessage: (messageName: string) =>
-			(messages as Messages)[messageName]?.message ?? "",
+			(messages as Messages)[messageName]?.message ?? messageName,
 		getUILanguage: () => "en",
 	},
 });
