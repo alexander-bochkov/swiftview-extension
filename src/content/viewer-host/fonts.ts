@@ -16,6 +16,6 @@ const FONT_WEIGHT_RANGE = "100 900";
 export const createFontFace = (): FontFace =>
 	new FontFace(
 		FONT_FAMILY,
-		`url(${chrome.runtime.getURL(FONT_PATH)}) format("woff2")`,
+		`url(${browser.runtime.getURL(FONT_PATH)}) format("woff2")`,
 		{ weight: FONT_WEIGHT_RANGE },
 	);

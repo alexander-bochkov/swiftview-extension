@@ -7,7 +7,7 @@ import manifest from "./manifest.config.ts";
 
 export default defineConfig({
 	build: {
-		target: "chrome134",
+		target: "chrome148",
 	},
 	plugins: [
 		crx({ manifest }),

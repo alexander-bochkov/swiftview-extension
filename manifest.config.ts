@@ -25,7 +25,7 @@ export default defineManifest({
 		"128": "icons/icon-128.png",
 	},
 	manifest_version: 3,
-	minimum_chrome_version: "134",
+	minimum_chrome_version: "148",
 	name: "__MSG_extension@name__",
 	permissions: ["contextMenus", "scripting"],
 	short_name: "SwiftView",

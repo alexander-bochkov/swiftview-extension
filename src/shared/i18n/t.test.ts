@@ -11,13 +11,13 @@ describe("t", () => {
 	});
 
 	it("returns the message name if the message is missing", () => {
-		vi.spyOn(chrome.i18n, "getMessage").mockReturnValue("");
+		vi.spyOn(browser.i18n, "getMessage").mockReturnValue("");
 
 		expect(t("viewer@image_error")).toBe("viewer@image_error");
 	});
 
-	it("passes the arguments to chrome.i18n.getMessage", () => {
-		const getMessage = vi.spyOn(chrome.i18n, "getMessage");
+	it("passes the arguments to browser.i18n.getMessage", () => {
+		const getMessage = vi.spyOn(browser.i18n, "getMessage");
 
 		t("viewer@image_error", ["photo.png"], { escapeLt: true });
 
