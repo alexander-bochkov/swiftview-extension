@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasModifierKey } from "./has-modifier-key";
+import { hasModifierKey } from "./utils";
 
 const NO_KEYS = {
 	altKey: false,

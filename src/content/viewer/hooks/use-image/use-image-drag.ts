@@ -1,12 +1,8 @@
-import {
-	MOVE_THRESHOLD,
-	POINTER_BUTTON,
-	POINTER_TYPE,
-} from "@shared/constants";
+import { POINTER_BUTTON } from "@shared/constants";
 import type { Nullable, Point } from "@shared/types";
-import { hasModifierKey } from "@shared/utils";
 import { type ComponentProps, useRef } from "react";
 import type { ViewerStore } from "../use-viewer-store";
+import { hasModifierKey } from "./utils";
 
 type UseImageDragOptions = { store: ViewerStore };
 
@@ -25,6 +21,9 @@ type Press = {
 	readonly pointerId: number;
 	readonly startPoint: Point;
 };
+
+// In px, per axis. Matches the smallest drag threshold of Chromium.
+const MOVE_THRESHOLD = 3;
 
 export const useImageDrag = ({
 	store: { dispatch, state },
@@ -46,9 +45,6 @@ export const useImageDrag = ({
 			pressRef.current = null;
 		},
 		onPointerDown: (e) => {
-			// Currently, only the mouse is supported.
-			if (e.pointerType !== POINTER_TYPE.MOUSE) return;
-
 			if (
 				e.button !== POINTER_BUTTON.MAIN ||
 				!e.isPrimary ||

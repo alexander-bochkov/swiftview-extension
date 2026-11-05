@@ -108,10 +108,18 @@ describe("useImageDrag", () => {
 			expect(setPointerCapture).toHaveBeenCalledExactlyOnceWith(7);
 		});
 
+		it.each(["touch", "pen"] as const)("drags with a %s", (pointerType) => {
+			const result = renderDrag();
+
+			down(result, { pointerType });
+			move(result, { clientX: 50, pointerType });
+
+			expect(setPointerCapture).toHaveBeenCalledOnce();
+			expect(dispatch).toHaveBeenCalled();
+		});
+
 		it.each<[string, PointerInit]>([
 			["another button", { button: 2 }],
-			["a touch", { pointerType: "touch" }],
-			["a pen", { pointerType: "pen" }],
 			["a secondary pointer", { isPrimary: false }],
 			["an event dispatched by a script", { isTrusted: false }],
 			["a press with Alt", { altKey: true }],

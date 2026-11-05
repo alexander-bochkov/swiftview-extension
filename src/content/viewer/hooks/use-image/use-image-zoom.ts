@@ -1,7 +1,7 @@
 import type { Nullable, Point } from "@shared/types";
-import { hasModifierKey } from "@shared/utils";
 import { type ComponentProps, type RefObject, useEffect } from "react";
 import type { ViewerStore } from "../use-viewer-store";
+import { hasModifierKey } from "./utils";
 
 type UseImageZoomOptions = {
 	containerRef: RefObject<Nullable<HTMLElement>>;
