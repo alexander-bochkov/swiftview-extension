@@ -1,21 +1,20 @@
 import { injectCSS } from "virtual:css-injected-by-js";
 import type { Nullable } from "@shared/types";
 import { createRoot, type Root } from "react-dom/client";
-import type { PageLock } from "../page-lock";
 import { Viewer } from "../viewer";
 import { createFontFace } from "./fonts";
 import "./viewer-host.css";
+import { BLOCKED_EVENTS } from "./constants";
+import { EventBlocker } from "./event-blocker";
+import { ScrollLock } from "./scroll-lock";
 
 export class ViewerHost {
-	private readonly pageLock: PageLock;
+	private readonly eventBlocker = new EventBlocker();
+	private readonly scrollLock = new ScrollLock();
 
 	private fontFace: Nullable<FontFace> = null;
 	private host: Nullable<HTMLElement> = null;
 	private root: Nullable<Root> = null;
-
-	constructor(pageLock: PageLock) {
-		this.pageLock = pageLock;
-	}
 
 	get isOpen(): boolean {
 		return this.host !== null;
@@ -30,9 +29,12 @@ export class ViewerHost {
 			this.host = document.createElement("swiftview-root");
 			document.documentElement.append(this.host);
 
-			this.pageLock.lock(this.host);
-
 			const shadowRoot = this.host.attachShadow({ mode: "closed" });
+
+			// Before the blocker, which stops the events of the page at the window,
+			// where the lock prevents them from scrolling.
+			this.scrollLock.lock(shadowRoot);
+			this.eventBlocker.block(BLOCKED_EVENTS, this.host);
 
 			injectCSS({ target: shadowRoot });
 
@@ -47,7 +49,9 @@ export class ViewerHost {
 	}
 
 	close(): void {
-		this.pageLock.unlock();
+		this.eventBlocker.unblock();
+		this.scrollLock.unlock();
+
 		this.root?.unmount();
 		this.host?.remove();
 

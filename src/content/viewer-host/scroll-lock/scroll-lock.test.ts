@@ -7,10 +7,10 @@ import {
 	type MockInstance,
 	vi,
 } from "vitest";
-import { ScrollbarHider } from "./scrollbar-hider";
+import { ScrollLock } from "./scroll-lock";
 
-describe("ScrollbarHider", () => {
-	let hider: ScrollbarHider;
+describe("ScrollLock", () => {
+	let lock: ScrollLock;
 	let scrollTo: MockInstance<typeof window.scrollTo>;
 
 	const rootStyle = document.documentElement.style;
@@ -44,23 +44,158 @@ describe("ScrollbarHider", () => {
 		Object.defineProperty(window, "scrollY", { configurable: true, value: y });
 	};
 
+	// The viewer: a button in a shadow root, like the toolbar.
+	let button: HTMLButtonElement;
+	let host: HTMLElement;
+	let root: ShadowRoot;
+
+	const isPrevented = (target: EventTarget, event: Event): boolean => {
+		target.dispatchEvent(event);
+
+		return event.defaultPrevented;
+	};
+
+	const keyDown = (key: string, init: KeyboardEventInit = {}) =>
+		new KeyboardEvent("keydown", {
+			bubbles: true,
+			cancelable: true,
+			composed: true,
+			key,
+			...init,
+		});
+
 	beforeEach(() => {
 		setScrollbars({});
 		setScrollPosition(0, 0);
 		scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
 
-		hider = new ScrollbarHider();
+		host = document.createElement("div");
+		root = host.attachShadow({ mode: "open" });
+		button = document.createElement("button");
+		root.append(button);
+		document.body.append(host);
+
+		lock = new ScrollLock();
 	});
 
 	afterEach(() => {
-		hider.restore();
+		lock.unlock();
+		host.remove();
 		rootStyle.cssText = "";
 		vi.restoreAllMocks();
 	});
 
-	describe("hide", () => {
+	describe("scrolling", () => {
+		it.each([
+			" ",
+			"ArrowDown",
+			"ArrowLeft",
+			"ArrowRight",
+			"ArrowUp",
+			"End",
+			"Home",
+			"PageDown",
+			"PageUp",
+		])("prevents %j in the viewer", (key) => {
+			lock.lock(root);
+
+			expect(isPrevented(root, keyDown(key))).toBe(true);
+		});
+
+		it("prevents a scroll key in the page", () => {
+			lock.lock(root);
+
+			expect(isPrevented(document.body, keyDown("ArrowDown"))).toBe(true);
+		});
+
+		it("prevents a scroll key with Ctrl or Shift", () => {
+			lock.lock(root);
+
+			expect(isPrevented(root, keyDown("End", { ctrlKey: true }))).toBe(true);
+			expect(isPrevented(root, keyDown(" ", { shiftKey: true }))).toBe(true);
+		});
+
+		it("lets Space press a focused button of the viewer", () => {
+			lock.lock(root);
+			button.focus();
+
+			expect(isPrevented(button, keyDown(" "))).toBe(false);
+		});
+
+		it("prevents the arrows on a focused button of the viewer", () => {
+			lock.lock(root);
+			button.focus();
+
+			expect(isPrevented(button, keyDown("ArrowDown"))).toBe(true);
+		});
+
+		it.each([
+			["Alt", { altKey: true }],
+			["Meta", { metaKey: true }],
+		])("leaves the browser shortcuts with %s", (_, init) => {
+			lock.lock(root);
+
+			expect(isPrevented(root, keyDown("ArrowLeft", init))).toBe(false);
+		});
+
+		it("leaves the keys that don't scroll", () => {
+			lock.lock(root);
+
+			expect(isPrevented(root, keyDown("Enter"))).toBe(false);
+			expect(isPrevented(root, keyDown("t"))).toBe(false);
+		});
+
+		it("prevents the wheel", () => {
+			lock.lock(root);
+
+			const wheel = new WheelEvent("wheel", {
+				bubbles: true,
+				cancelable: true,
+				composed: true,
+				deltaY: 100,
+			});
+
+			expect(isPrevented(root, wheel)).toBe(true);
+		});
+
+		it("prevents a press of the wheel, which would start autoscrolling", () => {
+			lock.lock(root);
+
+			const press = (button: number) =>
+				new MouseEvent("mousedown", {
+					bubbles: true,
+					button,
+					cancelable: true,
+					composed: true,
+				});
+
+			expect(isPrevented(root, press(1))).toBe(true);
+			expect(isPrevented(root, press(0))).toBe(false);
+		});
+
+		it("doesn't stop the events", () => {
+			const listener = vi.fn();
+			document.addEventListener("keydown", listener);
+
+			lock.lock(root);
+			root.dispatchEvent(keyDown("ArrowDown"));
+
+			document.removeEventListener("keydown", listener);
+
+			expect(listener).toHaveBeenCalledOnce();
+		});
+
+		it("is allowed again after unlock", () => {
+			lock.lock(root);
+			lock.unlock();
+
+			expect(isPrevented(root, keyDown("ArrowDown"))).toBe(false);
+		});
+	});
+
+	describe("lock", () => {
 		it("hides the scrollbars of the page", () => {
-			hider.hide();
+			lock.lock(root);
 
 			expect(getStyle("scrollbar-width")).toEqual({
 				priority: "important",
@@ -71,7 +206,7 @@ describe("ScrollbarHider", () => {
 		it("leaves the overflow of the page alone", () => {
 			setScrollbars({ height: 15, width: 15 });
 
-			hider.hide();
+			lock.lock(root);
 
 			expect(getStyle("overflow").value).toBe("");
 		});
@@ -79,7 +214,7 @@ describe("ScrollbarHider", () => {
 		it("replaces the vertical scrollbar with padding", () => {
 			setScrollbars({ width: 15 });
 
-			hider.hide();
+			lock.lock(root);
 
 			expect(getStyle("padding-right")).toEqual({
 				priority: "important",
@@ -91,7 +226,7 @@ describe("ScrollbarHider", () => {
 			setScrollbars({ width: 15 });
 			rootStyle.setProperty("padding-right", "10px");
 
-			hider.hide();
+			lock.lock(root);
 
 			expect(getStyle("padding-right").value).toBe("25px");
 		});
@@ -99,7 +234,7 @@ describe("ScrollbarHider", () => {
 		it("adds no padding without a vertical scrollbar", () => {
 			setScrollbars({ height: 15 });
 
-			hider.hide();
+			lock.lock(root);
 
 			expect(getStyle("padding-right").value).toBe("");
 		});
@@ -107,23 +242,23 @@ describe("ScrollbarHider", () => {
 		it("extends the scrollable area by the scrollbars", () => {
 			setScrollbars({ height: 12, width: 15 });
 
-			hider.hide();
+			lock.lock(root);
 
 			expect(getScrollExtender()?.style.width).toBe("3015px");
 			expect(getScrollExtender()?.style.height).toBe("5012px");
 		});
 
 		it("does not extend the scrollable area without scrollbars", () => {
-			hider.hide();
+			lock.lock(root);
 
 			expect(getScrollExtender()).toBeNull();
 		});
 
-		it("does nothing when already hidden", () => {
+		it("does nothing when already locked", () => {
 			setScrollbars({ width: 15 });
 
-			hider.hide();
-			hider.hide();
+			lock.lock(root);
+			lock.lock(root);
 
 			expect(getStyle("padding-right").value).toBe("15px");
 			expect(
@@ -132,12 +267,12 @@ describe("ScrollbarHider", () => {
 		});
 	});
 
-	describe("restore", () => {
+	describe("unlock", () => {
 		it("removes the styles", () => {
 			setScrollbars({ height: 15, width: 15 });
 
-			hider.hide();
-			hider.restore();
+			lock.lock(root);
+			lock.unlock();
 
 			expect(rootStyle.cssText).toBe("");
 		});
@@ -145,8 +280,8 @@ describe("ScrollbarHider", () => {
 		it("removes the scroll extender", () => {
 			setScrollbars({ height: 15, width: 15 });
 
-			hider.hide();
-			hider.restore();
+			lock.lock(root);
+			lock.unlock();
 
 			expect(getScrollExtender()).toBeNull();
 		});
@@ -156,8 +291,8 @@ describe("ScrollbarHider", () => {
 			rootStyle.setProperty("scrollbar-width", "thin", "important");
 			rootStyle.setProperty("padding-right", "10px");
 
-			hider.hide();
-			hider.restore();
+			lock.lock(root);
+			lock.unlock();
 
 			expect(getStyle("scrollbar-width")).toEqual({
 				priority: "important",
@@ -171,11 +306,11 @@ describe("ScrollbarHider", () => {
 
 		it("restores the scroll position", () => {
 			setScrollPosition(10, 500);
-			hider.hide();
+			lock.lock(root);
 
-			// The browser scrolled the page back while the scrollbars were hidden.
+			// The browser scrolled the page back while it was locked.
 			setScrollPosition(10, 485);
-			hider.restore();
+			lock.unlock();
 
 			expect(scrollTo).toHaveBeenCalledExactlyOnceWith({
 				behavior: "instant",
@@ -187,28 +322,28 @@ describe("ScrollbarHider", () => {
 		it("does not scroll when the position has not changed", () => {
 			setScrollPosition(10, 500);
 
-			hider.hide();
-			hider.restore();
+			lock.lock(root);
+			lock.unlock();
 
 			expect(scrollTo).not.toHaveBeenCalled();
 		});
 
-		it("does nothing when not hidden", () => {
+		it("does nothing when not locked", () => {
 			rootStyle.setProperty("scrollbar-width", "thin");
 			setScrollPosition(10, 500);
 
-			hider.restore();
+			lock.unlock();
 
 			expect(getStyle("scrollbar-width").value).toBe("thin");
 			expect(scrollTo).not.toHaveBeenCalled();
 		});
 
-		it("allows hiding again", () => {
+		it("allows locking again", () => {
 			setScrollbars({ width: 15 });
 
-			hider.hide();
-			hider.restore();
-			hider.hide();
+			lock.lock(root);
+			lock.unlock();
+			lock.lock(root);
 
 			expect(getStyle("padding-right").value).toBe("15px");
 			expect(getScrollExtender()).not.toBeNull();

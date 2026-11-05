@@ -12,8 +12,6 @@ import {
 	type MockInstance,
 	vi,
 } from "vitest";
-import { PageLock } from "../page-lock";
-import { ScrollbarHider } from "../scrollbar-hider";
 import { FONT_FAMILY } from "./fonts";
 import { ViewerHost } from "./viewer-host";
 
@@ -43,7 +41,7 @@ const FakeViewer = (): null => {
 
 describe("ViewerHost", () => {
 	let consoleError: MockInstance<typeof console.error>;
-	let pageLock: PageLock;
+	let pageController: AbortController;
 	let viewerHost: ViewerHost;
 
 	const getHosts = () =>
@@ -63,6 +61,38 @@ describe("ViewerHost", () => {
 
 	const close = () => {
 		act(() => viewerHost.close());
+	};
+
+	// Stands for the page: a keydown listener on the document.
+	const listenOnPage = () => {
+		const listener = vi.fn();
+
+		document.addEventListener("keydown", listener, {
+			signal: pageController.signal,
+		});
+
+		return listener;
+	};
+
+	const pressKey = (target: EventTarget, key: string): KeyboardEvent => {
+		const e = new KeyboardEvent("keydown", {
+			bubbles: true,
+			cancelable: true,
+			composed: true,
+			key,
+		});
+		target.dispatchEvent(e);
+
+		return e;
+	};
+
+	// Checks the page is back to normal: it sees its events and can scroll.
+	const expectPageUnlocked = () => {
+		const listener = listenOnPage();
+		const e = pressKey(document.body, "ArrowDown");
+
+		expect(listener).toHaveBeenCalledOnce();
+		expect(e.defaultPrevented).toBe(false);
 	};
 
 	beforeAll(() => {
@@ -106,12 +136,13 @@ describe("ViewerHost", () => {
 		// The extension APIs only exist in a content script.
 		vi.stubGlobal("browser", { runtime: { getURL } });
 
-		pageLock = new PageLock(new ScrollbarHider());
-		viewerHost = new ViewerHost(pageLock);
+		pageController = new AbortController();
+		viewerHost = new ViewerHost();
 	});
 
 	afterEach(() => {
 		close();
+		pageController.abort();
 
 		for (const host of getHosts()) host.remove();
 
@@ -169,13 +200,39 @@ describe("ViewerHost", () => {
 			expect(getViewerProps().url).toBe("https://example.com/other.png");
 		});
 
-		it("locks the page with the host", () => {
-			const lock = vi.spyOn(pageLock, "lock");
+		it("hides the events of the page from the page", () => {
+			const listener = listenOnPage();
 
 			open();
+			pressKey(document.body, "t");
 
-			expect(lock).toHaveBeenCalledExactlyOnceWith(getHosts()[0]);
-			expect(pageLock.isLocked).toBe(true);
+			expect(listener).not.toHaveBeenCalled();
+		});
+
+		it("hides the events of the viewer from the page", () => {
+			const listener = listenOnPage();
+
+			open();
+			const host = getHosts()[0];
+			if (!host) throw new Error("No host");
+			pressKey(host, "t");
+
+			expect(listener).not.toHaveBeenCalled();
+		});
+
+		// The scroll lock sees the page events before the blocker stops them.
+		it("keeps the page from scrolling with the keys of the page", () => {
+			open();
+
+			expect(pressKey(document.body, "ArrowDown").defaultPrevented).toBe(true);
+		});
+
+		it("keeps the page from scrolling with the keys of the viewer", () => {
+			open();
+			const host = getHosts()[0];
+			if (!host) throw new Error("No host");
+
+			expect(pressKey(host, "ArrowDown").defaultPrevented).toBe(true);
 		});
 
 		it("replaces the previous viewer when opened again", () => {
@@ -222,7 +279,7 @@ describe("ViewerHost", () => {
 			open();
 			close();
 
-			expect(pageLock.isLocked).toBe(false);
+			expectPageUnlocked();
 		});
 
 		it("removes the font from the document", () => {
@@ -308,7 +365,7 @@ describe("ViewerHost", () => {
 			expect(consoleError).toHaveBeenCalledWith(error);
 			expect(viewerHost.isOpen).toBe(false);
 			expect(getHosts()).toHaveLength(0);
-			expect(pageLock.isLocked).toBe(false);
+			expectPageUnlocked();
 		});
 
 		it("can open again after a failure", () => {
