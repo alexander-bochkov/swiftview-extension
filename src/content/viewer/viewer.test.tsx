@@ -24,6 +24,23 @@ const IMAGE_URL = "https://example.com/image.png";
 const CONTAINER: Size = { height: 100, width: 500 };
 const IMAGE: Size = { height: 200, width: 400 };
 
+// The transform of the image as numbers. It isn't compared as a string, as
+// jsdom serializes it in its shortest form, e.g. `scale(0.5, 0.5)` as
+// `scale(0.5)`, and that form can change between versions.
+const getTransform = ({ style }: HTMLElement) => {
+	const getArgs = (name: string): number[] =>
+		style.transform
+			.match(new RegExp(`\\b${name}\\(([^)]*)\\)`))?.[1]
+			?.split(",")
+			.map((arg) => parseFloat(arg)) ?? [];
+
+	const [x = 0, y = 0] = getArgs("translate");
+	const [scaleX = 1, scaleY = scaleX] = getArgs("scale");
+	const [rotation = 0] = getArgs("rotate");
+
+	return { rotation, scale: [scaleX, scaleY], translate: [x, y] };
+};
+
 describe("Viewer", () => {
 	const onClose = vi.fn();
 	let notifyResize: (size: Size) => void;
@@ -143,9 +160,11 @@ describe("Viewer", () => {
 				"flip-vertical",
 			]);
 			expect(image.style.display).toBe("");
-			expect(image.style.transform).toBe(
-				"translate(50px, -50px) scale(0.5, 0.5) rotate(0deg)",
-			);
+			expect(getTransform(image)).toEqual({
+				rotation: 0,
+				scale: [0.5, 0.5],
+				translate: [50, -50],
+			});
 		});
 
 		it("shows the zoom of the fitted image", () => {
@@ -168,9 +187,11 @@ describe("Viewer", () => {
 			await clickButton("rotate-right");
 
 			// Turned a quarter, the image is 200x400 on screen and fits at 25%.
-			expect(image.style.transform).toBe(
-				"translate(50px, -50px) scale(0.25, 0.25) rotate(90deg)",
-			);
+			expect(getTransform(image)).toEqual({
+				rotation: 90,
+				scale: [0.25, 0.25],
+				translate: [50, -50],
+			});
 		});
 
 		it("returns a zoomed image to the fitted size before it rotates", async () => {
@@ -183,15 +204,19 @@ describe("Viewer", () => {
 			await userEvent.setup().click(image);
 			await clickButton("rotate-right");
 
-			expect(image.style.transform).toBe(
-				"translate(50px, -50px) scale(0.5, 0.5) rotate(0deg)",
-			);
+			expect(getTransform(image)).toEqual({
+				rotation: 0,
+				scale: [0.5, 0.5],
+				translate: [50, -50],
+			});
 
 			await act(async () => resolve({} as Animation));
 
-			expect(image.style.transform).toBe(
-				"translate(50px, -50px) scale(0.25, 0.25) rotate(90deg)",
-			);
+			expect(getTransform(image)).toEqual({
+				rotation: 90,
+				scale: [0.25, 0.25],
+				translate: [50, -50],
+			});
 		});
 
 		it("ignores the tools until the turn ends", async () => {
@@ -204,12 +229,12 @@ describe("Viewer", () => {
 			await clickButton("rotate-right");
 			await clickButton("flip-horizontal");
 
-			expect(image.style.transform).toContain("scale(0.25, 0.25)");
+			expect(getTransform(image).scale).toEqual([0.25, 0.25]);
 
 			await act(async () => resolve({} as Animation));
 			await clickButton("flip-horizontal");
 
-			expect(image.style.transform).toContain("scale(-0.25, 0.25)");
+			expect(getTransform(image).scale).toEqual([-0.25, 0.25]);
 		});
 
 		it("ignores the tools until a flip ends", async () => {
@@ -223,12 +248,15 @@ describe("Viewer", () => {
 			await clickButton("flip-vertical");
 			await clickButton("rotate-right");
 
-			expect(image.style.transform).toContain("scale(-0.5, 0.5) rotate(0deg)");
+			expect(getTransform(image)).toMatchObject({
+				rotation: 0,
+				scale: [-0.5, 0.5],
+			});
 
 			await act(async () => resolve({} as Animation));
 			await clickButton("flip-vertical");
 
-			expect(image.style.transform).toContain("scale(-0.5, -0.5)");
+			expect(getTransform(image).scale).toEqual([-0.5, -0.5]);
 		});
 
 		it("ignores the tools during both the return and the turn", async () => {
@@ -253,19 +281,23 @@ describe("Viewer", () => {
 			await clickButton("rotate-right");
 			await clickButton("flip-horizontal");
 
-			expect(image.style.transform).toContain("scale(0.5, 0.5) rotate(0deg)");
+			expect(getTransform(image)).toMatchObject({
+				rotation: 0,
+				scale: [0.5, 0.5],
+			});
 
 			await act(async () => fit.resolve({} as Animation));
 			await clickButton("flip-horizontal");
 
-			expect(image.style.transform).toContain(
-				"scale(0.25, 0.25) rotate(90deg)",
-			);
+			expect(getTransform(image)).toMatchObject({
+				rotation: 90,
+				scale: [0.25, 0.25],
+			});
 
 			await act(async () => turn.resolve({} as Animation));
 			await clickButton("flip-horizontal");
 
-			expect(image.style.transform).toContain("scale(-0.25, 0.25)");
+			expect(getTransform(image).scale).toEqual([-0.25, 0.25]);
 		});
 
 		it("ignores the tools until a resize during a flip ends", async () => {
@@ -292,12 +324,12 @@ describe("Viewer", () => {
 			await act(async () => flip.reject(new DOMException("", "AbortError")));
 			await clickButton("flip-vertical");
 
-			expect(image.style.transform).toContain("scale(-1, 1)");
+			expect(getTransform(image).scale).toEqual([-1, 1]);
 
 			await act(async () => fit.resolve({} as Animation));
 			await clickButton("flip-vertical");
 
-			expect(image.style.transform).toContain("scale(-1, -1)");
+			expect(getTransform(image).scale).toEqual([-1, -1]);
 		});
 
 		it("ignores the mouse until a flip ends", async () => {
@@ -325,18 +357,18 @@ describe("Viewer", () => {
 
 			await clickButton("rotate-left");
 
-			expect(image.style.transform).toContain("rotate(-90deg)");
+			expect(getTransform(image).rotation).toBe(-90);
 		});
 
 		it.each([
-			["flip-horizontal", "scale(-0.5, 0.5)"],
-			["flip-vertical", "scale(0.5, -0.5)"],
+			["flip-horizontal", [-0.5, 0.5]],
+			["flip-vertical", [0.5, -0.5]],
 		])("mirrors the image on %s", async (name, scale) => {
 			const { image } = renderReadyViewer();
 
 			await clickButton(name);
 
-			expect(image.style.transform).toContain(scale);
+			expect(getTransform(image).scale).toEqual(scale);
 		});
 	});
 
@@ -347,7 +379,7 @@ describe("Viewer", () => {
 
 			await user.click(image);
 
-			expect(image.style.transform).toContain("scale(1, 1)");
+			expect(getTransform(image).scale).toEqual([1, 1]);
 			expect(screen.getByText("100%")).toBeDefined();
 			expect(onClose).not.toHaveBeenCalled();
 		});
@@ -376,7 +408,7 @@ describe("Viewer", () => {
 
 			await clickButton("flip-horizontal");
 
-			expect(image.style.transform).toContain("scale(-");
+			expect(getTransform(image).scale[0]).toBeLessThan(0);
 		});
 	});
 
