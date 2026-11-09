@@ -13,6 +13,7 @@ describe("Toolbar", () => {
 	const onClose = vi.fn();
 	const onFlip = vi.fn();
 	const onRotate = vi.fn();
+	const onToggleZoom = vi.fn();
 
 	// Vitest globals are off, so Testing Library can't register this itself.
 	afterEach(() => {
@@ -27,6 +28,7 @@ describe("Toolbar", () => {
 				onClose={onClose}
 				onFlip={onFlip}
 				onRotate={onRotate}
+				onToggleZoom={onToggleZoom}
 				scale={scale}
 			/>,
 		);
@@ -71,6 +73,12 @@ describe("Toolbar", () => {
 			renderToolbar(false, scale);
 
 			expect(screen.getByText(text)).toBeDefined();
+		});
+
+		it("toggles the zoom on the zoom button", async () => {
+			await clickButton("100%");
+
+			expect(onToggleZoom).toHaveBeenCalledOnce();
 		});
 	});
 

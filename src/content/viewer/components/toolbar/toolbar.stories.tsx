@@ -12,6 +12,7 @@ export default {
 		onClose: fn(),
 		onFlip: fn(),
 		onRotate: fn(),
+		onToggleZoom: fn(),
 		scale: 1,
 	},
 	argTypes: {

@@ -8,6 +8,7 @@ type ToolbarProps = {
 	onClose: () => void;
 	onFlip: (direction: FlipDirection) => void;
 	onRotate: (direction: RotateDirection) => void;
+	onToggleZoom: () => void;
 	scale: number;
 };
 
@@ -24,6 +25,7 @@ export const Toolbar = ({
 	onClose,
 	onFlip,
 	onRotate,
+	onToggleZoom,
 	scale,
 }: ToolbarProps) => (
 	<div className={styles.toolbar}>
@@ -44,7 +46,9 @@ export const Toolbar = ({
 				<Button onClick={() => onFlip("vertical")}>
 					<Icon name="flip-vertical" />
 				</Button>
-				<div className={styles.zoom}>{formatZoom(scale)}</div>
+				<Button className={styles.zoom} onClick={onToggleZoom}>
+					{formatZoom(scale)}
+				</Button>
 			</div>
 		)}
 	</div>
