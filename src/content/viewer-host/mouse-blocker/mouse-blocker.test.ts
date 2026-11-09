@@ -2,18 +2,29 @@ import { POINTER_BUTTON } from "@shared/constants";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MouseBlocker } from "./mouse-blocker";
 
+const TYPES = [
+	"auxclick",
+	"click",
+	"contextmenu",
+	"dblclick",
+	"mousedown",
+	"mouseup",
+] as const;
+
 describe("MouseBlocker", () => {
 	let blocker: MouseBlocker;
 	let host: HTMLElement;
 	let root: ShadowRoot;
 
-	const press = (button: number) =>
-		new MouseEvent("mousedown", {
+	const mouse = (type: string, button: number = POINTER_BUTTON.MAIN) =>
+		new MouseEvent(type, {
 			bubbles: true,
 			button,
 			cancelable: true,
 			composed: true,
 		});
+
+	const press = (button: number) => mouse("mousedown", button);
 
 	const isPrevented = (target: EventTarget, event: Event): boolean => {
 		target.dispatchEvent(event);
@@ -34,17 +45,23 @@ describe("MouseBlocker", () => {
 		host.remove();
 	});
 
-	it("hides mousedown from the page", () => {
+	it.each(TYPES)("hides %s from the page", (type) => {
 		const listener = vi.fn();
-		document.addEventListener("mousedown", listener);
+		document.addEventListener(type, listener);
 
 		blocker.block(root);
-		document.body.dispatchEvent(press(POINTER_BUTTON.MAIN));
-		root.dispatchEvent(press(POINTER_BUTTON.MAIN));
+		document.body.dispatchEvent(mouse(type));
+		root.dispatchEvent(mouse(type));
 
-		document.removeEventListener("mousedown", listener);
+		document.removeEventListener(type, listener);
 
 		expect(listener).not.toHaveBeenCalled();
+	});
+
+	it("leaves the context menu of the browser", () => {
+		blocker.block(root);
+
+		expect(isPrevented(root, mouse("contextmenu"))).toBe(false);
 	});
 
 	describe("scrolling", () => {
@@ -62,6 +79,17 @@ describe("MouseBlocker", () => {
 
 			expect(isPrevented(root, press(POINTER_BUTTON.MAIN))).toBe(false);
 		});
+
+		it.each(["auxclick", "mouseup"])(
+			"leaves %s of the wheel button",
+			(type) => {
+				blocker.block(root);
+
+				expect(isPrevented(root, mouse(type, POINTER_BUTTON.AUXILIARY))).toBe(
+					false,
+				);
+			},
+		);
 
 		it("is allowed again after unblock", () => {
 			blocker.block(root);

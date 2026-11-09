@@ -270,6 +270,23 @@ describe("ViewerHost", () => {
 			expect(listener).not.toHaveBeenCalled();
 		});
 
+		it.each(["click", "contextmenu", "pointerdown", "touchstart"])(
+			"hides %s of the viewer from the page",
+			(type) => {
+				const listener = vi.fn();
+				document.addEventListener(type, listener, {
+					signal: pageController.signal,
+				});
+
+				open();
+				getHosts()[0]?.dispatchEvent(
+					new Event(type, { bubbles: true, composed: true }),
+				);
+
+				expect(listener).not.toHaveBeenCalled();
+			},
+		);
+
 		it("hides the events of the viewer from the page", () => {
 			const listener = listenOnPage();
 
