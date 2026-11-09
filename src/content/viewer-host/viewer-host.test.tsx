@@ -141,7 +141,7 @@ describe("ViewerHost", () => {
 	});
 
 	afterEach(() => {
-		close();
+		act(() => viewerHost.destroy());
 		pageController.abort();
 
 		for (const host of getHosts()) host.remove();
@@ -168,6 +168,67 @@ describe("ViewerHost", () => {
 			close();
 
 			expect(viewerHost.isOpen).toBe(false);
+		});
+	});
+
+	describe("init", () => {
+		// Stands for the page: a capture listener it adds to the window after the
+		// content script ran.
+		const listenOnWindow = (type: string) => {
+			const listener = vi.fn();
+
+			window.addEventListener(type, listener, {
+				capture: true,
+				signal: pageController.signal,
+			});
+
+			return listener;
+		};
+
+		it("hides the keys from window listeners the page added after it", () => {
+			viewerHost.init();
+			const listener = listenOnWindow("keydown");
+
+			open();
+			pressKey(document.body, "t");
+
+			expect(listener).not.toHaveBeenCalled();
+		});
+
+		it("hides the mouse buttons from window listeners the page added after it", () => {
+			viewerHost.init();
+			const listener = listenOnWindow("mousedown");
+
+			open();
+			document.body.dispatchEvent(
+				new MouseEvent("mousedown", { bubbles: true, composed: true }),
+			);
+
+			expect(listener).not.toHaveBeenCalled();
+		});
+
+		it("leaves the page alone while nothing is open", () => {
+			viewerHost.init();
+
+			expectPageUnlocked();
+		});
+	});
+
+	describe("destroy", () => {
+		it("closes the viewer", () => {
+			open();
+			act(() => viewerHost.destroy());
+
+			expect(viewerHost.isOpen).toBe(false);
+			expect(getHosts()).toHaveLength(0);
+		});
+
+		it("unlocks the page", () => {
+			viewerHost.init();
+			open();
+			act(() => viewerHost.destroy());
+
+			expectPageUnlocked();
 		});
 	});
 
@@ -220,7 +281,6 @@ describe("ViewerHost", () => {
 			expect(listener).not.toHaveBeenCalled();
 		});
 
-		// The scroll lock sees the page events before the blocker stops them.
 		it("keeps the page from scrolling with the keys of the page", () => {
 			open();
 

@@ -4,13 +4,21 @@ import { createRoot, type Root } from "react-dom/client";
 import { Viewer } from "../viewer";
 import { createFontFace } from "./fonts";
 import "./viewer-host.css";
-import { BLOCKED_EVENTS } from "./constants";
-import { EventBlocker } from "./event-blocker";
-import { ScrollLock } from "./scroll-lock";
+import { KeyboardBlocker } from "./keyboard-blocker";
+import { MouseBlocker } from "./mouse-blocker";
+import { ScrollbarHider } from "./scrollbar-hider";
+import { WheelBlocker } from "./wheel-blocker";
 
 export class ViewerHost {
-	private readonly eventBlocker = new EventBlocker();
-	private readonly scrollLock = new ScrollLock();
+	private readonly keyboardBlocker = new KeyboardBlocker();
+	private readonly mouseBlocker = new MouseBlocker();
+	private readonly wheelBlocker = new WheelBlocker();
+	private readonly blockers = [
+		this.keyboardBlocker,
+		this.mouseBlocker,
+		this.wheelBlocker,
+	];
+	private readonly scrollbarHider = new ScrollbarHider();
 
 	private fontFace: Nullable<FontFace> = null;
 	private host: Nullable<HTMLElement> = null;
@@ -18,6 +26,20 @@ export class ViewerHost {
 
 	get isOpen(): boolean {
 		return this.host !== null;
+	}
+
+	// Adds the listeners of the blockers before the page adds its own, so they
+	// see the events first. Not the wheel: a listener that isn't passive, kept
+	// for the life of the page, would slow down its scrolling.
+	init(): void {
+		this.keyboardBlocker.init();
+		this.mouseBlocker.init();
+	}
+
+	destroy(): void {
+		this.close();
+
+		for (const blocker of this.blockers) blocker.destroy();
 	}
 
 	open(url: string): void {
@@ -31,10 +53,8 @@ export class ViewerHost {
 
 			const shadowRoot = this.host.attachShadow({ mode: "closed" });
 
-			// Before the blocker, which stops the events of the page at the window,
-			// where the lock prevents them from scrolling.
-			this.scrollLock.lock(shadowRoot);
-			this.eventBlocker.block(BLOCKED_EVENTS, this.host);
+			for (const blocker of this.blockers) blocker.block(shadowRoot);
+			this.scrollbarHider.hide();
 
 			injectCSS({ target: shadowRoot });
 
@@ -49,8 +69,8 @@ export class ViewerHost {
 	}
 
 	close(): void {
-		this.eventBlocker.unblock();
-		this.scrollLock.unlock();
+		for (const blocker of this.blockers) blocker.unblock();
+		this.scrollbarHider.restore();
 
 		this.root?.unmount();
 		this.host?.remove();

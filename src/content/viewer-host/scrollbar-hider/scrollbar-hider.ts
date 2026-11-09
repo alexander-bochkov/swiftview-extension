@@ -1,4 +1,3 @@
-import { POINTER_BUTTON } from "@shared/constants";
 import type { Nullable, Point } from "@shared/types";
 
 type Style = {
@@ -7,89 +6,21 @@ type Style = {
 	readonly value: string;
 };
 
-// Keys whose default action scrolls the page. By `key`, not `code`, so the
-// numpad arrows with Num Lock off are covered too.
-const SCROLL_KEYS: readonly string[] = [
-	" ",
-	"ArrowDown",
-	"ArrowLeft",
-	"ArrowRight",
-	"ArrowUp",
-	"End",
-	"Home",
-	"PageDown",
-	"PageUp",
-];
-
-// Keeps the page from moving while the viewer is open. Scrolling is prevented
-// per event, as `overflow: hidden` misses pages that scroll an inner element.
-// The hidden scrollbars are made up for with padding and a larger scroll area,
-// though pages sized with `vw` may still reflow.
-export class ScrollLock {
-	private controller: Nullable<AbortController> = null;
-	private root: Nullable<ShadowRoot> = null;
+// Hides the scrollbars of the page while the viewer is open. Scrolling itself
+// is prevented by the blockers, per event, as `overflow: hidden` misses pages
+// that scroll an inner element. The hidden scrollbars are made up for with
+// padding and a larger scroll area, though pages sized with `vw` may still
+// reflow.
+export class ScrollbarHider {
+	private isHidden = false;
 	private scrollExtender: Nullable<HTMLElement> = null;
 	private scrollPosition: Point = { x: 0, y: 0 };
 	private styles: Style[] = [];
 
-	lock(root: ShadowRoot): void {
-		if (this.controller) return;
+	hide(): void {
+		if (this.isHidden) return;
 
-		this.root = root;
-
-		this.controller = new AbortController();
-		const signal = this.controller.signal;
-
-		const options = {
-			capture: true,
-			// Not passive, otherwise the wheel can't be prevented.
-			passive: false,
-			signal,
-		};
-
-		window.addEventListener("keydown", this.handleKeyDown, options);
-		window.addEventListener("mousedown", this.handleMouseDown, options);
-		window.addEventListener("wheel", this.handleWheel, options);
-
-		this.hideScrollbars();
-	}
-
-	unlock(): void {
-		if (!this.controller) return;
-
-		this.controller.abort();
-		this.controller = null;
-		this.root = null;
-
-		this.scrollExtender?.remove();
-		this.scrollExtender = null;
-
-		this.restoreStyles();
-		this.restoreScrollPosition();
-	}
-
-	private handleKeyDown = (e: KeyboardEvent): void => {
-		if (!SCROLL_KEYS.includes(e.key)) return;
-
-		// Browser shortcuts, like Alt+Left to go back.
-		if (e.altKey || e.metaKey) return;
-
-		// Space on a focused button presses it.
-		const isButtonPress =
-			e.key === " " && this.root?.activeElement instanceof HTMLButtonElement;
-
-		if (!isButtonPress) e.preventDefault();
-	};
-
-	private handleMouseDown = (e: MouseEvent): void => {
-		if (e.button === POINTER_BUTTON.AUXILIARY) e.preventDefault();
-	};
-
-	private handleWheel = (e: WheelEvent): void => {
-		e.preventDefault();
-	};
-
-	private hideScrollbars(): void {
+		this.isHidden = true;
 		this.scrollPosition = { x: window.scrollX, y: window.scrollY };
 
 		const root = document.documentElement;
@@ -115,6 +46,18 @@ export class ScrollLock {
 				`${parseFloat(paddingRight) + scrollbarWidth}px`,
 			);
 		}
+	}
+
+	restore(): void {
+		if (!this.isHidden) return;
+
+		this.isHidden = false;
+
+		this.scrollExtender?.remove();
+		this.scrollExtender = null;
+
+		this.restoreStyles();
+		this.restoreScrollPosition();
 	}
 
 	// Otherwise a page scrolled to the end is scrolled back by the scrollbar
