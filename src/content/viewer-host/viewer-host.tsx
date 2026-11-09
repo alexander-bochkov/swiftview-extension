@@ -6,18 +6,20 @@ import { createFontFace } from "./fonts";
 import "./viewer-host.css";
 import { KeyboardBlocker } from "./keyboard-blocker";
 import { MouseBlocker } from "./mouse-blocker";
+import { PointerBlocker } from "./pointer-blocker";
 import { ScrollbarHider } from "./scrollbar-hider";
+import { TouchBlocker } from "./touch-blocker";
 import { WheelBlocker } from "./wheel-blocker";
 
 export class ViewerHost {
-	private readonly keyboardBlocker = new KeyboardBlocker();
-	private readonly mouseBlocker = new MouseBlocker();
-	private readonly wheelBlocker = new WheelBlocker();
-	private readonly blockers = [
-		this.keyboardBlocker,
-		this.mouseBlocker,
-		this.wheelBlocker,
+	// Started by init(), see there.
+	private readonly earlyBlockers = [
+		new KeyboardBlocker(),
+		new MouseBlocker(),
+		new PointerBlocker(),
+		new TouchBlocker(),
 	];
+	private readonly blockers = [...this.earlyBlockers, new WheelBlocker()];
 	private readonly scrollbarHider = new ScrollbarHider();
 
 	private fontFace: Nullable<FontFace> = null;
@@ -32,8 +34,7 @@ export class ViewerHost {
 	// see the events first. Not the wheel: a listener that isn't passive, kept
 	// for the life of the page, would slow down its scrolling.
 	init(): void {
-		this.keyboardBlocker.init();
-		this.mouseBlocker.init();
+		for (const blocker of this.earlyBlockers) blocker.init();
 	}
 
 	destroy(): void {
