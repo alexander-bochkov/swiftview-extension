@@ -4,18 +4,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 type MessageListener = (message: unknown) => void;
 
 const mocks = vi.hoisted(() => ({
+	init: vi.fn(),
 	isOpen: false,
 	open: vi.fn(),
 }));
 
-vi.mock("./page-lock", () => ({ PageLock: class {} }));
-vi.mock("./scrollbar-hider", () => ({ ScrollbarHider: class {} }));
 vi.mock("./viewer-host", () => ({
 	ViewerHost: class {
 		get isOpen(): boolean {
 			return mocks.isOpen;
 		}
 
+		init = mocks.init;
 		open = mocks.open;
 	},
 }));
@@ -47,6 +47,12 @@ afterEach(() => {
 	mocks.isOpen = false;
 	vi.clearAllMocks();
 	vi.unstubAllGlobals();
+});
+
+describe("on load", () => {
+	it("initializes the viewer host", () => {
+		expect(mocks.init).toHaveBeenCalledOnce();
+	});
 });
 
 describe("on message", () => {
