@@ -1,3 +1,4 @@
+import type { Point } from "@shared/types";
 import { useRef } from "react";
 import { Icon, ImageError, Overlay, Toolbar } from "./components";
 import {
@@ -12,6 +13,11 @@ type ViewerProps = {
 	onClose: () => void;
 	url: string;
 };
+
+// Points are measured from the center of the container. Zooming to it keeps
+// the part of the image in the center where it is, unless the image has to
+// move to stay within its bounds.
+const CONTAINER_CENTER: Point = { x: 0, y: 0 };
 
 export const Viewer = ({ onClose, url }: ViewerProps) => {
 	const overlayRef = useRef<HTMLDialogElement>(null);
@@ -36,6 +42,9 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 						}
 						onRotate={(direction) =>
 							store.dispatch({ payload: direction, type: "ROTATE" })
+						}
+						onToggleZoom={() =>
+							store.dispatch({ payload: CONTAINER_CENTER, type: "TOGGLE_ZOOM" })
 						}
 						scale={scale}
 					/>

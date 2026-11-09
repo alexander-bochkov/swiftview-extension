@@ -524,6 +524,16 @@ describe("reducer", () => {
 			expect(state).toMatchObject({ offset: { y: -50 }, scale: 1 });
 		});
 
+		it("keeps the part of the image at the center point in the center", () => {
+			// -60 at 200% is -30 at 100%, within the limit of 50.
+			const state = reducer(
+				createState({ offset: { x: 0, y: -60 }, scale: 2 }),
+				{ payload: { x: 0, y: 0 }, type: "TOGGLE_ZOOM" },
+			);
+
+			expect(state).toMatchObject({ offset: { y: -30 }, scale: 1 });
+		});
+
 		it("fills the container with a small image", () => {
 			const state = reducer(createState(SMALL_IMAGE), {
 				payload: { x: 0, y: 0 },

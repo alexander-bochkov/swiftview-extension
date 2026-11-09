@@ -158,6 +158,7 @@ describe("Viewer", () => {
 				"rotate-left",
 				"flip-horizontal",
 				"flip-vertical",
+				"50%",
 			]);
 			expect(image.style.display).toBe("");
 			expect(getTransform(image)).toEqual({
@@ -350,6 +351,22 @@ describe("Viewer", () => {
 			await user.click(image);
 
 			expect(screen.getByText("100%")).toBeDefined();
+		});
+
+		it("toggles the zoom on the zoom button around the center", async () => {
+			const { image } = renderReadyViewer();
+
+			await clickButton("50%");
+
+			// At 100% the image is 400x200 in the container of 500x100. It stays
+			// centered, as it did when fitted.
+			expect(getTransform(image)).toEqual({
+				rotation: 0,
+				scale: [1, 1],
+				translate: [50, -50],
+			});
+			expect(screen.getByText("100%")).toBeDefined();
+			expect(onClose).not.toHaveBeenCalled();
 		});
 
 		it("rotates the image left", async () => {

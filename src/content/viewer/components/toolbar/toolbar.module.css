@@ -22,14 +22,12 @@
 	align-items: flex-end;
 }
 
+/* A pill instead of the round button, with the colors of the button. */
 .zoom {
-	display: flex;
-	justify-content: center;
 	width: 64px;
 	height: 18px;
 	margin-top: 8px;
+	font-family: inherit;
 	font-size: 14px;
-	color: rgb(255 255 255 / 70%);
-	background-color: rgb(110 110 110 / 50%);
 	border-radius: 9px;
 }
