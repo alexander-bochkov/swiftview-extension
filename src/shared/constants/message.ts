@@ -1,4 +1,4 @@
 export const MESSAGE_TYPE = {
-	OPEN_IMAGE: "open-image",
-	RESOLVE_IMAGE_URL: "resolve-image-url",
+	FIND_BEST_MEDIA_URL: "find-best-media-url",
+	OPEN_MEDIA: "open-media",
 } as const;

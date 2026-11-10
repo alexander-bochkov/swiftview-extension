@@ -8,9 +8,9 @@ type MessageListener = (
 ) => void;
 
 const mocks = vi.hoisted(() => ({
+	findBestImageUrl: vi.fn<() => string | null>(() => null),
 	init: vi.fn(),
 	point: null as { x: number; y: number } | null,
-	resolveImageUrl: vi.fn<() => string | null>(() => null),
 }));
 
 vi.mock("./context-menu-tracker", () => ({
@@ -23,11 +23,11 @@ vi.mock("./context-menu-tracker", () => ({
 	},
 }));
 
-vi.mock("./resolve-image-url", () => ({
-	resolveImageUrl: mocks.resolveImageUrl,
+vi.mock("./find-best-image-url", () => ({
+	findBestImageUrl: mocks.findBestImageUrl,
 }));
 
-const BETTER_URL = "https://example.com/photo-large.png";
+const BEST_URL = "https://example.com/photo-large.png";
 const PHOTO_URL = "https://example.com/photo.png";
 const POINT = { x: 10, y: 20 };
 
@@ -67,42 +67,42 @@ describe("on load", () => {
 });
 
 describe("on message", () => {
-	it("resolves the url with the point of the menu", () => {
+	it("finds the best url with the point of the menu", () => {
 		mocks.point = POINT;
 
-		onMessage({ type: MESSAGE_TYPE.RESOLVE_IMAGE_URL }, {}, sendResponse);
+		onMessage({ type: MESSAGE_TYPE.FIND_BEST_MEDIA_URL }, {}, sendResponse);
 
-		expect(mocks.resolveImageUrl).toHaveBeenCalledExactlyOnceWith(POINT);
+		expect(mocks.findBestImageUrl).toHaveBeenCalledExactlyOnceWith(POINT);
 	});
 
-	it("resolves the url without a point before a menu opens", () => {
-		onMessage({ type: MESSAGE_TYPE.RESOLVE_IMAGE_URL }, {}, sendResponse);
+	it("finds the best url without a point before a menu opens", () => {
+		onMessage({ type: MESSAGE_TYPE.FIND_BEST_MEDIA_URL }, {}, sendResponse);
 
-		expect(mocks.resolveImageUrl).toHaveBeenCalledExactlyOnceWith(null);
+		expect(mocks.findBestImageUrl).toHaveBeenCalledExactlyOnceWith(null);
 	});
 
-	it("responds with the resolved url", () => {
-		mocks.resolveImageUrl.mockReturnValueOnce(BETTER_URL);
+	it("responds with the best url", () => {
+		mocks.findBestImageUrl.mockReturnValueOnce(BEST_URL);
 
-		onMessage({ type: MESSAGE_TYPE.RESOLVE_IMAGE_URL }, {}, sendResponse);
+		onMessage({ type: MESSAGE_TYPE.FIND_BEST_MEDIA_URL }, {}, sendResponse);
 
-		expect(sendResponse).toHaveBeenCalledExactlyOnceWith(BETTER_URL);
+		expect(sendResponse).toHaveBeenCalledExactlyOnceWith(BEST_URL);
 	});
 
-	it("responds with null without a better url", () => {
-		onMessage({ type: MESSAGE_TYPE.RESOLVE_IMAGE_URL }, {}, sendResponse);
+	it("responds with null without a best url", () => {
+		onMessage({ type: MESSAGE_TYPE.FIND_BEST_MEDIA_URL }, {}, sendResponse);
 
 		expect(sendResponse).toHaveBeenCalledExactlyOnceWith(null);
 	});
 
 	it("ignores a message of another type", () => {
 		onMessage(
-			{ type: MESSAGE_TYPE.OPEN_IMAGE, url: PHOTO_URL },
+			{ type: MESSAGE_TYPE.OPEN_MEDIA, url: PHOTO_URL },
 			{},
 			sendResponse,
 		);
 
-		expect(mocks.resolveImageUrl).not.toHaveBeenCalled();
+		expect(mocks.findBestImageUrl).not.toHaveBeenCalled();
 		expect(sendResponse).not.toHaveBeenCalled();
 	});
 });

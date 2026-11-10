@@ -1,8 +1,11 @@
-import { MESSAGE_TYPE } from "@shared/constants";
 import { t } from "@shared/i18n";
-import type { OpenImageMessage } from "@shared/types";
 import { MENU_ITEM_ID } from "./constants";
-import { offerReload, requestImageUrl, syncMenuWithActiveTab } from "./utils";
+import {
+	findBestMediaUrl,
+	offerReload,
+	openMedia,
+	syncMenuWithActiveTab,
+} from "./utils";
 
 browser.runtime.onInstalled.addListener(async () => {
 	await browser.contextMenus.removeAll();
@@ -11,7 +14,7 @@ browser.runtime.onInstalled.addListener(async () => {
 		{
 			contexts: ["image"],
 			id: MENU_ITEM_ID,
-			title: t("context_menu@open_image"),
+			title: t("context_menu@open_with_swiftview"),
 			visible: false,
 		},
 		syncMenuWithActiveTab,
@@ -22,21 +25,10 @@ browser.contextMenus.onClicked.addListener(
 	async ({ frameId = 0, menuItemId, srcUrl }, tab) => {
 		if (menuItemId !== MENU_ITEM_ID || !srcUrl || !tab?.id) return;
 
-		const url = await requestImageUrl(tab.id, frameId);
+		const bestUrl = await findBestMediaUrl(tab.id, frameId);
+		const opened = await openMedia(tab.id, bestUrl || srcUrl);
 
-		try {
-			await browser.tabs.sendMessage<OpenImageMessage>(
-				tab.id,
-				{ type: MESSAGE_TYPE.OPEN_IMAGE, url: url || srcUrl },
-				// The viewer runs only in the top frame, which gives it the whole page,
-				// even for images inside iframes.
-				{ frameId: 0 },
-			);
-		} catch {
-			// No content script in the tab. Chrome adds it only to pages loaded after
-			// the extension was installed, updated or enabled.
-			await offerReload(tab.id);
-		}
+		if (!opened) await offerReload(tab.id);
 	},
 );
 

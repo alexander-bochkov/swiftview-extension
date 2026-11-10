@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { syncMenuWithActiveTab } from "./sync-menu-with-active-tab";
 
-const OPEN_IMAGE_ID = "open-image";
+const MENU_ITEM_ID = "open-with-swiftview";
 const TAB_ID = 7;
 
 const executeScript = vi.fn<() => Promise<unknown>>(() => Promise.resolve());
@@ -42,7 +42,7 @@ describe("syncMenuWithActiveTab", () => {
 	it("shows the menu item if content scripts can run on the page", async () => {
 		await syncMenuWithActiveTab();
 
-		expect(update).toHaveBeenCalledExactlyOnceWith(OPEN_IMAGE_ID, {
+		expect(update).toHaveBeenCalledExactlyOnceWith(MENU_ITEM_ID, {
 			visible: true,
 		});
 	});
@@ -52,7 +52,7 @@ describe("syncMenuWithActiveTab", () => {
 
 		await syncMenuWithActiveTab();
 
-		expect(update).toHaveBeenCalledExactlyOnceWith(OPEN_IMAGE_ID, {
+		expect(update).toHaveBeenCalledExactlyOnceWith(MENU_ITEM_ID, {
 			visible: false,
 		});
 	});
@@ -82,7 +82,7 @@ describe("syncMenuWithActiveTab", () => {
 
 		await staleSync;
 
-		expect(update).toHaveBeenCalledExactlyOnceWith(OPEN_IMAGE_ID, {
+		expect(update).toHaveBeenCalledExactlyOnceWith(MENU_ITEM_ID, {
 			visible: true,
 		});
 	});
