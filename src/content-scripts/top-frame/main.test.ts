@@ -57,7 +57,7 @@ describe("on load", () => {
 
 describe("on message", () => {
 	it("opens the viewer with the image url", () => {
-		onMessage({ type: MESSAGE_TYPE.OPEN_IMAGE, url: PHOTO_URL });
+		onMessage({ type: MESSAGE_TYPE.OPEN_MEDIA, url: PHOTO_URL });
 
 		expect(mocks.open).toHaveBeenCalledExactlyOnceWith(PHOTO_URL);
 	});
@@ -65,7 +65,7 @@ describe("on message", () => {
 	it("ignores the message while the viewer is open", () => {
 		mocks.isOpen = true;
 
-		onMessage({ type: MESSAGE_TYPE.OPEN_IMAGE, url: PHOTO_URL });
+		onMessage({ type: MESSAGE_TYPE.OPEN_MEDIA, url: PHOTO_URL });
 
 		expect(mocks.open).not.toHaveBeenCalled();
 	});

@@ -6,11 +6,11 @@ type Message<Type extends MessageType, Data extends object = object> = Readonly<
 	{ type: Type } & Data
 >;
 
-export type OpenImageMessage = Message<
-	typeof MESSAGE_TYPE.OPEN_IMAGE,
-	{ url: string }
+export type FindBestMediaUrlMessage = Message<
+	typeof MESSAGE_TYPE.FIND_BEST_MEDIA_URL
 >;
 
-export type ResolveImageUrlMessage = Message<
-	typeof MESSAGE_TYPE.RESOLVE_IMAGE_URL
+export type OpenMediaMessage = Message<
+	typeof MESSAGE_TYPE.OPEN_MEDIA,
+	{ url: string }
 >;
