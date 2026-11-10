@@ -2,7 +2,7 @@ import { MESSAGE_TYPE } from "@shared/constants";
 import { t } from "@shared/i18n";
 import type { OpenImageMessage } from "@shared/types";
 import { MENU_ITEM_ID } from "./constants";
-import { offerReload, syncMenuWithActiveTab } from "./utils";
+import { offerReload, requestImageUrl, syncMenuWithActiveTab } from "./utils";
 
 browser.runtime.onInstalled.addListener(async () => {
 	await browser.contextMenus.removeAll();
@@ -10,7 +10,7 @@ browser.runtime.onInstalled.addListener(async () => {
 	browser.contextMenus.create(
 		{
 			contexts: ["image"],
-			id: MENU_ITEM_ID.OPEN_IMAGE,
+			id: MENU_ITEM_ID,
 			title: t("context_menu@open_image"),
 			visible: false,
 		},
@@ -19,15 +19,17 @@ browser.runtime.onInstalled.addListener(async () => {
 });
 
 browser.contextMenus.onClicked.addListener(
-	async ({ menuItemId, srcUrl }, tab) => {
-		if (menuItemId !== MENU_ITEM_ID.OPEN_IMAGE || !srcUrl || !tab?.id) return;
+	async ({ frameId = 0, menuItemId, srcUrl }, tab) => {
+		if (menuItemId !== MENU_ITEM_ID || !srcUrl || !tab?.id) return;
+
+		const url = await requestImageUrl(tab.id, frameId);
 
 		try {
 			await browser.tabs.sendMessage<OpenImageMessage>(
 				tab.id,
-				{ type: MESSAGE_TYPE.OPEN_IMAGE, url: srcUrl },
-				// The content script runs only in the top frame, which gives the viewer
-				// the whole page, even for images inside iframes.
+				{ type: MESSAGE_TYPE.OPEN_IMAGE, url: url || srcUrl },
+				// The viewer runs only in the top frame, which gives it the whole page,
+				// even for images inside iframes.
 				{ frameId: 0 },
 			);
 		} catch {

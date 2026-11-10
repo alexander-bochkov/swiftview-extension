@@ -8,8 +8,19 @@ export default defineManifest({
 	},
 	content_scripts: [
 		{
-			js: ["src/content/main.ts"],
+			js: ["src/content-scripts/top-frame/main.ts"],
 			match_about_blank: true,
+			// crxjs manifest type doesn't include it.
+			// match_origin_as_fallback: true,
+			matches: ["<all_urls>"],
+			run_at: "document_start",
+		},
+		{
+			all_frames: true,
+			js: ["src/content-scripts/all-frames/main.ts"],
+			match_about_blank: true,
+			// crxjs manifest type doesn't include it.
+			// match_origin_as_fallback: true,
 			matches: ["<all_urls>"],
 			run_at: "document_start",
 		},

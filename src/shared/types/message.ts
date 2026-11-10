@@ -10,3 +10,7 @@ export type OpenImageMessage = Message<
 	typeof MESSAGE_TYPE.OPEN_IMAGE,
 	{ url: string }
 >;
+
+export type ResolveImageUrlMessage = Message<
+	typeof MESSAGE_TYPE.RESOLVE_IMAGE_URL
+>;

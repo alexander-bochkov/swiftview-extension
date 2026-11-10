@@ -1,5 +1,5 @@
 import type { Preview } from "@storybook/react-vite";
-import { createFontFace } from "../src/content/viewer-host/fonts";
+import { createFontFace } from "../src/content-scripts/top-frame/viewer-host/fonts";
 import { fakeBrowser } from "../src/shared/test-utils";
 
 // Before the stories are imported, as some components use the extension APIs

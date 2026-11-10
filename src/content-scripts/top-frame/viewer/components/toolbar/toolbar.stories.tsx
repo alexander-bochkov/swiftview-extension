@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { withViewerBackdrop } from "../../../../../.storybook/decorators";
+import { withViewerBackdrop } from "../../../../../../.storybook/decorators";
 import { Toolbar } from "./toolbar";
 
 type Metadata = Meta<typeof Toolbar>;
