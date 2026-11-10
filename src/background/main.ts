@@ -25,7 +25,7 @@ browser.contextMenus.onClicked.addListener(
 	async ({ frameId = 0, menuItemId, srcUrl }, tab) => {
 		if (menuItemId !== MENU_ITEM_ID || !srcUrl || !tab?.id) return;
 
-		const bestUrl = await findBestMediaUrl(tab.id, frameId);
+		const bestUrl = await findBestMediaUrl(tab.id, frameId, srcUrl);
 		const opened = await openMedia(tab.id, bestUrl || srcUrl);
 
 		if (!opened) await offerReload(tab.id);

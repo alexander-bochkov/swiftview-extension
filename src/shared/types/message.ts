@@ -7,7 +7,8 @@ type Message<Type extends MessageType, Data extends object = object> = Readonly<
 >;
 
 export type FindBestMediaUrlMessage = Message<
-	typeof MESSAGE_TYPE.FIND_BEST_MEDIA_URL
+	typeof MESSAGE_TYPE.FIND_BEST_MEDIA_URL,
+	{ srcUrl: string }
 >;
 
 export type OpenMediaMessage = Message<
