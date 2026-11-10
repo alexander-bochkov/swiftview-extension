@@ -9,6 +9,7 @@ type MessageListener = (
 
 const mocks = vi.hoisted(() => ({
 	findBestImageUrl: vi.fn<() => string | null>(() => null),
+	findMenuImage: vi.fn<() => HTMLImageElement | null>(() => null),
 	init: vi.fn(),
 	point: null as { x: number; y: number } | null,
 }));
@@ -27,9 +28,15 @@ vi.mock("./find-best-image-url", () => ({
 	findBestImageUrl: mocks.findBestImageUrl,
 }));
 
+vi.mock("./find-menu-image", () => ({
+	findMenuImage: mocks.findMenuImage,
+}));
+
 const BEST_URL = "https://example.com/photo-large.png";
 const PHOTO_URL = "https://example.com/photo.png";
 const POINT = { x: 10, y: 20 };
+
+const MESSAGE = { srcUrl: PHOTO_URL, type: MESSAGE_TYPE.FIND_BEST_MEDIA_URL };
 
 const sendResponse = vi.fn();
 
@@ -67,31 +74,57 @@ describe("on load", () => {
 });
 
 describe("on message", () => {
-	it("finds the best url with the point of the menu", () => {
+	it("finds the image of the menu with its point and url", () => {
 		mocks.point = POINT;
 
-		onMessage({ type: MESSAGE_TYPE.FIND_BEST_MEDIA_URL }, {}, sendResponse);
+		onMessage(MESSAGE, {}, sendResponse);
 
-		expect(mocks.findBestImageUrl).toHaveBeenCalledExactlyOnceWith(POINT);
+		expect(mocks.findMenuImage).toHaveBeenCalledExactlyOnceWith(
+			POINT,
+			PHOTO_URL,
+		);
 	});
 
-	it("finds the best url without a point before a menu opens", () => {
-		onMessage({ type: MESSAGE_TYPE.FIND_BEST_MEDIA_URL }, {}, sendResponse);
+	it("finds the image without a point before a menu opens", () => {
+		onMessage(MESSAGE, {}, sendResponse);
 
-		expect(mocks.findBestImageUrl).toHaveBeenCalledExactlyOnceWith(null);
+		expect(mocks.findMenuImage).toHaveBeenCalledExactlyOnceWith(
+			null,
+			PHOTO_URL,
+		);
+	});
+
+	it("finds the best url of the image of the menu", () => {
+		const image = document.createElement("img");
+
+		mocks.findMenuImage.mockReturnValueOnce(image);
+
+		onMessage(MESSAGE, {}, sendResponse);
+
+		expect(mocks.findBestImageUrl).toHaveBeenCalledExactlyOnceWith(image);
 	});
 
 	it("responds with the best url", () => {
+		mocks.findMenuImage.mockReturnValueOnce(document.createElement("img"));
 		mocks.findBestImageUrl.mockReturnValueOnce(BEST_URL);
 
-		onMessage({ type: MESSAGE_TYPE.FIND_BEST_MEDIA_URL }, {}, sendResponse);
+		onMessage(MESSAGE, {}, sendResponse);
 
 		expect(sendResponse).toHaveBeenCalledExactlyOnceWith(BEST_URL);
 	});
 
 	it("responds with null without a best url", () => {
-		onMessage({ type: MESSAGE_TYPE.FIND_BEST_MEDIA_URL }, {}, sendResponse);
+		mocks.findMenuImage.mockReturnValueOnce(document.createElement("img"));
 
+		onMessage(MESSAGE, {}, sendResponse);
+
+		expect(sendResponse).toHaveBeenCalledExactlyOnceWith(null);
+	});
+
+	it("responds with null without the image of the menu", () => {
+		onMessage(MESSAGE, {}, sendResponse);
+
+		expect(mocks.findBestImageUrl).not.toHaveBeenCalled();
 		expect(sendResponse).toHaveBeenCalledExactlyOnceWith(null);
 	});
 
@@ -102,7 +135,7 @@ describe("on message", () => {
 			sendResponse,
 		);
 
-		expect(mocks.findBestImageUrl).not.toHaveBeenCalled();
+		expect(mocks.findMenuImage).not.toHaveBeenCalled();
 		expect(sendResponse).not.toHaveBeenCalled();
 	});
 });

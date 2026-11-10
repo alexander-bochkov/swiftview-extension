@@ -155,6 +155,7 @@ describe("on menu item click", () => {
 		expect(mocks.findBestMediaUrl).toHaveBeenCalledExactlyOnceWith(
 			TAB_ID,
 			IFRAME_ID,
+			PHOTO_URL,
 		);
 		expect(mocks.findBestMediaUrl).toHaveBeenCalledBefore(mocks.openMedia);
 	});
@@ -165,7 +166,11 @@ describe("on menu item click", () => {
 			{ id: TAB_ID },
 		);
 
-		expect(mocks.findBestMediaUrl).toHaveBeenCalledExactlyOnceWith(TAB_ID, 0);
+		expect(mocks.findBestMediaUrl).toHaveBeenCalledExactlyOnceWith(
+			TAB_ID,
+			0,
+			PHOTO_URL,
+		);
 	});
 
 	it.each([
