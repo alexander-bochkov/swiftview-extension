@@ -1,30 +1,33 @@
 import { defineManifest } from "@crxjs/vite-plugin";
 import pkg from "./package.json" with { type: "json" };
 
+// crxjs's manifest type lacks `match_origin_as_fallback`. Declaring the array
+// separately skips the excess-property check while the rest stays type-checked.
+// crxjs keeps unknown keys when it rewrites content script entries.
+const contentScripts = [
+	{
+		js: ["src/content-scripts/top-frame/main.ts"],
+		match_about_blank: true,
+		match_origin_as_fallback: true,
+		matches: ["<all_urls>"],
+		run_at: "document_start",
+	},
+	{
+		all_frames: true,
+		js: ["src/content-scripts/all-frames/main.ts"],
+		match_about_blank: true,
+		match_origin_as_fallback: true,
+		matches: ["<all_urls>"],
+		run_at: "document_start",
+	},
+];
+
 export default defineManifest({
 	background: {
 		service_worker: "src/background/main.ts",
 		type: "module",
 	},
-	content_scripts: [
-		{
-			js: ["src/content-scripts/top-frame/main.ts"],
-			match_about_blank: true,
-			// crxjs manifest type doesn't include it.
-			// match_origin_as_fallback: true,
-			matches: ["<all_urls>"],
-			run_at: "document_start",
-		},
-		{
-			all_frames: true,
-			js: ["src/content-scripts/all-frames/main.ts"],
-			match_about_blank: true,
-			// crxjs manifest type doesn't include it.
-			// match_origin_as_fallback: true,
-			matches: ["<all_urls>"],
-			run_at: "document_start",
-		},
-	],
+	content_scripts: contentScripts,
 	default_locale: "en",
 	description: "__MSG_extension@description__",
 	homepage_url: "https://github.com/alexander-bochkov/swiftview-extension",
