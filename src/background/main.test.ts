@@ -20,14 +20,20 @@ type UpdatedListener = (
 
 const mocks = vi.hoisted(() => ({
 	offerReload: vi.fn(() => Promise.resolve()),
+	requestImageUrl: vi.fn<() => Promise<string | null>>(() =>
+		Promise.resolve(null),
+	),
 	syncMenuWithActiveTab: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock("./utils", () => ({
 	offerReload: mocks.offerReload,
+	requestImageUrl: mocks.requestImageUrl,
 	syncMenuWithActiveTab: mocks.syncMenuWithActiveTab,
 }));
 
+const BETTER_URL = "https://example.com/photo-large.png";
+const IFRAME_ID = 5;
 const OPEN_IMAGE_ID = "open-image";
 const PHOTO_URL = "https://example.com/photo.png";
 const TAB_ID = 7;
@@ -133,7 +139,7 @@ describe("on install", () => {
 describe("on menu item click", () => {
 	it("sends the image url to the top frame", async () => {
 		await onClicked(
-			{ menuItemId: OPEN_IMAGE_ID, srcUrl: PHOTO_URL },
+			{ frameId: 0, menuItemId: OPEN_IMAGE_ID, srcUrl: PHOTO_URL },
 			{ id: TAB_ID },
 		);
 
@@ -143,6 +149,61 @@ describe("on menu item click", () => {
 			{ frameId: 0 },
 		);
 		expect(mocks.offerReload).not.toHaveBeenCalled();
+	});
+
+	it("asks the frame of the menu for a better url first", async () => {
+		await onClicked(
+			{ frameId: IFRAME_ID, menuItemId: OPEN_IMAGE_ID, srcUrl: PHOTO_URL },
+			{ id: TAB_ID },
+		);
+
+		expect(mocks.requestImageUrl).toHaveBeenCalledExactlyOnceWith(
+			TAB_ID,
+			IFRAME_ID,
+		);
+		expect(mocks.requestImageUrl).toHaveBeenCalledBefore(sendMessage);
+	});
+
+	it("asks the top frame when the menu has no frame", async () => {
+		await onClicked(
+			{ menuItemId: OPEN_IMAGE_ID, srcUrl: PHOTO_URL },
+			{ id: TAB_ID },
+		);
+
+		expect(mocks.requestImageUrl).toHaveBeenCalledExactlyOnceWith(TAB_ID, 0);
+	});
+
+	it.each([
+		["no", null],
+		["an empty", ""],
+	])("sends the url of the menu when the frame has %s url", async (_, url) => {
+		mocks.requestImageUrl.mockResolvedValueOnce(url);
+
+		await onClicked(
+			{ frameId: IFRAME_ID, menuItemId: OPEN_IMAGE_ID, srcUrl: PHOTO_URL },
+			{ id: TAB_ID },
+		);
+
+		expect(sendMessage).toHaveBeenCalledExactlyOnceWith(
+			TAB_ID,
+			{ type: MESSAGE_TYPE.OPEN_IMAGE, url: PHOTO_URL },
+			{ frameId: 0 },
+		);
+	});
+
+	it("sends the better url of the frame to the top frame", async () => {
+		mocks.requestImageUrl.mockResolvedValueOnce(BETTER_URL);
+
+		await onClicked(
+			{ frameId: IFRAME_ID, menuItemId: OPEN_IMAGE_ID, srcUrl: PHOTO_URL },
+			{ id: TAB_ID },
+		);
+
+		expect(sendMessage).toHaveBeenCalledExactlyOnceWith(
+			TAB_ID,
+			{ type: MESSAGE_TYPE.OPEN_IMAGE, url: BETTER_URL },
+			{ frameId: 0 },
+		);
 	});
 
 	it("offers a reload if the tab has no content script", async () => {

@@ -25,7 +25,7 @@ const updateMenuVisibility = async (tabId: number): Promise<void> => {
 	if (syncId !== latestSyncId) return;
 
 	try {
-		await browser.contextMenus.update(MENU_ITEM_ID.OPEN_IMAGE, { visible });
+		await browser.contextMenus.update(MENU_ITEM_ID, { visible });
 	} catch {
 		// The menu item hasn't yet been created by onInstalled
 	}

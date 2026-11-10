@@ -13,7 +13,8 @@ export default defineConfig({
 		crx({ manifest }),
 		cssInjectedByJsPlugin({
 			jsAssetsFilterFunction: ({ facadeModuleId }) =>
-				facadeModuleId?.endsWith("/src/content/main.ts") ?? false,
+				facadeModuleId?.endsWith("/src/content-scripts/top-frame/main.ts") ??
+				false,
 		}),
 		react(),
 		svgr(),

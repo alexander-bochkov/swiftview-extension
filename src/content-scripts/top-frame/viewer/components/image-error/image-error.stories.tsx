@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { withViewerBackdrop } from "../../../../../.storybook/decorators";
+import { withViewerBackdrop } from "../../../../../../.storybook/decorators";
 import { ImageError } from "./image-error";
 
 type Metadata = Meta<typeof ImageError>;
