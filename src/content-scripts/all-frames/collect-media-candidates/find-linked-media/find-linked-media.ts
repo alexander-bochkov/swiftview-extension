@@ -63,8 +63,17 @@ const TYPE_FINDERS: Readonly<
 	"https:": findTypeByPathname,
 };
 
-export const findLinkedMedia = (element: Element): Nullable<MediaCandidate> => {
+const findAnchor = (element: Element): Nullable<Element> => {
 	const anchor = element.closest("a[href]");
+	if (anchor) return anchor;
+
+	const root = element.getRootNode();
+
+	return root instanceof ShadowRoot ? findAnchor(root.host) : null;
+};
+
+export const findLinkedMedia = (element: Element): Nullable<MediaCandidate> => {
+	const anchor = findAnchor(element);
 
 	if (!(anchor instanceof HTMLAnchorElement)) return null;
 

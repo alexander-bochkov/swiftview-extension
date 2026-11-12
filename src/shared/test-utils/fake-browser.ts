@@ -6,6 +6,10 @@ type Messages = Record<string, { message: string } | undefined>;
 // the content script uses, for the tests and Storybook. Substitutions are
 // ignored, as no message uses them.
 export const fakeBrowser = {
+	dom: {
+		// Open roots only: jsdom keeps a closed root to itself.
+		openOrClosedShadowRoot: (element: HTMLElement) => element.shadowRoot,
+	},
 	i18n: {
 		getMessage: (messageName: string) =>
 			(messages as Messages)[messageName]?.message ?? messageName,
