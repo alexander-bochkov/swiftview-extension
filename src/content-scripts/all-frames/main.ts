@@ -1,18 +1,17 @@
 import { MESSAGE_TYPE } from "@shared/constants";
-import type { FindBestMediaUrlMessage } from "@shared/types";
+import type { FindMediaCandidatesMessage } from "@shared/types";
+import { collectMediaCandidates } from "./collect-media-candidates";
 import { ContextMenuTracker } from "./context-menu-tracker";
-import { findBestImageUrl } from "./find-best-image-url";
-import { findMenuImage } from "./find-menu-image";
+import { findContextMenuMediaElement } from "./find-context-menu-media-element";
 
 const contextMenuTracker = new ContextMenuTracker();
 contextMenuTracker.init();
 
 browser.runtime.onMessage.addListener(
-	({ srcUrl, type }: FindBestMediaUrlMessage, _, sendResponse) => {
-		if (type !== MESSAGE_TYPE.FIND_BEST_MEDIA_URL) return;
+	({ srcUrl, type }: FindMediaCandidatesMessage, _, sendResponse) => {
+		if (type !== MESSAGE_TYPE.FIND_MEDIA_CANDIDATES) return;
 
-		const image = findMenuImage(contextMenuTracker.point, srcUrl);
-
-		sendResponse(image ? findBestImageUrl(image) : null);
+		const media = findContextMenuMediaElement(contextMenuTracker.point, srcUrl);
+		sendResponse(media ? collectMediaCandidates(media, srcUrl) : null);
 	},
 );

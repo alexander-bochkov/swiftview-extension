@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { findMenuImage } from "./find-menu-image";
+import { findContextMenuMediaElement } from "./find-context-menu-media-element";
 
+const CLIP_URL = "https://example.com/clip.mp4";
 const OTHER_URL = "https://example.com/other.png";
 const PHOTO_URL = "https://example.com/photo.png";
 const POINT = { x: 10, y: 20 };
@@ -9,6 +10,12 @@ const createImage = (src: string): HTMLImageElement => {
 	const image = document.createElement("img");
 	image.src = src;
 	return image;
+};
+
+const createVideo = (src: string): HTMLVideoElement => {
+	const video = document.createElement("video");
+	video.src = src;
+	return video;
 };
 
 // jsdom has no layout, so the elements under the point are stubbed.
@@ -22,9 +29,9 @@ afterEach(() => {
 	vi.clearAllMocks();
 });
 
-describe("findMenuImage", () => {
+describe("findContextMenuMediaElement", () => {
 	it("looks under the point of the menu", () => {
-		findMenuImage(POINT, PHOTO_URL);
+		findContextMenuMediaElement(POINT, PHOTO_URL);
 
 		expect(elementsFromPoint).toHaveBeenCalledExactlyOnceWith(POINT.x, POINT.y);
 	});
@@ -34,10 +41,18 @@ describe("findMenuImage", () => {
 
 		elementsFromPoint.mockReturnValueOnce([image]);
 
-		expect(findMenuImage(POINT, PHOTO_URL)).toBe(image);
+		expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
 	});
 
-	it("finds the image under an overlay", () => {
+	it("finds the video with the url of the menu", () => {
+		const video = createVideo(CLIP_URL);
+
+		elementsFromPoint.mockReturnValueOnce([video]);
+
+		expect(findContextMenuMediaElement(POINT, CLIP_URL)).toBe(video);
+	});
+
+	it("finds the media under an overlay", () => {
 		const image = createImage(PHOTO_URL);
 
 		elementsFromPoint.mockReturnValueOnce([
@@ -45,7 +60,7 @@ describe("findMenuImage", () => {
 			image,
 		]);
 
-		expect(findMenuImage(POINT, PHOTO_URL)).toBe(image);
+		expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
 	});
 
 	it("finds the image by the source it shows", () => {
@@ -55,29 +70,43 @@ describe("findMenuImage", () => {
 		Object.defineProperty(image, "currentSrc", { value: PHOTO_URL });
 		elementsFromPoint.mockReturnValueOnce([image]);
 
-		expect(findMenuImage(POINT, PHOTO_URL)).toBe(image);
+		expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
 	});
 
-	it("skips an image with another url", () => {
+	it("finds the video by the source it plays", () => {
+		const video = document.createElement("video");
+
+		// Picked from the <source> children, and jsdom doesn't pick.
+		Object.defineProperty(video, "currentSrc", { value: CLIP_URL });
+		elementsFromPoint.mockReturnValueOnce([video]);
+
+		expect(findContextMenuMediaElement(POINT, CLIP_URL)).toBe(video);
+	});
+
+	it("skips media with another url", () => {
 		const image = createImage(PHOTO_URL);
 
-		elementsFromPoint.mockReturnValueOnce([createImage(OTHER_URL), image]);
+		elementsFromPoint.mockReturnValueOnce([
+			createImage(OTHER_URL),
+			createVideo(CLIP_URL),
+			image,
+		]);
 
-		expect(findMenuImage(POINT, PHOTO_URL)).toBe(image);
+		expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
 	});
 
 	// A menu opened from the keyboard reports a point near the focused element.
-	it("finds nothing when no image under the point has the url", () => {
+	it("finds nothing when no media under the point has the url", () => {
 		elementsFromPoint.mockReturnValueOnce([
 			document.createElement("a"),
 			createImage(OTHER_URL),
 		]);
 
-		expect(findMenuImage(POINT, PHOTO_URL)).toBeNull();
+		expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBeNull();
 	});
 
 	it("finds nothing without a point", () => {
-		expect(findMenuImage(null, PHOTO_URL)).toBeNull();
+		expect(findContextMenuMediaElement(null, PHOTO_URL)).toBeNull();
 		expect(elementsFromPoint).not.toHaveBeenCalled();
 	});
 });

@@ -1,4 +1,4 @@
 export const MESSAGE_TYPE = {
-	FIND_BEST_MEDIA_URL: "find-best-media-url",
-	OPEN_MEDIA: "open-media",
+	FIND_MEDIA_CANDIDATES: "find-media-candidates",
+	OPEN_VIEWER: "open-viewer",
 } as const;

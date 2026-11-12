@@ -1,3 +1,5 @@
+import { MEDIA_TYPE } from "@shared/constants";
+import type { MediaCandidate } from "@shared/types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 type ActivatedListener = () => void;
@@ -18,28 +20,42 @@ type UpdatedListener = (
 ) => void;
 
 const mocks = vi.hoisted(() => ({
-	findBestMediaUrl: vi.fn<() => Promise<string | null>>(() =>
-		Promise.resolve(null),
+	findMediaCandidates: vi.fn<() => Promise<readonly MediaCandidate[]>>(() =>
+		Promise.resolve([]),
 	),
 	offerReload: vi.fn(() => Promise.resolve()),
-	openMedia: vi.fn<() => Promise<boolean>>(() => Promise.resolve(true)),
+	openViewer: vi.fn<() => Promise<boolean>>(() => Promise.resolve(true)),
 	syncMenuWithActiveTab: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock("./utils", () => ({
-	findBestMediaUrl: mocks.findBestMediaUrl,
+// Only the helpers that reach outside the script are mocked.
+vi.mock("./utils", async (importOriginal) => ({
+	...(await importOriginal<typeof import("./utils")>()),
+	findMediaCandidates: mocks.findMediaCandidates,
 	offerReload: mocks.offerReload,
-	openMedia: mocks.openMedia,
+	openViewer: mocks.openViewer,
 	syncMenuWithActiveTab: mocks.syncMenuWithActiveTab,
 }));
 
 const BEST_URL = "https://example.com/photo-large.png";
+const CLIP_URL = "https://example.com/clip.mp4";
 const IFRAME_ID = 5;
 const MENU_ITEM_ID = "open-with-swiftview";
 const PHOTO_URL = "https://example.com/photo.png";
 const TAB_ID = 7;
 const WINDOW_ID = 3;
 const WINDOW_ID_NONE = -1;
+
+const BEST = { type: MEDIA_TYPE.IMAGE, url: BEST_URL };
+const CLIP = { type: MEDIA_TYPE.VIDEO, url: CLIP_URL };
+const PHOTO = { type: MEDIA_TYPE.IMAGE, url: PHOTO_URL };
+
+const PHOTO_CLICK = {
+	frameId: 0,
+	mediaType: MEDIA_TYPE.IMAGE,
+	menuItemId: MENU_ITEM_ID,
+	srcUrl: PHOTO_URL,
+} as const;
 
 const create = vi.fn<(properties: object, callback: () => void) => void>();
 const removeAll = vi.fn(() => Promise.resolve());
@@ -104,12 +120,12 @@ afterEach(() => {
 });
 
 describe("on install", () => {
-	it("creates a hidden menu item for images", async () => {
+	it("creates a hidden menu item for images and videos", async () => {
 		await onInstalled();
 
 		expect(create).toHaveBeenCalledExactlyOnceWith(
 			{
-				contexts: ["image"],
+				contexts: [MEDIA_TYPE.IMAGE, MEDIA_TYPE.VIDEO],
 				id: MENU_ITEM_ID,
 				title: "Open with SwiftView",
 				visible: false,
@@ -136,133 +152,125 @@ describe("on install", () => {
 });
 
 describe("on menu item click", () => {
-	it("opens the url of the menu", async () => {
+	it("asks the frame of the menu for the candidates of the image", async () => {
+		await onClicked({ ...PHOTO_CLICK, frameId: IFRAME_ID }, { id: TAB_ID });
+
+		expect(mocks.findMediaCandidates).toHaveBeenCalledExactlyOnceWith(
+			TAB_ID,
+			IFRAME_ID,
+			PHOTO,
+		);
+	});
+
+	it("asks the frame of the menu for the candidates of the video", async () => {
 		await onClicked(
-			{ frameId: 0, menuItemId: MENU_ITEM_ID, srcUrl: PHOTO_URL },
+			{ ...PHOTO_CLICK, mediaType: MEDIA_TYPE.VIDEO, srcUrl: CLIP_URL },
 			{ id: TAB_ID },
 		);
 
-		expect(mocks.openMedia).toHaveBeenCalledExactlyOnceWith(TAB_ID, PHOTO_URL);
+		expect(mocks.findMediaCandidates).toHaveBeenCalledExactlyOnceWith(
+			TAB_ID,
+			0,
+			CLIP,
+		);
+	});
+
+	it("asks the top frame when the menu reports no frame", async () => {
+		await onClicked({ ...PHOTO_CLICK, frameId: undefined }, { id: TAB_ID });
+
+		expect(mocks.findMediaCandidates).toHaveBeenCalledExactlyOnceWith(
+			TAB_ID,
+			0,
+			PHOTO,
+		);
+	});
+
+	it("opens the candidates", async () => {
+		mocks.findMediaCandidates.mockResolvedValueOnce([BEST, PHOTO]);
+
+		await onClicked(PHOTO_CLICK, { id: TAB_ID });
+
+		expect(mocks.findMediaCandidates).toHaveBeenCalledBefore(mocks.openViewer);
+		expect(mocks.openViewer).toHaveBeenCalledExactlyOnceWith(TAB_ID, [
+			BEST,
+			PHOTO,
+		]);
 		expect(mocks.offerReload).not.toHaveBeenCalled();
 	});
 
-	it("asks the frame of the menu for the best url first", async () => {
-		await onClicked(
-			{ frameId: IFRAME_ID, menuItemId: MENU_ITEM_ID, srcUrl: PHOTO_URL },
-			{ id: TAB_ID },
-		);
+	it("offers to reload the page without a content script", async () => {
+		mocks.openViewer.mockResolvedValueOnce(false);
 
-		expect(mocks.findBestMediaUrl).toHaveBeenCalledExactlyOnceWith(
-			TAB_ID,
-			IFRAME_ID,
-			PHOTO_URL,
-		);
-		expect(mocks.findBestMediaUrl).toHaveBeenCalledBefore(mocks.openMedia);
-	});
-
-	it("asks the top frame when the menu has no frame", async () => {
-		await onClicked(
-			{ menuItemId: MENU_ITEM_ID, srcUrl: PHOTO_URL },
-			{ id: TAB_ID },
-		);
-
-		expect(mocks.findBestMediaUrl).toHaveBeenCalledExactlyOnceWith(
-			TAB_ID,
-			0,
-			PHOTO_URL,
-		);
-	});
-
-	it.each([
-		["no", null],
-		["an empty", ""],
-	])("opens the url of the menu when the frame has %s url", async (_, url) => {
-		mocks.findBestMediaUrl.mockResolvedValueOnce(url);
-
-		await onClicked(
-			{ frameId: IFRAME_ID, menuItemId: MENU_ITEM_ID, srcUrl: PHOTO_URL },
-			{ id: TAB_ID },
-		);
-
-		expect(mocks.openMedia).toHaveBeenCalledExactlyOnceWith(TAB_ID, PHOTO_URL);
-	});
-
-	it("opens the best url of the frame", async () => {
-		mocks.findBestMediaUrl.mockResolvedValueOnce(BEST_URL);
-
-		await onClicked(
-			{ frameId: IFRAME_ID, menuItemId: MENU_ITEM_ID, srcUrl: PHOTO_URL },
-			{ id: TAB_ID },
-		);
-
-		expect(mocks.openMedia).toHaveBeenCalledExactlyOnceWith(TAB_ID, BEST_URL);
-	});
-
-	it("offers a reload if the media can't be opened", async () => {
-		mocks.openMedia.mockResolvedValueOnce(false);
-
-		await onClicked(
-			{ menuItemId: MENU_ITEM_ID, srcUrl: PHOTO_URL },
-			{ id: TAB_ID },
-		);
+		await onClicked(PHOTO_CLICK, { id: TAB_ID });
 
 		expect(mocks.offerReload).toHaveBeenCalledExactlyOnceWith(TAB_ID);
 	});
 
 	it("ignores a click on another menu item", async () => {
-		await onClicked({ menuItemId: "other", srcUrl: PHOTO_URL }, { id: TAB_ID });
+		await onClicked({ ...PHOTO_CLICK, menuItemId: "other" }, { id: TAB_ID });
 
-		expect(mocks.findBestMediaUrl).not.toHaveBeenCalled();
-		expect(mocks.openMedia).not.toHaveBeenCalled();
+		expect(mocks.findMediaCandidates).not.toHaveBeenCalled();
+		expect(mocks.openViewer).not.toHaveBeenCalled();
 	});
 
-	it("ignores a click without a media url", async () => {
-		await onClicked({ menuItemId: MENU_ITEM_ID }, { id: TAB_ID });
+	it("ignores a click without a url", async () => {
+		await onClicked({ ...PHOTO_CLICK, srcUrl: undefined }, { id: TAB_ID });
 
-		expect(mocks.findBestMediaUrl).not.toHaveBeenCalled();
-		expect(mocks.openMedia).not.toHaveBeenCalled();
+		expect(mocks.openViewer).not.toHaveBeenCalled();
 	});
 
-	it("ignores a click outside a tab", async () => {
-		await onClicked({ menuItemId: MENU_ITEM_ID, srcUrl: PHOTO_URL });
+	it("ignores a click without a tab", async () => {
+		await onClicked(PHOTO_CLICK);
 
-		expect(mocks.findBestMediaUrl).not.toHaveBeenCalled();
-		expect(mocks.openMedia).not.toHaveBeenCalled();
+		expect(mocks.openViewer).not.toHaveBeenCalled();
 	});
+
+	it.each([undefined, "audio" as const])(
+		"ignores a click on media of the type %s",
+		async (mediaType) => {
+			await onClicked({ ...PHOTO_CLICK, mediaType }, { id: TAB_ID });
+
+			expect(mocks.openViewer).not.toHaveBeenCalled();
+		},
+	);
 });
 
-describe("menu item sync", () => {
-	it("happens when another tab is activated", () => {
+describe("on tab activated", () => {
+	it("syncs the menu item", () => {
 		onActivated();
 
 		expect(mocks.syncMenuWithActiveTab).toHaveBeenCalledOnce();
 	});
+});
 
-	it("happens when the loading status of the active tab changes", () => {
-		onUpdated(TAB_ID, { status: "complete" }, { active: true });
+describe("on tab updated", () => {
+	it("syncs the menu item when the active tab loads", () => {
+		onUpdated(TAB_ID, { status: "loading" }, { active: true });
 
 		expect(mocks.syncMenuWithActiveTab).toHaveBeenCalledOnce();
 	});
 
-	it("skips other updates of the active tab", () => {
+	it("ignores an inactive tab", () => {
+		onUpdated(TAB_ID, { status: "loading" }, { active: false });
+
+		expect(mocks.syncMenuWithActiveTab).not.toHaveBeenCalled();
+	});
+
+	it("ignores a change other than the status", () => {
 		onUpdated(TAB_ID, {}, { active: true });
 
 		expect(mocks.syncMenuWithActiveTab).not.toHaveBeenCalled();
 	});
+});
 
-	it("skips updates of a background tab", () => {
-		onUpdated(TAB_ID, { status: "complete" }, { active: false });
-
-		expect(mocks.syncMenuWithActiveTab).not.toHaveBeenCalled();
-	});
-
-	it("happens when another window gets focus", () => {
+describe("on window focus changed", () => {
+	it("syncs the menu item", () => {
 		onFocusChanged(WINDOW_ID);
 
 		expect(mocks.syncMenuWithActiveTab).toHaveBeenCalledOnce();
 	});
 
-	it("skips the focus leaving Chrome", () => {
+	it("ignores the loss of focus", () => {
 		onFocusChanged(WINDOW_ID_NONE);
 
 		expect(mocks.syncMenuWithActiveTab).not.toHaveBeenCalled();
