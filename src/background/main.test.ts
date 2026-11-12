@@ -120,7 +120,7 @@ afterEach(() => {
 });
 
 describe("on install", () => {
-	it("creates a hidden menu item for images and videos", async () => {
+	it("creates the menu item for images and videos", async () => {
 		await onInstalled();
 
 		expect(create).toHaveBeenCalledExactlyOnceWith(
@@ -128,7 +128,6 @@ describe("on install", () => {
 				contexts: [MEDIA_TYPE.IMAGE, MEDIA_TYPE.VIDEO],
 				id: MENU_ITEM_ID,
 				title: "Open with SwiftView",
-				visible: false,
 			},
 			expect.any(Function),
 		);

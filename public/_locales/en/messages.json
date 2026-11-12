@@ -3,6 +3,10 @@
 		"description": "Confirm dialog shown when the page was opened before the extension was installed, updated or re-enabled, so it has to be reloaded before an image or a video can be opened. Keep \"SwiftView\" untranslated.",
 		"message": "SwiftView can't open images or videos on this page until it's reloaded. Reload now?"
 	},
+	"context_menu@not_available_on_page": {
+		"description": "Disabled context menu item shown on pages where the extension can't run, such as the browser's own pages. Keep \"SwiftView\" untranslated.",
+		"message": "SwiftView isn't available on this page"
+	},
 	"context_menu@open_with_swiftview": {
 		"description": "Context menu item shown on images and videos. Opens the image or video in the viewer. Keep \"SwiftView\" untranslated.",
 		"message": "Open with SwiftView"
