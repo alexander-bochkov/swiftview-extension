@@ -1,15 +1,23 @@
 import { MEDIA_TYPE } from "@shared/constants";
 import type { MediaCandidate } from "@shared/types";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MediaViewer } from "./media-viewer";
 import type { MediaProbe } from "./use-media-probe";
 
+type ImageViewerProps = {
+	readonly containerRef: { readonly current: HTMLElement | null };
+	readonly image: HTMLImageElement;
+	readonly onClose: () => void;
+};
+
 const mocks = vi.hoisted(() => ({
+	ImageViewer: vi.fn<(props: ImageViewerProps) => string>(() => "image viewer"),
 	useMediaProbe: vi.fn<() => MediaProbe>(() => ({ status: "loading" })),
 }));
 
+vi.mock("../image-viewer", () => ({ ImageViewer: mocks.ImageViewer }));
 vi.mock("./use-media-probe", () => ({ useMediaProbe: mocks.useMediaProbe }));
 
 // The buttons contain only an icon, so render its name to make them queryable.
@@ -56,6 +64,13 @@ describe("MediaViewer", () => {
 		return render(<MediaViewer candidates={candidates} onClose={onClose} />);
 	};
 
+	const getImageViewerProps = (): ImageViewerProps => {
+		const props = mocks.ImageViewer.mock.lastCall?.[0];
+		if (!props) throw new Error("ImageViewer was not rendered");
+
+		return props;
+	};
+
 	const getButtonNames = () =>
 		screen.getAllByRole("button").map((button) => button.textContent);
 
@@ -88,16 +103,37 @@ describe("MediaViewer", () => {
 		});
 	});
 
-	describe("with the media", () => {
-		it("shows the image", () => {
-			const image = document.createElement("img");
+	describe("with an image", () => {
+		const image = document.createElement("img");
 
-			const { container } = renderViewer({ element: image, status: "loaded" });
+		it("hands it to the image viewer in the overlay", () => {
+			renderViewer({ element: image, status: "loaded" });
 
-			expect(container.contains(image)).toBe(true);
+			expect(screen.getByText("image viewer")).toBeDefined();
+			expect(getImageViewerProps()).toMatchObject({ image });
+			expect(getImageViewerProps().containerRef.current).toBeInstanceOf(
+				HTMLDialogElement,
+			);
 		});
 
-		it("shows the video with the native controls", () => {
+		it("shows neither the loader nor its own close button", () => {
+			renderViewer({ element: image, status: "loaded" });
+
+			expect(screen.queryByText("spinner")).toBeNull();
+			expect(screen.queryByRole("button")).toBeNull();
+		});
+
+		it("closes when the image viewer asks to", async () => {
+			renderViewer({ element: image, status: "loaded" });
+
+			act(() => getImageViewerProps().onClose());
+
+			await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
+		});
+	});
+
+	describe("with a video", () => {
+		it("shows it with the native controls", () => {
 			const video = document.createElement("video");
 
 			const { container } = renderViewer({ element: video, status: "loaded" });
@@ -108,7 +144,7 @@ describe("MediaViewer", () => {
 
 		it("hides the loader", () => {
 			renderViewer({
-				element: document.createElement("img"),
+				element: document.createElement("video"),
 				status: "loaded",
 			});
 

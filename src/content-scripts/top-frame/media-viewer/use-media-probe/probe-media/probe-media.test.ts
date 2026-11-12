@@ -51,6 +51,15 @@ describe("probeMedia", () => {
 		return { element, promise };
 	};
 
+	// jsdom doesn't load images, so the natural size is reported by hand.
+	const loadImage = (element: MediaElement, height = 200, width = 400) => {
+		Object.defineProperties(element, {
+			naturalHeight: { value: height },
+			naturalWidth: { value: width },
+		});
+		element.dispatchEvent(new Event("load"));
+	};
+
 	describe("an image", () => {
 		it("loads it into an img", () => {
 			const { element } = probe(PHOTO);
@@ -62,9 +71,18 @@ describe("probeMedia", () => {
 		it("resolves with the img once it loaded", async () => {
 			const { element, promise } = probe(PHOTO);
 
-			element.dispatchEvent(new Event("load"));
+			loadImage(element);
 
 			await expect(promise).resolves.toBe(element);
+		});
+
+		it("rejects and drops the url when it loaded without a size", async () => {
+			const { element, promise } = probe(PHOTO);
+
+			loadImage(element, 0, 0);
+
+			await expect(promise).rejects.toThrow(/no size/i);
+			expect(element.hasAttribute("src")).toBe(false);
 		});
 	});
 
@@ -119,7 +137,7 @@ describe("probeMedia", () => {
 			const { element, promise } = probe(PHOTO);
 
 			vi.advanceTimersByTime(PROBE_TIMEOUT_MS - 1);
-			element.dispatchEvent(new Event("load"));
+			loadImage(element);
 
 			await expect(promise).resolves.toBe(element);
 		});
@@ -147,7 +165,7 @@ describe("probeMedia", () => {
 		it("ignores an error and the timeout", async () => {
 			const { element, promise } = probe(PHOTO);
 
-			element.dispatchEvent(new Event("load"));
+			loadImage(element);
 			await promise;
 
 			element.dispatchEvent(new Event("error"));
@@ -159,7 +177,7 @@ describe("probeMedia", () => {
 		it("ignores an abort", async () => {
 			const { element, promise } = probe(PHOTO);
 
-			element.dispatchEvent(new Event("load"));
+			loadImage(element);
 			await promise;
 
 			controller.abort();
