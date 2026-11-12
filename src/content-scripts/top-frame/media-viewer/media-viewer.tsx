@@ -7,6 +7,7 @@ import {
 	Overlay,
 	Toolbar,
 } from "../components";
+import { ImageViewer } from "../image-viewer";
 import styles from "./media-viewer.module.css";
 import { useMediaProbe } from "./use-media-probe";
 
@@ -19,8 +20,8 @@ export const MediaViewer = ({ candidates, onClose }: MediaViewerProps) => {
 	const overlayRef = useRef<HTMLDialogElement>(null);
 	const probe = useMediaProbe(candidates);
 
-	// TODO: hand the element to an image viewer or a video viewer. Until then
-	// it is shown as it is, a video with the native controls.
+	// TODO: hand the video to a video viewer. Until then it is shown as it is,
+	// with the native controls.
 	useEffect(() => {
 		if (
 			probe.status === "loaded" &&
@@ -32,16 +33,31 @@ export const MediaViewer = ({ candidates, onClose }: MediaViewerProps) => {
 
 	return (
 		<Overlay className={styles.mediaViewer} onClose={onClose} ref={overlayRef}>
-			{({ onRequestClose }) => (
-				<>
-					<Toolbar onClose={onRequestClose} />
-					{probe.status === "loading" && <Loader />}
-					{probe.status === "failed" && <MediaError />}
-					{probe.status === "loaded" && (
-						<ElementSlot className={styles.media} element={probe.element} />
-					)}
-				</>
-			)}
+			{({ onRequestClose }) => {
+				if (
+					probe.status === "loaded" &&
+					probe.element instanceof HTMLImageElement
+				) {
+					return (
+						<ImageViewer
+							containerRef={overlayRef}
+							image={probe.element}
+							onClose={onRequestClose}
+						/>
+					);
+				}
+
+				return (
+					<>
+						<Toolbar onClose={onRequestClose} />
+						{probe.status === "loading" && <Loader />}
+						{probe.status === "failed" && <MediaError />}
+						{probe.status === "loaded" && (
+							<ElementSlot className={styles.media} element={probe.element} />
+						)}
+					</>
+				);
+			}}
 		</Overlay>
 	);
 };

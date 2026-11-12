@@ -18,6 +18,12 @@ const createElement = (type: MediaType): MediaElement => {
 const getLoadEvent = (element: MediaElement): string =>
 	element instanceof HTMLVideoElement ? "loadedmetadata" : "load";
 
+// An image without a size, such as an SVG without its own size in some
+// browsers, can't be fitted or shown.
+const hasSize = (element: MediaElement): boolean =>
+	element instanceof HTMLVideoElement ||
+	(element.naturalWidth > 0 && element.naturalHeight > 0);
+
 const unload = (element: MediaElement): void => {
 	element.removeAttribute("src");
 	if (element instanceof HTMLVideoElement) element.load();
@@ -54,6 +60,11 @@ export const probeMedia = (
 		element.addEventListener(
 			getLoadEvent(element),
 			() => {
+				if (!hasSize(element)) {
+					fail(new Error(`No size in ${url}`));
+					return;
+				}
+
 				stopWaiting();
 				resolve(element);
 			},
