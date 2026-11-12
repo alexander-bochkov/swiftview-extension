@@ -1,16 +1,16 @@
 import { MESSAGE_TYPE } from "@shared/constants";
-import type { OpenMediaMessage } from "@shared/types";
+import type { MediaCandidate, OpenViewerMessage } from "@shared/types";
 
-export const openMedia = async (
+export const openViewer = async (
 	tabId: number,
-	url: string,
+	candidates: readonly MediaCandidate[],
 ): Promise<boolean> => {
 	try {
-		await browser.tabs.sendMessage<OpenMediaMessage>(
+		await browser.tabs.sendMessage<OpenViewerMessage>(
 			tabId,
-			{ type: MESSAGE_TYPE.OPEN_MEDIA, url },
+			{ candidates, type: MESSAGE_TYPE.OPEN_VIEWER },
 			// The viewer runs only in the top frame, which gives it the whole page,
-			// even for images inside iframes.
+			// even for media inside iframes.
 			{ frameId: 0 },
 		);
 		return true;

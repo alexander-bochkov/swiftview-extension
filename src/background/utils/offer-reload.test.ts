@@ -7,7 +7,7 @@ type Injection = {
 };
 
 const MESSAGE =
-	"SwiftView can't open images on this page until it's reloaded. Reload now?";
+	"SwiftView can't open images or videos on this page until it's reloaded. Reload now?";
 const TAB_ID = 7;
 
 const confirm = vi.fn(() => true);
