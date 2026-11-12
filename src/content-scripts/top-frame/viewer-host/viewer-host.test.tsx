@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 
 import { injectCSS } from "virtual:css-injected-by-js";
+import { MEDIA_TYPE } from "@shared/constants";
+import type { MediaCandidate } from "@shared/types";
 import { act, useEffect } from "react";
 import {
 	afterEach,
@@ -16,21 +18,28 @@ import { FONT_FAMILY } from "./fonts";
 import { ViewerHost } from "./viewer-host";
 
 type ViewerProps = {
+	readonly candidates: readonly MediaCandidate[];
 	readonly onClose: () => void;
-	readonly url: string;
 };
 
 const mocks = vi.hoisted(() => ({
 	injectCSS: vi.fn(),
+	MediaViewer: vi.fn(),
 	onUnmount: vi.fn(),
-	Viewer: vi.fn(),
 }));
 
 // The stylesheet comes from a Vite virtual module that only exists in a build.
 vi.mock("virtual:css-injected-by-js", () => ({ injectCSS: mocks.injectCSS }));
-vi.mock("../viewer", () => ({ Viewer: mocks.Viewer }));
+vi.mock("../media-viewer", () => ({ MediaViewer: mocks.MediaViewer }));
 
-const PHOTO_URL = "https://example.com/photo.png";
+const PHOTO: MediaCandidate = {
+	type: MEDIA_TYPE.IMAGE,
+	url: "https://example.com/photo.png",
+};
+const CLIP: MediaCandidate = {
+	type: MEDIA_TYPE.VIDEO,
+	url: "https://example.com/clip.mp4",
+};
 
 // Reports the unmount through the cleanup of an effect.
 const FakeViewer = (): null => {
@@ -48,15 +57,15 @@ describe("ViewerHost", () => {
 		document.documentElement.querySelectorAll("swiftview-root");
 
 	const getViewerProps = (): ViewerProps => {
-		const props = mocks.Viewer.mock.lastCall?.[0];
+		const props = mocks.MediaViewer.mock.lastCall?.[0];
 		if (!props) throw new Error("Viewer was not rendered");
 
 		return props;
 	};
 
 	// React renders inside act, so the render has finished when it returns.
-	const open = (url = PHOTO_URL) => {
-		act(() => viewerHost.open(url));
+	const open = (candidates: readonly MediaCandidate[] = [PHOTO]) => {
+		act(() => viewerHost.open(candidates));
 	};
 
 	const close = () => {
@@ -108,7 +117,7 @@ describe("ViewerHost", () => {
 
 	beforeEach(() => {
 		consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-		mocks.Viewer.mockImplementation(FakeViewer);
+		mocks.MediaViewer.mockImplementation(FakeViewer);
 
 		fonts = new Set();
 		vi.stubGlobal(
@@ -255,10 +264,10 @@ describe("ViewerHost", () => {
 			});
 		});
 
-		it("renders the viewer with the url", () => {
-			open("https://example.com/other.png");
+		it("renders the viewer with the candidates", () => {
+			open([CLIP, PHOTO]);
 
-			expect(getViewerProps().url).toBe("https://example.com/other.png");
+			expect(getViewerProps().candidates).toEqual([CLIP, PHOTO]);
 		});
 
 		it("hides the events of the page from the page", () => {
@@ -410,7 +419,7 @@ describe("ViewerHost", () => {
 	describe("errors", () => {
 		it("logs and closes when the viewer throws while rendering", async () => {
 			const error = new Error("render failed");
-			mocks.Viewer.mockImplementation(() => {
+			mocks.MediaViewer.mockImplementation(() => {
 				throw error;
 			});
 
@@ -419,7 +428,7 @@ describe("ViewerHost", () => {
 			Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", false);
 
 			try {
-				viewerHost.open(PHOTO_URL);
+				viewerHost.open([PHOTO]);
 
 				await vi.waitFor(() => expect(viewerHost.isOpen).toBe(false));
 			} finally {

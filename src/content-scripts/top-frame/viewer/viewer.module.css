@@ -10,20 +10,3 @@
 	left: 0;
 	transition: transform 150ms ease-out;
 }
-
-.loader {
-	position: absolute;
-	inset: 0;
-	width: 48px;
-	height: 48px;
-	margin: auto;
-	color: rgb(255 255 255 / 50%);
-	pointer-events: none;
-	animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-	to {
-		transform: rotate(1turn);
-	}
-}

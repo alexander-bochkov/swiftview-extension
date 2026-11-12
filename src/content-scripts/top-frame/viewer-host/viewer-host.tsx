@@ -1,7 +1,7 @@
 import { injectCSS } from "virtual:css-injected-by-js";
-import type { Nullable } from "@shared/types";
+import type { MediaCandidate, Nullable } from "@shared/types";
 import { createRoot, type Root } from "react-dom/client";
-import { Viewer } from "../viewer";
+import { MediaViewer } from "../media-viewer";
 import { createFontFace } from "./fonts";
 import "./viewer-host.css";
 import { KeyboardBlocker } from "./keyboard-blocker";
@@ -43,7 +43,7 @@ export class ViewerHost {
 		for (const blocker of this.blockers) blocker.destroy();
 	}
 
-	open(url: string): void {
+	open(candidates: readonly MediaCandidate[]): void {
 		this.close();
 
 		// Rendering errors arrive in onUncaughtError, this catch covers the
@@ -63,7 +63,9 @@ export class ViewerHost {
 			document.fonts.add(this.fontFace);
 
 			this.root = createRoot(shadowRoot, { onUncaughtError: this.handleError });
-			this.root.render(<Viewer onClose={() => this.close()} url={url} />);
+			this.root.render(
+				<MediaViewer candidates={candidates} onClose={() => this.close()} />,
+			);
 		} catch (error) {
 			this.handleError(error);
 		}

@@ -1,16 +1,15 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Toolbar } from "./toolbar";
+import { ImageTools } from "./image-tools";
 
 // The buttons contain only an icon, so render its name to make them queryable.
-vi.mock("../icon", async (importOriginal) => ({
-	...(await importOriginal<typeof import("../icon")>()),
+vi.mock("../../components/icon", async (importOriginal) => ({
+	...(await importOriginal<typeof import("../../components/icon")>()),
 	Icon: ({ name }: { name: string }) => name,
 }));
 
-describe("Toolbar", () => {
-	const onClose = vi.fn();
+describe("ImageTools", () => {
 	const onFlip = vi.fn();
 	const onRotate = vi.fn();
 	const onToggleZoom = vi.fn();
@@ -21,11 +20,9 @@ describe("Toolbar", () => {
 		vi.clearAllMocks();
 	});
 
-	const renderToolbar = (hideTools = false, scale = 1) =>
+	const renderTools = (scale = 1) =>
 		render(
-			<Toolbar
-				hideTools={hideTools}
-				onClose={onClose}
+			<ImageTools
 				onFlip={onFlip}
 				onRotate={onRotate}
 				onToggleZoom={onToggleZoom}
@@ -35,15 +32,23 @@ describe("Toolbar", () => {
 
 	const clickButton = async (name: string) => {
 		const user = userEvent.setup();
-		renderToolbar();
+		renderTools();
 
 		await user.click(screen.getByRole("button", { name }));
 	};
 
-	it("closes on the close button", async () => {
-		await clickButton("x-mark");
+	it("shows the tools in order", () => {
+		renderTools();
 
-		expect(onClose).toHaveBeenCalledOnce();
+		expect(
+			screen.getAllByRole("button").map((button) => button.textContent),
+		).toEqual([
+			"rotate-right",
+			"rotate-left",
+			"flip-horizontal",
+			"flip-vertical",
+			"100%",
+		]);
 	});
 
 	it.each([
@@ -70,7 +75,7 @@ describe("Toolbar", () => {
 			["above 100%", 4, "400%"],
 			["as at least 1% for a very large image", 0.004, "1%"],
 		])("shows the zoom %s", (_, scale, text) => {
-			renderToolbar(false, scale);
+			renderTools(scale);
 
 			expect(screen.getByText(text)).toBeDefined();
 		});
@@ -79,31 +84,6 @@ describe("Toolbar", () => {
 			await clickButton("100%");
 
 			expect(onToggleZoom).toHaveBeenCalledOnce();
-		});
-	});
-
-	describe("hidden tools", () => {
-		it("shows only the close button", () => {
-			renderToolbar(true);
-
-			expect(
-				screen.getAllByRole("button").map((button) => button.textContent),
-			).toEqual(["x-mark"]);
-		});
-
-		it("hides the zoom", () => {
-			renderToolbar(true);
-
-			expect(screen.queryByText("100%")).toBeNull();
-		});
-
-		it("still closes on the close button", async () => {
-			const user = userEvent.setup();
-			renderToolbar(true);
-
-			await user.click(screen.getByRole("button", { name: "x-mark" }));
-
-			expect(onClose).toHaveBeenCalledOnce();
 		});
 	});
 });

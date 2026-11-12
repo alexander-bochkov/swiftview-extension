@@ -15,8 +15,8 @@
 		"description": "Extension name in the Chrome Web Store and on the extensions page. Keep \"SwiftView\" untranslated.",
 		"message": "SwiftView - Image & Video Viewer"
 	},
-	"viewer@image_error": {
-		"description": "Shown in the viewer in place of an image that failed to load.",
-		"message": "Couldn't open the image"
+	"viewer@load_error": {
+		"description": "Shown in the viewer when it has nothing to show: every image or video it tried failed to load, or it had nothing to try.",
+		"message": "Couldn't open the image or video"
 	}
 }
