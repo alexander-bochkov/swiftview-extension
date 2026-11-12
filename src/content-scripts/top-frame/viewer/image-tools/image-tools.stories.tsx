@@ -1,15 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { withViewerBackdrop } from "../../../../../../.storybook/decorators";
-import { Toolbar } from "./toolbar";
+import { withViewerBackdrop } from "../../../../../.storybook/decorators";
+import { Toolbar } from "../../components";
+import { ImageTools } from "./image-tools";
 
-type Metadata = Meta<typeof Toolbar>;
+type Metadata = Meta<typeof ImageTools>;
 type Story = StoryObj<Metadata>;
 
 export default {
 	args: {
-		hideTools: false,
-		onClose: fn(),
 		onFlip: fn(),
 		onRotate: fn(),
 		onToggleZoom: fn(),
@@ -18,9 +17,11 @@ export default {
 	argTypes: {
 		scale: { control: { max: 10, min: 0, step: 0.01, type: "range" } },
 	},
-	component: Toolbar,
+	component: ImageTools,
 	decorators: [withViewerBackdrop],
-	title: "Toolbar",
+	// In the toolbar, which places the tools.
+	render: (args) => <Toolbar onClose={fn()} tools={<ImageTools {...args} />} />,
+	title: "ImageTools",
 } satisfies Metadata;
 
 export const Default: Story = {};
@@ -32,9 +33,4 @@ export const ZoomedIn: Story = {
 // A zoom under 1% is shown as 1%, not 0%.
 export const ZoomedFarOut: Story = {
 	args: { scale: 0.001 },
-};
-
-// While the image loads or after it failed, only the close button is shown.
-export const WithoutTools: Story = {
-	args: { hideTools: true },
 };

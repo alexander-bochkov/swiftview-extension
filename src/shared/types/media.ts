@@ -6,3 +6,5 @@ export type MediaCandidate = Readonly<{
 	type: MediaType;
 	url: string;
 }>;
+
+export type MediaElement = HTMLImageElement | HTMLVideoElement;

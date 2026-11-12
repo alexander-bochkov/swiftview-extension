@@ -1,6 +1,4 @@
-import type { Nullable, Point } from "@shared/types";
-
-export type MediaElement = HTMLImageElement | HTMLVideoElement;
+import type { MediaElement, Nullable, Point } from "@shared/types";
 
 const isMediaElement = (el: Element): el is MediaElement =>
 	el instanceof HTMLImageElement || el instanceof HTMLVideoElement;

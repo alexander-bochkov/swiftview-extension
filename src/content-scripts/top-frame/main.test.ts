@@ -65,29 +65,17 @@ describe("on load", () => {
 });
 
 describe("on message", () => {
-	it("opens the viewer with the image url", () => {
-		onMessage(openMessage(PHOTO));
-
-		expect(mocks.open).toHaveBeenCalledExactlyOnceWith(PHOTO_URL);
-	});
-
-	// The viewer shows only images so far.
-	it("opens the viewer with the first image among the candidates", () => {
+	it("opens the viewer with the candidates", () => {
 		onMessage(openMessage(CLIP, PHOTO));
 
-		expect(mocks.open).toHaveBeenCalledExactlyOnceWith(PHOTO_URL);
+		expect(mocks.open).toHaveBeenCalledExactlyOnceWith([CLIP, PHOTO]);
 	});
 
-	it("opens the viewer with the first candidate without an image", () => {
-		onMessage(openMessage(CLIP));
-
-		expect(mocks.open).toHaveBeenCalledExactlyOnceWith(CLIP_URL);
-	});
-
-	it("ignores the message without candidates", () => {
+	// The viewer tells that it has nothing to show.
+	it("opens the viewer even without candidates", () => {
 		onMessage(openMessage());
 
-		expect(mocks.open).not.toHaveBeenCalled();
+		expect(mocks.open).toHaveBeenCalledExactlyOnceWith([]);
 	});
 
 	it("ignores the message while the viewer is open", () => {

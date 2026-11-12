@@ -1,0 +1,9 @@
+/* A pill instead of the round button, with the colors of the button. */
+.zoom {
+	width: 64px;
+	height: 18px;
+	margin-top: 8px;
+	font-family: inherit;
+	font-size: 14px;
+	border-radius: 9px;
+}

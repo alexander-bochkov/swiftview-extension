@@ -1,12 +1,13 @@
 import type { Point } from "@shared/types";
 import { useRef } from "react";
-import { Icon, ImageError, Overlay, Toolbar } from "./components";
+import { Loader, MediaError, Overlay, Toolbar } from "../components";
 import {
 	selectIsReady,
 	useContainerResize,
 	useImage,
 	useViewerStore,
 } from "./hooks";
+import { ImageTools } from "./image-tools";
 import styles from "./viewer.module.css";
 
 type ViewerProps = {
@@ -35,23 +36,29 @@ export const Viewer = ({ onClose, url }: ViewerProps) => {
 			{({ onRequestClose }) => (
 				<>
 					<Toolbar
-						hideTools={!isReady}
 						onClose={onRequestClose}
-						onFlip={(direction) =>
-							store.dispatch({ payload: direction, type: "FLIP" })
+						tools={
+							isReady && (
+								<ImageTools
+									onFlip={(direction) =>
+										store.dispatch({ payload: direction, type: "FLIP" })
+									}
+									onRotate={(direction) =>
+										store.dispatch({ payload: direction, type: "ROTATE" })
+									}
+									onToggleZoom={() =>
+										store.dispatch({
+											payload: CONTAINER_CENTER,
+											type: "TOGGLE_ZOOM",
+										})
+									}
+									scale={scale}
+								/>
+							)
 						}
-						onRotate={(direction) =>
-							store.dispatch({ payload: direction, type: "ROTATE" })
-						}
-						onToggleZoom={() =>
-							store.dispatch({ payload: CONTAINER_CENTER, type: "TOGGLE_ZOOM" })
-						}
-						scale={scale}
 					/>
-					{hasImageError && <ImageError />}
-					{!isReady && !hasImageError && (
-						<Icon className={styles.loader} name="spinner" />
-					)}
+					{hasImageError && <MediaError />}
+					{!isReady && !hasImageError && <Loader />}
 					<img
 						{...imageProps}
 						alt=""

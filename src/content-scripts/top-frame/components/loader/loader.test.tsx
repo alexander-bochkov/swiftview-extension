@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ImageError } from "./image-error";
+import { Loader } from "./loader";
 
 // Render the icon's name to make it queryable.
 vi.mock("../icon", async (importOriginal) => ({
@@ -8,19 +8,13 @@ vi.mock("../icon", async (importOriginal) => ({
 	Icon: ({ name }: { name: string }) => name,
 }));
 
-describe("ImageError", () => {
+describe("Loader", () => {
 	// Vitest globals are off, so Testing Library can't register this itself.
 	afterEach(cleanup);
 
-	it("shows the no-symbol icon", () => {
-		render(<ImageError />);
+	it("shows the spinner icon", () => {
+		render(<Loader />);
 
-		expect(screen.getByText("no-symbol")).toBeDefined();
-	});
-
-	it("tells that the image couldn't be opened", () => {
-		render(<ImageError />);
-
-		expect(screen.getByText("Couldn't open the image")).toBeDefined();
+		expect(screen.getByText("spinner")).toBeDefined();
 	});
 });

@@ -1,6 +1,5 @@
 import { MEDIA_TYPE } from "@shared/constants";
-import type { MediaCandidate, Nullable } from "@shared/types";
-import type { MediaElement } from "../find-context-menu-media-element";
+import type { MediaCandidate, MediaElement, Nullable } from "@shared/types";
 import { findBestImage } from "./find-best-image";
 import { findLinkedMedia } from "./find-linked-media";
 
