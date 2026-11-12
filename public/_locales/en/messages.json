@@ -1,14 +1,14 @@
 {
 	"confirm_dialog@reload_page": {
-		"description": "Confirm dialog shown when the page was opened before the extension was installed, updated or re-enabled, so it has to be reloaded before an image or a video can be opened. Keep \"SwiftView\" untranslated.",
+		"description": "Confirm dialog shown when the page was opened before the extension was installed, updated or re-enabled, so it has to be reloaded before an image or a video can be opened.",
 		"message": "SwiftView can't open images or videos on this page until it's reloaded. Reload now?"
 	},
 	"context_menu@not_available_on_page": {
-		"description": "Disabled context menu item shown on pages where the extension can't run, such as the browser's own pages. Keep \"SwiftView\" untranslated.",
+		"description": "Disabled context menu item shown on pages where the extension can't run, such as the browser's own pages.",
 		"message": "SwiftView isn't available on this page"
 	},
 	"context_menu@open_with_swiftview": {
-		"description": "Context menu item shown on images and videos. Opens the image or video in the viewer. Keep \"SwiftView\" untranslated.",
+		"description": "Context menu item shown on images and videos. Opens the image or video in the viewer.",
 		"message": "Open with SwiftView"
 	},
 	"extension@description": {
@@ -16,7 +16,7 @@
 		"message": "Opens an image or a video in a viewer on the same page from its context menu. Images support zoom, pan, rotate and flip."
 	},
 	"extension@name": {
-		"description": "Extension name in the Chrome Web Store and on the extensions page. Keep \"SwiftView\" untranslated.",
+		"description": "Extension name in the Chrome Web Store and on the extensions page.",
 		"message": "SwiftView - Image & Video Viewer"
 	},
 	"viewer@load_error": {
