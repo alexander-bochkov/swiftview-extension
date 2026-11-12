@@ -4,6 +4,12 @@ import { syncMenuWithActiveTab } from "./sync-menu-with-active-tab";
 const MENU_ITEM_ID = "open-with-swiftview";
 const TAB_ID = 7;
 
+const ENABLED = { enabled: true, title: "Open with SwiftView" };
+const DISABLED = {
+	enabled: false,
+	title: "SwiftView isn't available on this page",
+};
+
 const executeScript = vi.fn<() => Promise<unknown>>(() => Promise.resolve());
 const query = vi.fn<() => Promise<Partial<chrome.tabs.Tab>[]>>(() =>
 	Promise.resolve([{ id: TAB_ID }]),
@@ -39,22 +45,18 @@ describe("syncMenuWithActiveTab", () => {
 		});
 	});
 
-	it("shows the menu item if content scripts can run on the page", async () => {
+	it("enables the menu item if content scripts can run on the page", async () => {
 		await syncMenuWithActiveTab();
 
-		expect(update).toHaveBeenCalledExactlyOnceWith(MENU_ITEM_ID, {
-			visible: true,
-		});
+		expect(update).toHaveBeenCalledExactlyOnceWith(MENU_ITEM_ID, ENABLED);
 	});
 
-	it("hides the menu item if content scripts can't run on the page", async () => {
+	it("disables the menu item and says so if content scripts can't run on the page", async () => {
 		executeScript.mockRejectedValueOnce(new Error("Cannot access"));
 
 		await syncMenuWithActiveTab();
 
-		expect(update).toHaveBeenCalledExactlyOnceWith(MENU_ITEM_ID, {
-			visible: false,
-		});
+		expect(update).toHaveBeenCalledExactlyOnceWith(MENU_ITEM_ID, DISABLED);
 	});
 
 	it.each([
@@ -82,9 +84,7 @@ describe("syncMenuWithActiveTab", () => {
 
 		await staleSync;
 
-		expect(update).toHaveBeenCalledExactlyOnceWith(MENU_ITEM_ID, {
-			visible: true,
-		});
+		expect(update).toHaveBeenCalledExactlyOnceWith(MENU_ITEM_ID, ENABLED);
 	});
 
 	it("doesn't fail if the menu item isn't created yet", async () => {

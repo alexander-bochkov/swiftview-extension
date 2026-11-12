@@ -17,7 +17,6 @@ browser.runtime.onInstalled.addListener(async () => {
 			contexts: [MEDIA_TYPE.IMAGE, MEDIA_TYPE.VIDEO],
 			id: MENU_ITEM_ID,
 			title: t("context_menu@open_with_swiftview"),
-			visible: false,
 		},
 		syncMenuWithActiveTab,
 	);

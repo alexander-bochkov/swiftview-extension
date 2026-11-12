@@ -1,3 +1,4 @@
+import { t } from "@shared/i18n";
 import { MENU_ITEM_ID } from "../constants";
 
 let latestSyncId = 0;
@@ -17,15 +18,22 @@ const canContentScriptsRunOnPage = async (tabId: number): Promise<boolean> => {
 	}
 };
 
-const updateMenuVisibility = async (tabId: number): Promise<void> => {
+const updateMenuItem = async (tabId: number): Promise<void> => {
 	const syncId = ++latestSyncId;
-	const visible = await canContentScriptsRunOnPage(tabId);
+	const enabled = await canContentScriptsRunOnPage(tabId);
 
 	// A newer sync started while this one was running
 	if (syncId !== latestSyncId) return;
 
 	try {
-		await browser.contextMenus.update(MENU_ITEM_ID, { visible });
+		await browser.contextMenus.update(MENU_ITEM_ID, {
+			enabled,
+			title: t(
+				enabled
+					? "context_menu@open_with_swiftview"
+					: "context_menu@not_available_on_page",
+			),
+		});
 	} catch {
 		// The menu item hasn't yet been created by onInstalled
 	}
@@ -37,5 +45,5 @@ export const syncMenuWithActiveTab = async (): Promise<void> => {
 		lastFocusedWindow: true,
 	});
 
-	if (tab?.id) await updateMenuVisibility(tab.id);
+	if (tab?.id) await updateMenuItem(tab.id);
 };
