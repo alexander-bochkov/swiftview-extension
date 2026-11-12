@@ -12,12 +12,19 @@ type ImageViewerProps = {
 	readonly onClose: () => void;
 };
 
+type VideoViewerProps = {
+	readonly onClose: () => void;
+	readonly video: HTMLVideoElement;
+};
+
 const mocks = vi.hoisted(() => ({
 	ImageViewer: vi.fn<(props: ImageViewerProps) => string>(() => "image viewer"),
 	useMediaProbe: vi.fn<() => MediaProbe>(() => ({ status: "loading" })),
+	VideoViewer: vi.fn<(props: VideoViewerProps) => string>(() => "video viewer"),
 }));
 
 vi.mock("../image-viewer", () => ({ ImageViewer: mocks.ImageViewer }));
+vi.mock("../video-viewer", () => ({ VideoViewer: mocks.VideoViewer }));
 vi.mock("./use-media-probe", () => ({ useMediaProbe: mocks.useMediaProbe }));
 
 // The buttons contain only an icon, so render its name to make them queryable.
@@ -67,6 +74,13 @@ describe("MediaViewer", () => {
 	const getImageViewerProps = (): ImageViewerProps => {
 		const props = mocks.ImageViewer.mock.lastCall?.[0];
 		if (!props) throw new Error("ImageViewer was not rendered");
+
+		return props;
+	};
+
+	const getVideoViewerProps = (): VideoViewerProps => {
+		const props = mocks.VideoViewer.mock.lastCall?.[0];
+		if (!props) throw new Error("VideoViewer was not rendered");
 
 		return props;
 	};
@@ -133,22 +147,28 @@ describe("MediaViewer", () => {
 	});
 
 	describe("with a video", () => {
-		it("shows it with the native controls", () => {
-			const video = document.createElement("video");
+		const video = document.createElement("video");
 
-			const { container } = renderViewer({ element: video, status: "loaded" });
+		it("hands it to the video viewer", () => {
+			renderViewer({ element: video, status: "loaded" });
 
-			expect(container.contains(video)).toBe(true);
-			expect(video.controls).toBe(true);
+			expect(screen.getByText("video viewer")).toBeDefined();
+			expect(getVideoViewerProps()).toMatchObject({ video });
 		});
 
-		it("hides the loader", () => {
-			renderViewer({
-				element: document.createElement("video"),
-				status: "loaded",
-			});
+		it("shows neither the loader nor its own close button", () => {
+			renderViewer({ element: video, status: "loaded" });
 
 			expect(screen.queryByText("spinner")).toBeNull();
+			expect(screen.queryByRole("button")).toBeNull();
+		});
+
+		it("closes when the video viewer asks to", async () => {
+			renderViewer({ element: video, status: "loaded" });
+
+			act(() => getVideoViewerProps().onClose());
+
+			await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
 		});
 	});
 

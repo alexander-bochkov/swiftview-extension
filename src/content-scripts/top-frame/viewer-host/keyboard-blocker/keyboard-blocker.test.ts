@@ -105,6 +105,34 @@ describe("KeyboardBlocker", () => {
 			expect(isPrevented(button, keyDown("ArrowDown"))).toBe(true);
 		});
 
+		describe("on a focused video of the viewer", () => {
+			let video: HTMLVideoElement;
+
+			beforeEach(() => {
+				video = document.createElement("video");
+				// Focusable in jsdom, as a video with controls is in the browser.
+				video.tabIndex = 0;
+				root.append(video);
+
+				blocker.block(root);
+				video.focus();
+			});
+
+			it.each([" ", "ArrowLeft", "ArrowUp", "End", "Home"])(
+				"leaves %j, which the video handles",
+				(name) => {
+					expect(isPrevented(video, keyDown(name))).toBe(false);
+				},
+			);
+
+			it.each(["PageDown", "PageUp"])(
+				"prevents %s, which only scrolls",
+				(name) => {
+					expect(isPrevented(video, keyDown(name))).toBe(true);
+				},
+			);
+		});
+
 		it.each([
 			["Alt", { altKey: true }],
 			["Meta", { metaKey: true }],
