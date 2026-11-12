@@ -172,6 +172,26 @@ describe("findLinkedMedia", () => {
 			expect(findLinkedMedia(image)?.url).toBe("https://example.com/photo.png");
 		});
 
+		it("finds a link around the shadow host of the element", () => {
+			const image = createImage();
+			const host = document.createElement("div");
+			host.attachShadow({ mode: "open" }).append(image);
+			createAnchor("https://example.com/photo.png", host);
+
+			expect(findLinkedMedia(image)?.url).toBe("https://example.com/photo.png");
+		});
+
+		it("finds the link inside the shadow root before one around the host", () => {
+			const image = createImage();
+			const host = document.createElement("div");
+			host
+				.attachShadow({ mode: "open" })
+				.append(createAnchor("https://example.com/page.html", image));
+			createAnchor("https://example.com/photo.png", host);
+
+			expect(findLinkedMedia(image)).toBeNull();
+		});
+
 		it("finds nothing for a link without href", () => {
 			expect(findLinkedMedia(createLinkedImage())).toBeNull();
 		});

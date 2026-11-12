@@ -21,11 +21,22 @@ const createVideo = (src: string): HTMLVideoElement => {
 // jsdom has no layout, so the elements under the point are stubbed.
 const elementsFromPoint = vi.fn<(x: number, y: number) => Element[]>(() => []);
 
+// A host with a shadow root that holds the elements under the point.
+const createHost = (mode: ShadowRootMode, ...elements: Element[]) => {
+	const host = document.createElement("div");
+	const root = host.attachShadow({ mode });
+	root.append(...elements);
+	root.elementsFromPoint = vi.fn(() => elements);
+
+	return { host, root };
+};
+
 beforeEach(() => {
 	document.elementsFromPoint = elementsFromPoint;
 });
 
 afterEach(() => {
+	vi.restoreAllMocks();
 	vi.clearAllMocks();
 });
 
@@ -108,5 +119,52 @@ describe("findContextMenuMediaElement", () => {
 	it("finds nothing without a point", () => {
 		expect(findContextMenuMediaElement(null, PHOTO_URL)).toBeNull();
 		expect(elementsFromPoint).not.toHaveBeenCalled();
+	});
+
+	describe("in a shadow root", () => {
+		it("finds the image in an open root, under the same point", () => {
+			const image = createImage(PHOTO_URL);
+			const { host, root } = createHost("open", image);
+
+			elementsFromPoint.mockReturnValueOnce([host]);
+
+			expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
+			expect(root.elementsFromPoint).toHaveBeenCalledExactlyOnceWith(
+				POINT.x,
+				POINT.y,
+			);
+		});
+
+		it("finds the image in a closed root through the extension API", () => {
+			const image = createImage(PHOTO_URL);
+			const { host, root } = createHost("closed", image);
+
+			// jsdom keeps a closed root to itself, like the browser does for a page.
+			vi.spyOn(browser.dom, "openOrClosedShadowRoot").mockImplementation(
+				(element) => (element === host ? root : null),
+			);
+			elementsFromPoint.mockReturnValueOnce([host]);
+
+			expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
+		});
+
+		it("finds the image in a root inside a root", () => {
+			const image = createImage(PHOTO_URL);
+			const inner = createHost("open", image);
+			const outer = createHost("open", inner.host);
+
+			elementsFromPoint.mockReturnValueOnce([outer.host]);
+
+			expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
+		});
+
+		it("goes on with the elements under a host without the media", () => {
+			const image = createImage(PHOTO_URL);
+			const { host } = createHost("open", createImage(OTHER_URL));
+
+			elementsFromPoint.mockReturnValueOnce([host, image]);
+
+			expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
+		});
 	});
 });
