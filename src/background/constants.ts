@@ -1,1 +1,1 @@
-export const MENU_ITEM_ID = "open-with-swiftview";
+export const MENU_ITEM_ID = "media";

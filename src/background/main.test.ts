@@ -24,7 +24,9 @@ const mocks = vi.hoisted(() => ({
 		Promise.resolve([]),
 	),
 	offerReload: vi.fn(() => Promise.resolve()),
+	openExtensionSettings: vi.fn(() => Promise.resolve()),
 	openViewer: vi.fn<() => Promise<boolean>>(() => Promise.resolve(true)),
+	shouldAskForFileAccess: vi.fn(() => Promise.resolve(false)),
 	syncMenuWithActiveTab: vi.fn(() => Promise.resolve()),
 }));
 
@@ -33,14 +35,17 @@ vi.mock("./utils", async (importOriginal) => ({
 	...(await importOriginal<typeof import("./utils")>()),
 	findMediaCandidates: mocks.findMediaCandidates,
 	offerReload: mocks.offerReload,
+	openExtensionSettings: mocks.openExtensionSettings,
 	openViewer: mocks.openViewer,
+	shouldAskForFileAccess: mocks.shouldAskForFileAccess,
 	syncMenuWithActiveTab: mocks.syncMenuWithActiveTab,
 }));
 
 const BEST_URL = "https://example.com/photo-large.png";
 const CLIP_URL = "https://example.com/clip.mp4";
+const FILE_URL = "file:///C:/photos/index.html";
 const IFRAME_ID = 5;
-const MENU_ITEM_ID = "open-with-swiftview";
+const MENU_ITEM_ID = "media";
 const PHOTO_URL = "https://example.com/photo.png";
 const TAB_ID = 7;
 const WINDOW_ID = 3;
@@ -205,10 +210,24 @@ describe("on menu item click", () => {
 		expect(mocks.offerReload).toHaveBeenCalledExactlyOnceWith(TAB_ID);
 	});
 
+	it("opens the extension settings on a local file the extension can't access", async () => {
+		mocks.shouldAskForFileAccess.mockResolvedValueOnce(true);
+
+		await onClicked(PHOTO_CLICK, { id: TAB_ID, url: FILE_URL });
+
+		expect(mocks.shouldAskForFileAccess).toHaveBeenCalledExactlyOnceWith(
+			FILE_URL,
+		);
+		expect(mocks.openExtensionSettings).toHaveBeenCalledOnce();
+		expect(mocks.findMediaCandidates).not.toHaveBeenCalled();
+		expect(mocks.openViewer).not.toHaveBeenCalled();
+	});
+
 	it("ignores a click on another menu item", async () => {
 		await onClicked({ ...PHOTO_CLICK, menuItemId: "other" }, { id: TAB_ID });
 
 		expect(mocks.findMediaCandidates).not.toHaveBeenCalled();
+		expect(mocks.openExtensionSettings).not.toHaveBeenCalled();
 		expect(mocks.openViewer).not.toHaveBeenCalled();
 	});
 

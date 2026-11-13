@@ -41,7 +41,7 @@ export default defineManifest({
 	manifest_version: 3,
 	minimum_chrome_version: "148",
 	name: "__MSG_extension@name__",
-	permissions: ["contextMenus", "scripting"],
+	permissions: ["contextMenus", "scripting", "tabs"],
 	short_name: "SwiftView",
 	version: pkg.version,
 	web_accessible_resources: [
