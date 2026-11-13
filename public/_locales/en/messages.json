@@ -3,6 +3,10 @@
 		"description": "Confirm dialog shown when the page was opened before the extension was installed, updated or re-enabled, so it has to be reloaded before an image or a video can be opened.",
 		"message": "SwiftView can't open images or videos on this page until it's reloaded. Reload now?"
 	},
+	"context_menu@allow_file_access": {
+		"description": "Context menu item shown on images and videos in local files while the extension isn't allowed to access file URLs. Opens the extension's page in the browser, where the access is allowed.",
+		"message": "Allow SwiftView access to file URLs"
+	},
 	"context_menu@not_available_on_page": {
 		"description": "Disabled context menu item shown on pages where the extension can't run, such as the browser's own pages.",
 		"message": "SwiftView isn't available on this page"

@@ -5,7 +5,9 @@ import {
 	findMediaCandidates,
 	isMediaType,
 	offerReload,
+	openExtensionSettings,
 	openViewer,
+	shouldAskForFileAccess,
 	syncMenuWithActiveTab,
 } from "./utils";
 
@@ -30,6 +32,11 @@ browser.contextMenus.onClicked.addListener(
 			!tab?.id ||
 			!isMediaType(mediaType)
 		) {
+			return;
+		}
+
+		if (await shouldAskForFileAccess(tab.url)) {
+			await openExtensionSettings();
 			return;
 		}
 

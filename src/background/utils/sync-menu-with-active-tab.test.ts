@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { syncMenuWithActiveTab } from "./sync-menu-with-active-tab";
 
-const MENU_ITEM_ID = "open-with-swiftview";
+const FILE_URL = "file:///C:/photos/index.html";
+const MENU_ITEM_ID = "media";
+const PAGE_URL = "https://example.com/photos";
 const TAB_ID = 7;
 
 const ENABLED = { enabled: true, title: "Open with SwiftView" };
@@ -9,10 +11,15 @@ const DISABLED = {
 	enabled: false,
 	title: "SwiftView isn't available on this page",
 };
+const ALLOW_FILE_ACCESS = {
+	enabled: true,
+	title: "Allow SwiftView access to file URLs",
+};
 
 const executeScript = vi.fn<() => Promise<unknown>>(() => Promise.resolve());
+const isAllowedFileSchemeAccess = vi.fn(() => Promise.resolve(true));
 const query = vi.fn<() => Promise<Partial<chrome.tabs.Tab>[]>>(() =>
-	Promise.resolve([{ id: TAB_ID }]),
+	Promise.resolve([{ id: TAB_ID, url: PAGE_URL }]),
 );
 const update = vi.fn(() => Promise.resolve());
 
@@ -20,6 +27,7 @@ beforeEach(() => {
 	vi.stubGlobal("browser", {
 		...browser,
 		contextMenus: { update },
+		extension: { isAllowedFileSchemeAccess },
 		scripting: { executeScript },
 		tabs: { query },
 	});
@@ -57,6 +65,27 @@ describe("syncMenuWithActiveTab", () => {
 		await syncMenuWithActiveTab();
 
 		expect(update).toHaveBeenCalledExactlyOnceWith(MENU_ITEM_ID, DISABLED);
+	});
+
+	it("offers to allow the access on a local file the extension can't access", async () => {
+		query.mockResolvedValueOnce([{ id: TAB_ID, url: FILE_URL }]);
+		isAllowedFileSchemeAccess.mockResolvedValueOnce(false);
+
+		await syncMenuWithActiveTab();
+
+		expect(executeScript).not.toHaveBeenCalled();
+		expect(update).toHaveBeenCalledExactlyOnceWith(
+			MENU_ITEM_ID,
+			ALLOW_FILE_ACCESS,
+		);
+	});
+
+	it("enables the menu item on a local file the extension can access", async () => {
+		query.mockResolvedValueOnce([{ id: TAB_ID, url: FILE_URL }]);
+
+		await syncMenuWithActiveTab();
+
+		expect(update).toHaveBeenCalledExactlyOnceWith(MENU_ITEM_ID, ENABLED);
 	});
 
 	it.each([
