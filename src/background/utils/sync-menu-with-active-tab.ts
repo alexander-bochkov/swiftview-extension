@@ -1,7 +1,7 @@
 import { t } from "@shared/i18n";
 import { MENU_ITEM_ID } from "../constants";
 
-let latestSyncId = 0;
+let lastSyncId = 0;
 
 // Chrome has no API to ask this directly, and documentUrlPatterns can't cover
 // the Chrome Web Store, sites blocked by policy or the user's site access.
@@ -19,11 +19,11 @@ const canContentScriptsRunOnPage = async (tabId: number): Promise<boolean> => {
 };
 
 const updateMenuItem = async (tabId: number): Promise<void> => {
-	const syncId = ++latestSyncId;
+	const syncId = ++lastSyncId;
 	const enabled = await canContentScriptsRunOnPage(tabId);
 
 	// A newer sync started while this one was running
-	if (syncId !== latestSyncId) return;
+	if (syncId !== lastSyncId) return;
 
 	try {
 		await browser.contextMenus.update(MENU_ITEM_ID, {
