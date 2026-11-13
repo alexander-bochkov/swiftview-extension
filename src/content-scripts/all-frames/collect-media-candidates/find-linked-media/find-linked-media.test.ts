@@ -136,12 +136,20 @@ describe("findLinkedMedia", () => {
 			expect(findLinkedMedia(image)?.type).toBe(MEDIA_TYPE.IMAGE);
 		});
 
+		// Whether the data behind the MIME type loads is for the viewer to find out.
+		it("accepts a data url without data", () => {
+			const image = createLinkedImage("data:image/png");
+
+			expect(findLinkedMedia(image)?.type).toBe(MEDIA_TYPE.IMAGE);
+		});
+
 		it.each([
 			"data:text/html,<h1>Hi</h1>",
 			"data:application/pdf;base64,AAAA",
 			"data:image/x-icon;base64,AAAA",
+			"data:image/png.foo;base64,AAAA",
+			"data:image/svg+json,AAAA",
 			"data:video/ogg;base64,AAAA",
-			"data:image/png",
 			"data:,hello",
 		])("rejects %s", (href) => {
 			expect(findLinkedMedia(createLinkedImage(href))).toBeNull();
