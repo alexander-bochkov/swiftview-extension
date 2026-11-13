@@ -1,10 +1,5 @@
 import { MEDIA_TYPE, MEDIA_TYPES } from "@shared/constants";
-import type {
-	MediaCandidate,
-	MediaType,
-	Nullable,
-	Optional,
-} from "@shared/types";
+import type { MediaCandidate, MediaType, Optional } from "@shared/types";
 
 // Matches the file extension at the end of a path.
 // Capture groups:
@@ -68,10 +63,10 @@ const findAnchor = (element: Element): Optional<HTMLAnchorElement> => {
 	if (root instanceof ShadowRoot) return findAnchor(root.host);
 };
 
-export const findLinkedMedia = (element: Element): Nullable<MediaCandidate> => {
+export const findLinkedMedia = (element: Element): Optional<MediaCandidate> => {
 	const anchor = findAnchor(element);
 
 	// For an invalid url the anchor reports the protocol ":" and an empty path.
 	const type = anchor && TYPE_FINDERS[anchor.protocol]?.(anchor.pathname);
-	return type ? { type, url: anchor.href } : null;
+	return type && { type, url: anchor.href };
 };

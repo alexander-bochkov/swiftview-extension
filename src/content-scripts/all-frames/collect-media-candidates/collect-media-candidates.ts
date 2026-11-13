@@ -1,10 +1,10 @@
 import { MEDIA_TYPE } from "@shared/constants";
-import type { MediaCandidate, MediaElement, Nullable } from "@shared/types";
+import type { MediaCandidate, MediaElement, Optional } from "@shared/types";
 import { findBestImage } from "./find-best-image";
 import { findLinkedMedia } from "./find-linked-media";
 
 const dedupe = (
-	candidates: readonly Nullable<MediaCandidate>[],
+	candidates: readonly Optional<MediaCandidate>[],
 ): MediaCandidate[] =>
 	candidates
 		.filter((candidate) => !!candidate)
