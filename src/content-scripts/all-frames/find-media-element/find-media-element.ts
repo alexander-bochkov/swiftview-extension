@@ -11,7 +11,7 @@ const getShadowRoot = (element: Element): Nullable<ShadowRoot> =>
 		? browser.dom.openOrClosedShadowRoot(element)
 		: null;
 
-const findMediaElement = (
+export const findMediaElement = (
 	root: DocumentOrShadowRoot,
 	point: Point,
 	srcUrl: string,
@@ -27,9 +27,3 @@ const findMediaElement = (
 
 	return null;
 };
-
-export const findContextMenuMediaElement = (
-	point: Nullable<Point>,
-	srcUrl: string,
-): Nullable<MediaElement> =>
-	point ? findMediaElement(document, point, srcUrl) : null;

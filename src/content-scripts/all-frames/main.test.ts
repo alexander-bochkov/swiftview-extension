@@ -10,9 +10,9 @@ type MessageListener = (
 
 const mocks = vi.hoisted(() => ({
 	collectMediaCandidates: vi.fn<() => MediaCandidate[]>(() => []),
-	findContextMenuMediaElement: vi.fn<
-		() => HTMLImageElement | HTMLVideoElement | null
-	>(() => null),
+	findMediaElement: vi.fn<() => HTMLImageElement | HTMLVideoElement | null>(
+		() => null,
+	),
 	init: vi.fn(),
 	point: null as { x: number; y: number } | null,
 }));
@@ -31,8 +31,8 @@ vi.mock("./context-menu-tracker", () => ({
 	},
 }));
 
-vi.mock("./find-context-menu-media-element", () => ({
-	findContextMenuMediaElement: mocks.findContextMenuMediaElement,
+vi.mock("./find-media-element", () => ({
+	findMediaElement: mocks.findMediaElement,
 }));
 
 const BEST_URL = "https://example.com/photo-large.png";
@@ -90,25 +90,24 @@ describe("on message", () => {
 
 		onMessage(MESSAGE, {}, sendResponse);
 
-		expect(mocks.findContextMenuMediaElement).toHaveBeenCalledExactlyOnceWith(
+		expect(mocks.findMediaElement).toHaveBeenCalledExactlyOnceWith(
+			document,
 			POINT,
 			PHOTO_URL,
 		);
 	});
 
-	it("finds the media without a point before a menu opens", () => {
+	it("looks for no media without a point before a menu opens", () => {
 		onMessage(MESSAGE, {}, sendResponse);
 
-		expect(mocks.findContextMenuMediaElement).toHaveBeenCalledExactlyOnceWith(
-			null,
-			PHOTO_URL,
-		);
+		expect(mocks.findMediaElement).not.toHaveBeenCalled();
 	});
 
 	it("collects the candidates of the media of the menu", () => {
 		const image = document.createElement("img");
 
-		mocks.findContextMenuMediaElement.mockReturnValueOnce(image);
+		mocks.point = POINT;
+		mocks.findMediaElement.mockReturnValueOnce(image);
 
 		onMessage(MESSAGE, {}, sendResponse);
 
@@ -119,9 +118,8 @@ describe("on message", () => {
 	});
 
 	it("responds with the candidates", () => {
-		mocks.findContextMenuMediaElement.mockReturnValueOnce(
-			document.createElement("img"),
-		);
+		mocks.point = POINT;
+		mocks.findMediaElement.mockReturnValueOnce(document.createElement("img"));
 		mocks.collectMediaCandidates.mockReturnValueOnce(CANDIDATES);
 
 		onMessage(MESSAGE, {}, sendResponse);
@@ -143,7 +141,7 @@ describe("on message", () => {
 			sendResponse,
 		);
 
-		expect(mocks.findContextMenuMediaElement).not.toHaveBeenCalled();
+		expect(mocks.findMediaElement).not.toHaveBeenCalled();
 		expect(sendResponse).not.toHaveBeenCalled();
 	});
 });

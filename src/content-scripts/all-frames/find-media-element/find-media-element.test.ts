@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { findContextMenuMediaElement } from "./find-context-menu-media-element";
+import { findMediaElement } from "./find-media-element";
 
 const CLIP_URL = "https://example.com/clip.mp4";
 const OTHER_URL = "https://example.com/other.png";
@@ -40,27 +40,35 @@ afterEach(() => {
 	vi.clearAllMocks();
 });
 
-describe("findContextMenuMediaElement", () => {
-	it("looks under the point of the menu", () => {
-		findContextMenuMediaElement(POINT, PHOTO_URL);
+describe("findMediaElement", () => {
+	it("looks under the point in the root", () => {
+		findMediaElement(document, POINT, PHOTO_URL);
 
 		expect(elementsFromPoint).toHaveBeenCalledExactlyOnceWith(POINT.x, POINT.y);
 	});
 
-	it("finds the image with the url of the menu", () => {
+	it("looks only in the given root", () => {
+		const image = createImage(PHOTO_URL);
+		const { root } = createHost("open", image);
+
+		expect(findMediaElement(root, POINT, PHOTO_URL)).toBe(image);
+		expect(elementsFromPoint).not.toHaveBeenCalled();
+	});
+
+	it("finds the image with the url", () => {
 		const image = createImage(PHOTO_URL);
 
 		elementsFromPoint.mockReturnValueOnce([image]);
 
-		expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
+		expect(findMediaElement(document, POINT, PHOTO_URL)).toBe(image);
 	});
 
-	it("finds the video with the url of the menu", () => {
+	it("finds the video with the url", () => {
 		const video = createVideo(CLIP_URL);
 
 		elementsFromPoint.mockReturnValueOnce([video]);
 
-		expect(findContextMenuMediaElement(POINT, CLIP_URL)).toBe(video);
+		expect(findMediaElement(document, POINT, CLIP_URL)).toBe(video);
 	});
 
 	it("finds the media under an overlay", () => {
@@ -71,7 +79,7 @@ describe("findContextMenuMediaElement", () => {
 			image,
 		]);
 
-		expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
+		expect(findMediaElement(document, POINT, PHOTO_URL)).toBe(image);
 	});
 
 	it("finds the image by the source it shows", () => {
@@ -81,7 +89,7 @@ describe("findContextMenuMediaElement", () => {
 		Object.defineProperty(image, "currentSrc", { value: PHOTO_URL });
 		elementsFromPoint.mockReturnValueOnce([image]);
 
-		expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
+		expect(findMediaElement(document, POINT, PHOTO_URL)).toBe(image);
 	});
 
 	it("finds the video by the source it plays", () => {
@@ -91,7 +99,7 @@ describe("findContextMenuMediaElement", () => {
 		Object.defineProperty(video, "currentSrc", { value: CLIP_URL });
 		elementsFromPoint.mockReturnValueOnce([video]);
 
-		expect(findContextMenuMediaElement(POINT, CLIP_URL)).toBe(video);
+		expect(findMediaElement(document, POINT, CLIP_URL)).toBe(video);
 	});
 
 	it("skips media with another url", () => {
@@ -103,22 +111,18 @@ describe("findContextMenuMediaElement", () => {
 			image,
 		]);
 
-		expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
+		expect(findMediaElement(document, POINT, PHOTO_URL)).toBe(image);
 	});
 
-	// A menu opened from the keyboard reports a point near the focused element.
+	// A menu opened from the keyboard reports the center of the focused element,
+	// the bottom-left of a selection, or a corner of the viewport.
 	it("finds nothing when no media under the point has the url", () => {
 		elementsFromPoint.mockReturnValueOnce([
 			document.createElement("a"),
 			createImage(OTHER_URL),
 		]);
 
-		expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBeNull();
-	});
-
-	it("finds nothing without a point", () => {
-		expect(findContextMenuMediaElement(null, PHOTO_URL)).toBeNull();
-		expect(elementsFromPoint).not.toHaveBeenCalled();
+		expect(findMediaElement(document, POINT, PHOTO_URL)).toBeNull();
 	});
 
 	describe("in a shadow root", () => {
@@ -128,7 +132,7 @@ describe("findContextMenuMediaElement", () => {
 
 			elementsFromPoint.mockReturnValueOnce([host]);
 
-			expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
+			expect(findMediaElement(document, POINT, PHOTO_URL)).toBe(image);
 			expect(root.elementsFromPoint).toHaveBeenCalledExactlyOnceWith(
 				POINT.x,
 				POINT.y,
@@ -145,7 +149,7 @@ describe("findContextMenuMediaElement", () => {
 			);
 			elementsFromPoint.mockReturnValueOnce([host]);
 
-			expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
+			expect(findMediaElement(document, POINT, PHOTO_URL)).toBe(image);
 		});
 
 		it("finds the image in a root inside a root", () => {
@@ -155,7 +159,7 @@ describe("findContextMenuMediaElement", () => {
 
 			elementsFromPoint.mockReturnValueOnce([outer.host]);
 
-			expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
+			expect(findMediaElement(document, POINT, PHOTO_URL)).toBe(image);
 		});
 
 		it("goes on with the elements under a host without the media", () => {
@@ -164,7 +168,7 @@ describe("findContextMenuMediaElement", () => {
 
 			elementsFromPoint.mockReturnValueOnce([host, image]);
 
-			expect(findContextMenuMediaElement(POINT, PHOTO_URL)).toBe(image);
+			expect(findMediaElement(document, POINT, PHOTO_URL)).toBe(image);
 		});
 	});
 });
