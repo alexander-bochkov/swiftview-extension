@@ -82,7 +82,7 @@ describe("findLinkedMedia", () => {
 			(name) => {
 				const image = createLinkedImage(`https://example.com/${name}`);
 
-				expect(findLinkedMedia(image)).toBeNull();
+				expect(findLinkedMedia(image)).toBeUndefined();
 			},
 		);
 	});
@@ -93,11 +93,11 @@ describe("findLinkedMedia", () => {
 			"ftp://example.com/photo.png",
 			"blob:https://example.com/photo.png",
 		])("rejects %s", (href) => {
-			expect(findLinkedMedia(createLinkedImage(href))).toBeNull();
+			expect(findLinkedMedia(createLinkedImage(href))).toBeUndefined();
 		});
 
 		it("finds nothing behind an invalid url", () => {
-			expect(findLinkedMedia(createLinkedImage("http://"))).toBeNull();
+			expect(findLinkedMedia(createLinkedImage("http://"))).toBeUndefined();
 		});
 	});
 
@@ -152,13 +152,13 @@ describe("findLinkedMedia", () => {
 			"data:video/ogg;base64,AAAA",
 			"data:,hello",
 		])("rejects %s", (href) => {
-			expect(findLinkedMedia(createLinkedImage(href))).toBeNull();
+			expect(findLinkedMedia(createLinkedImage(href))).toBeUndefined();
 		});
 
 		it("does not look for an extension in a data url", () => {
 			const image = createLinkedImage("data:text/plain,cat.png");
 
-			expect(findLinkedMedia(image)).toBeNull();
+			expect(findLinkedMedia(image)).toBeUndefined();
 		});
 	});
 
@@ -168,7 +168,7 @@ describe("findLinkedMedia", () => {
 			const inner = createAnchor("https://example.com/page.html", image);
 			createAnchor("https://example.com/photo.png", inner);
 
-			expect(findLinkedMedia(image)).toBeNull();
+			expect(findLinkedMedia(image)).toBeUndefined();
 		});
 
 		it("finds a link further up the tree", () => {
@@ -197,18 +197,18 @@ describe("findLinkedMedia", () => {
 				.append(createAnchor("https://example.com/page.html", image));
 			createAnchor("https://example.com/photo.png", host);
 
-			expect(findLinkedMedia(image)).toBeNull();
+			expect(findLinkedMedia(image)).toBeUndefined();
 		});
 
 		it("finds nothing for a link without href", () => {
-			expect(findLinkedMedia(createLinkedImage())).toBeNull();
+			expect(findLinkedMedia(createLinkedImage())).toBeUndefined();
 		});
 
 		it("finds nothing for an element outside any link", () => {
 			const image = createImage();
 			document.createElement("div").append(image);
 
-			expect(findLinkedMedia(image)).toBeNull();
+			expect(findLinkedMedia(image)).toBeUndefined();
 		});
 
 		it("finds nothing for a link of an svg document", () => {
@@ -223,7 +223,7 @@ describe("findLinkedMedia", () => {
 			anchor.setAttribute("href", "https://example.com/photo.png");
 			anchor.append(image);
 
-			expect(findLinkedMedia(image)).toBeNull();
+			expect(findLinkedMedia(image)).toBeUndefined();
 		});
 	});
 });

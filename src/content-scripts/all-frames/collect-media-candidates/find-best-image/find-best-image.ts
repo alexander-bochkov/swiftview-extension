@@ -1,13 +1,10 @@
 import { MEDIA_TYPE } from "@shared/constants";
-import type { MediaCandidate, Nullable } from "@shared/types";
+import type { MediaCandidate, Optional } from "@shared/types";
 
 type SrcsetCandidate = Readonly<{
 	size: number;
 	url: string;
 }>;
-
-// A candidate without a descriptor counts as 1x (the default of the spec).
-const DEFAULT_SIZE = 1;
 
 // Matches one srcset candidate per match.
 // Capture groups:
@@ -22,13 +19,23 @@ const CANDIDATE_REGEX = /[\s,]*(\S*[^\s,])(?:\s+([^\s,]+))?/g;
 //    needs the numbers, as a valid srcset uses the same unit for all of them.
 const DESCRIPTOR_REGEX = /^(\d+(?:\.\d+)?)[wx]$/;
 
+// A candidate without a descriptor counts as 1x (the default of the spec).
+const DEFAULT_SIZE = 1;
+
+const findLargestCandidate = (
+	candidates: readonly SrcsetCandidate[],
+): Optional<SrcsetCandidate> =>
+	candidates.reduce<Optional<SrcsetCandidate>>(
+		(largest, candidate) =>
+			!largest || candidate.size > largest.size ? candidate : largest,
+		undefined,
+	);
+
 const getSize = (descriptor?: string): number => {
 	const value = descriptor?.match(DESCRIPTOR_REGEX)?.[1];
 	return value ? Number(value) : DEFAULT_SIZE;
 };
 
-// The candidates of a srcset with their urls resolved against the document, as
-// the browser resolves them. A candidate whose url doesn't parse is skipped.
 const getCandidates = (srcset: string, baseURI: string): SrcsetCandidate[] => {
 	const candidates: SrcsetCandidate[] = [];
 
@@ -45,12 +52,10 @@ const getCandidates = (srcset: string, baseURI: string): SrcsetCandidate[] => {
 // matching <source> is the one that lists that url.
 const findSourceCandidates = (
 	image: HTMLImageElement,
-): Nullable<SrcsetCandidate[]> => {
+): Optional<SrcsetCandidate[]> => {
 	const picture = image.parentElement;
 
-	if (!(picture instanceof HTMLPictureElement) || !image.currentSrc) {
-		return null;
-	}
+	if (!(picture instanceof HTMLPictureElement)) return;
 
 	for (const element of picture.children) {
 		// Only the <source> elements before the image take part in the choice.
@@ -63,24 +68,13 @@ const findSourceCandidates = (
 			return candidates;
 		}
 	}
-
-	return null;
 };
-
-const findLargestCandidate = (
-	candidates: readonly SrcsetCandidate[],
-): Nullable<SrcsetCandidate> =>
-	candidates.reduce<Nullable<SrcsetCandidate>>(
-		(largest, candidate) =>
-			!largest || candidate.size > largest.size ? candidate : largest,
-		null,
-	);
 
 export const findBestImage = (
 	image: HTMLImageElement,
-): Nullable<MediaCandidate> => {
+): Optional<MediaCandidate> => {
 	const candidates =
 		findSourceCandidates(image) ?? getCandidates(image.srcset, image.baseURI);
 	const largest = findLargestCandidate(candidates);
-	return largest ? { type: MEDIA_TYPE.IMAGE, url: largest.url } : null;
+	return largest && { type: MEDIA_TYPE.IMAGE, url: largest.url };
 };

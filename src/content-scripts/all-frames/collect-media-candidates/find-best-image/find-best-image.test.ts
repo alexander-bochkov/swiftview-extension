@@ -114,7 +114,7 @@ describe("findBestImage", () => {
 		it("finds nothing for a candidate with an invalid url", () => {
 			const image = createImage({ srcset: "http://[invalid 2x" });
 
-			expect(findBestImage(image)).toBeNull();
+			expect(findBestImage(image)).toBeUndefined();
 		});
 
 		it("skips a candidate with an invalid url for the next largest", () => {
@@ -131,11 +131,11 @@ describe("findBestImage", () => {
 				src: "https://example.com/src.jpg",
 			});
 
-			expect(findBestImage(image)).toBeNull();
+			expect(findBestImage(image)).toBeUndefined();
 		});
 
 		it("finds nothing for an image without any source", () => {
-			expect(findBestImage(createImage())).toBeNull();
+			expect(findBestImage(createImage())).toBeUndefined();
 		});
 	});
 
@@ -216,7 +216,7 @@ describe("findBestImage", () => {
 				image,
 			);
 
-			expect(findBestImage(image)).toBeNull();
+			expect(findBestImage(image)).toBeUndefined();
 		});
 
 		it("ignores sources that come after the image", () => {
@@ -228,7 +228,7 @@ describe("findBestImage", () => {
 				),
 			);
 
-			expect(findBestImage(image)).toBeNull();
+			expect(findBestImage(image)).toBeUndefined();
 		});
 
 		it("ignores sources when the picture is not the direct parent", () => {
@@ -242,7 +242,7 @@ describe("findBestImage", () => {
 				wrapper,
 			);
 
-			expect(findBestImage(image)).toBeNull();
+			expect(findBestImage(image)).toBeUndefined();
 		});
 
 		it("skips a malformed candidate and still matches the source", () => {
