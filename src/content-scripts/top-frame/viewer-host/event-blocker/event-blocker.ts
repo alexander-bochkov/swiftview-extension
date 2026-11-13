@@ -1,4 +1,6 @@
-import type { EventType, Nullable } from "@shared/types";
+import type { Nullable } from "@shared/types";
+
+type EventType = keyof WindowEventMap;
 
 export type EventBlockerPolicy<Type extends EventType> = {
 	readonly types: readonly Type[];
