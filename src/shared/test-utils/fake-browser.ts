@@ -1,6 +1,7 @@
+import type { Optional } from "@shared/types";
 import messages from "../../../public/_locales/en/messages.json";
 
-type Messages = Record<string, { message: string } | undefined>;
+type Messages = Record<string, Optional<{ message: string }>>;
 
 // The extension APIs only exist in a content script. A stand-in for the parts
 // the content script uses, for the tests and Storybook. Substitutions are
