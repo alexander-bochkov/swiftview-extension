@@ -1,6 +1,6 @@
 import { MEDIA_TYPE } from "@shared/constants";
 import type { MediaCandidate, MediaElement, Optional } from "@shared/types";
-import { findBestImage } from "./find-best-image";
+import { findLargerImages } from "./find-larger-images";
 import { findLinkedMedia } from "./find-linked-media";
 
 const dedupe = (
@@ -19,7 +19,7 @@ const collectImageCandidates = (
 ): MediaCandidate[] =>
 	dedupe([
 		findLinkedMedia(image),
-		findBestImage(image),
+		...findLargerImages(image),
 		{ type: MEDIA_TYPE.IMAGE, url: srcUrl },
 	]);
 

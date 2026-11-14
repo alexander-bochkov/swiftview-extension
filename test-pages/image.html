@@ -369,7 +369,7 @@
 						><span><code>&lt;img srcset&gt;</code> (w and x descriptors)</span>
 					</h3>
 					<p class="expect">
-						Opens the largest candidate of the srcset: the 1600w one for the first image and the 3x one for the second, whatever the page shows.
+						Opens the largest candidate of the srcset: the 1600w one for the first image and the 3x one for the second. The candidates between it and the one the page shows are the fallbacks, in that order, before the url of the menu.
 					</p>
 					<div class="stage">
 						<figure>
@@ -1021,7 +1021,7 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 						<span class="tag">#25</span><span>Largest candidate missing</span>
 					</h3>
 					<p class="expect">
-						The 4x candidate fails, so the viewer falls back to the url of the menu, the one the page shows. On a display above 2x the page picks the 4x one too, and the image is broken on the page as well.
+						The 4x candidate fails, so the viewer falls back to the next larger one: the 2x candidate on a 1x display, or the url of the menu on a 2x display, where the page shows the 2x one already. On a display above 2x the page picks the 4x one too, and the image is broken on the page as well.
 					</p>
 					<div class="stage">
 						<img

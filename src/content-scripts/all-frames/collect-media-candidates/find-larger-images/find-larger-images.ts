@@ -19,21 +19,19 @@ const CANDIDATE_REGEX = /[\s,]*(\S*[^\s,])(?:\s+([^\s,]+))?/g;
 //    needs the numbers, as a valid srcset uses the same unit for all of them.
 const DESCRIPTOR_REGEX = /^(\d+(?:\.\d+)?)[wx]$/;
 
-// A candidate without a descriptor counts as 1x (the default of the spec).
-const DEFAULT_SIZE = 1;
+// The size of src, which the spec counts as a 1x candidate.
+const SRC_SIZE = 1;
 
-const findLargestCandidate = (
+// The size of what the page displays: the candidate the browser picked, or src
+// when the browser displays it or hasn't picked yet.
+const getDisplayedSize = (
 	candidates: readonly SrcsetCandidate[],
-): Optional<SrcsetCandidate> =>
-	candidates.reduce<Optional<SrcsetCandidate>>(
-		(largest, candidate) =>
-			!largest || candidate.size > largest.size ? candidate : largest,
-		undefined,
-	);
+	currentSrc: string,
+): number => candidates.find(({ url }) => url === currentSrc)?.size ?? SRC_SIZE;
 
-const getSize = (descriptor?: string): number => {
+const getSize = (descriptor?: string): Optional<number> => {
 	const value = descriptor?.match(DESCRIPTOR_REGEX)?.[1];
-	return value ? Number(value) : DEFAULT_SIZE;
+	return value ? Number(value) : undefined;
 };
 
 const getCandidates = (srcset: string, baseURI: string): SrcsetCandidate[] => {
@@ -41,7 +39,9 @@ const getCandidates = (srcset: string, baseURI: string): SrcsetCandidate[] => {
 
 	for (const [, url, descriptor] of srcset.matchAll(CANDIDATE_REGEX)) {
 		const href = url && URL.parse(url, baseURI)?.href;
-		if (href) candidates.push({ size: getSize(descriptor), url: href });
+		const size = getSize(descriptor);
+
+		if (href && size) candidates.push({ size, url: href });
 	}
 
 	return candidates;
@@ -70,11 +70,13 @@ const findSourceCandidates = (
 	}
 };
 
-export const findBestImage = (
-	image: HTMLImageElement,
-): Optional<MediaCandidate> => {
+export const findLargerImages = (image: HTMLImageElement): MediaCandidate[] => {
 	const candidates =
 		findSourceCandidates(image) ?? getCandidates(image.srcset, image.baseURI);
-	const largest = findLargestCandidate(candidates);
-	return largest && { type: MEDIA_TYPE.IMAGE, url: largest.url };
+	const displayedSize = getDisplayedSize(candidates, image.currentSrc);
+
+	return candidates
+		.filter(({ size }) => size > displayedSize)
+		.sort((first, second) => second.size - first.size)
+		.map(({ url }) => ({ type: MEDIA_TYPE.IMAGE, url }));
 };

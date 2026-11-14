@@ -3,28 +3,30 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { collectMediaCandidates } from "./collect-media-candidates";
 
 const mocks = vi.hoisted(() => ({
-	findBestImage: vi.fn<() => { type: string; url: string } | null>(() => null),
-	findLinkedMedia: vi.fn<() => { type: string; url: string } | null>(
-		() => null,
+	findLargerImages: vi.fn<() => { type: string; url: string }[]>(() => []),
+	findLinkedMedia: vi.fn<() => { type: string; url: string } | undefined>(
+		() => undefined,
 	),
 }));
 
-vi.mock("./find-best-image", () => ({
-	findBestImage: mocks.findBestImage,
+vi.mock("./find-larger-images", () => ({
+	findLargerImages: mocks.findLargerImages,
 }));
 
 vi.mock("./find-linked-media", () => ({
 	findLinkedMedia: mocks.findLinkedMedia,
 }));
 
-const BEST_URL = "https://example.com/photo-large.png";
 const CLIP_URL = "https://example.com/clip.mp4";
+const LARGE_URL = "https://example.com/photo-large.png";
 const LINK_URL = "https://example.com/photo-full.png";
+const MEDIUM_URL = "https://example.com/photo-medium.png";
 const PHOTO_URL = "https://example.com/photo.png";
 
-const BEST = { type: MEDIA_TYPE.IMAGE, url: BEST_URL };
 const CLIP = { type: MEDIA_TYPE.VIDEO, url: CLIP_URL };
+const LARGE = { type: MEDIA_TYPE.IMAGE, url: LARGE_URL };
 const LINK = { type: MEDIA_TYPE.IMAGE, url: LINK_URL };
+const MEDIUM = { type: MEDIA_TYPE.IMAGE, url: MEDIUM_URL };
 const PHOTO = { type: MEDIA_TYPE.IMAGE, url: PHOTO_URL };
 
 const image = document.createElement("img");
@@ -36,13 +38,14 @@ afterEach(() => {
 
 describe("collectMediaCandidates", () => {
 	describe("of an image", () => {
-		it("lists the link, the best url and the url of the menu, in that order", () => {
+		it("lists the link, the larger urls and the url of the menu, in that order", () => {
 			mocks.findLinkedMedia.mockReturnValueOnce(LINK);
-			mocks.findBestImage.mockReturnValueOnce(BEST);
+			mocks.findLargerImages.mockReturnValueOnce([LARGE, MEDIUM]);
 
 			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([
 				LINK,
-				BEST,
+				LARGE,
+				MEDIUM,
 				PHOTO,
 			]);
 		});
@@ -53,10 +56,10 @@ describe("collectMediaCandidates", () => {
 			expect(mocks.findLinkedMedia).toHaveBeenCalledExactlyOnceWith(image);
 		});
 
-		it("looks for the best url of the image", () => {
+		it("looks for the larger urls of the image", () => {
 			collectMediaCandidates(image, PHOTO_URL);
 
-			expect(mocks.findBestImage).toHaveBeenCalledExactlyOnceWith(image);
+			expect(mocks.findLargerImages).toHaveBeenCalledExactlyOnceWith(image);
 		});
 
 		it("lists a linked video before the image", () => {
@@ -65,7 +68,7 @@ describe("collectMediaCandidates", () => {
 			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([CLIP, PHOTO]);
 		});
 
-		it("lists only the url of the menu without a link and a best url", () => {
+		it("lists only the url of the menu without a link and larger urls", () => {
 			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([PHOTO]);
 		});
 	});
@@ -75,11 +78,11 @@ describe("collectMediaCandidates", () => {
 			expect(collectMediaCandidates(video, CLIP_URL)).toEqual([CLIP]);
 		});
 
-		it("doesn't look for a link or a best url", () => {
+		it("doesn't look for a link or larger urls", () => {
 			collectMediaCandidates(video, CLIP_URL);
 
 			expect(mocks.findLinkedMedia).not.toHaveBeenCalled();
-			expect(mocks.findBestImage).not.toHaveBeenCalled();
+			expect(mocks.findLargerImages).not.toHaveBeenCalled();
 		});
 	});
 
@@ -90,21 +93,21 @@ describe("collectMediaCandidates", () => {
 			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([PHOTO]);
 		});
 
-		it("drops a best url that is the url of the menu", () => {
-			mocks.findBestImage.mockReturnValueOnce(PHOTO);
+		it("drops a larger url that is the url of the menu", () => {
+			mocks.findLargerImages.mockReturnValueOnce([LARGE, PHOTO]);
 
-			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([PHOTO]);
+			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([LARGE, PHOTO]);
 		});
 
 		it("keeps the first of two candidates with one url", () => {
 			mocks.findLinkedMedia.mockReturnValueOnce({
 				type: MEDIA_TYPE.VIDEO,
-				url: BEST_URL,
+				url: LARGE_URL,
 			});
-			mocks.findBestImage.mockReturnValueOnce(BEST);
+			mocks.findLargerImages.mockReturnValueOnce([LARGE]);
 
 			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([
-				{ type: MEDIA_TYPE.VIDEO, url: BEST_URL },
+				{ type: MEDIA_TYPE.VIDEO, url: LARGE_URL },
 				PHOTO,
 			]);
 		});
