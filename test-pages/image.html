@@ -369,7 +369,7 @@
 						><span><code>&lt;img srcset&gt;</code> (w and x descriptors)</span>
 					</h3>
 					<p class="expect">
-						Opens the largest candidate of the srcset: the 1600w one for the first image and the 3x one for the second. The candidates between it and the one the page shows are the fallbacks, in that order, before the url of the menu.
+						Opens the largest candidate of the srcset: the 1600w one for the first image and the 3x one for the second. Every other candidate is a fallback, largest first, with the one the page shows in its place among them.
 					</p>
 					<div class="stage">
 						<figure>
@@ -414,7 +414,7 @@
 						>
 					</h3>
 					<p class="expect">
-						Opens the largest candidate of the source the browser chose: the wide one from 900px up, the narrow one below. The unsupported source is never chosen, so it's never opened.
+						Opens the source the browser chose, which is the url of the menu: the wide one from 900px up, the narrow one below. The unsupported source is never chosen, so it's never opened.
 					</p>
 					<div class="stage">
 						<picture
@@ -453,6 +453,42 @@
 				<section class="case" id="c-4">
 					<h3>
 						<span class="tag">#4</span
+						><span
+							><code>&lt;picture&gt;</code> with a bare
+							<code>&lt;source&gt;</code> and
+							<code>&lt;img srcset&gt;</code></span
+						>
+					</h3>
+					<p class="expect">
+						Opens the SVG source, which is the url of the menu. A source without a descriptor can't be ordered against the srcset of the image, so the 2x candidate of the image isn't offered even though it's larger, and the 1x fallback never shows.
+					</p>
+					<div class="stage">
+						<picture
+							><source
+								srcset="
+									data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iMzAwIiB2aWV3Qm94PSIwIDAgNjAwIDMwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiMyYTdmOWUiLz48cG9seWdvbiBwb2ludHM9IjAsMCA0NCwwIDAsNDQiIGZpbGw9IiNmZmYiLz48dGV4dCB4PSI1MCUiIHk9IjQ4JSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDQiIGZpbGw9IiNmZmYiPnBpY3R1cmU6IFNWRyBzb3VyY2U8L3RleHQ+PHRleHQgeD0iNTAlIiB5PSI3MiUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjMwIiBmaWxsPSIjZmZmIj42MDB4MzAwPC90ZXh0Pjwvc3ZnPg==
+								"
+								type="image/svg+xml"
+							>
+							<img
+								alt=""
+								src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iMzAwIiB2aWV3Qm94PSIwIDAgNjAwIDMwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiM4YTRmN2QiLz48cG9seWdvbiBwb2ludHM9IjAsMCA0NCwwIDAsNDQiIGZpbGw9IiNmZmYiLz48dGV4dCB4PSI1MCUiIHk9IjQ4JSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDQiIGZpbGw9IiNmZmYiPnBpY3R1cmU6IGZhbGxiYWNrIDF4PC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iNzIlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIzMCIgZmlsbD0iI2ZmZiI+NjAweDMwMDwvdGV4dD48L3N2Zz4="
+								srcset="
+									data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iMzAwIiB2aWV3Qm94PSIwIDAgNjAwIDMwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiM4YTRmN2QiLz48cG9seWdvbiBwb2ludHM9IjAsMCA0NCwwIDAsNDQiIGZpbGw9IiNmZmYiLz48dGV4dCB4PSI1MCUiIHk9IjQ4JSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDQiIGZpbGw9IiNmZmYiPnBpY3R1cmU6IGZhbGxiYWNrIDF4PC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iNzIlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIzMCIgZmlsbD0iI2ZmZiI+NjAweDMwMDwvdGV4dD48L3N2Zz4= 1x,
+									data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDEyMDAgNjAwIj48cmVjdCB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI2MDAiIGZpbGw9IiNiMjU0M2EiLz48cG9seWdvbiBwb2ludHM9IjAsMCA4OCwwIDAsODgiIGZpbGw9IiNmZmYiLz48dGV4dCB4PSI1MCUiIHk9IjQ4JSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iODgiIGZpbGw9IiNmZmYiPnBpY3R1cmU6IGZhbGxiYWNrIDJ4PC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iNzIlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSI2MCIgZmlsbD0iI2ZmZiI+MTIwMHg2MDA8L3RleHQ+PC9zdmc+ 2x
+								"
+								width="240"
+							></picture
+						>
+					</div>
+					<pre><code>&lt;picture&gt;
+  &lt;source type=&quot;image/svg+xml&quot; srcset=&quot;source.svg&quot;&gt;
+  &lt;img src=&quot;fallback.svg&quot; srcset=&quot;fallback.svg 1x, fallback-2x.svg 2x&quot; width=&quot;240&quot;&gt;
+&lt;/picture&gt;</code></pre>
+				</section>
+				<section class="case" id="c-5">
+					<h3>
+						<span class="tag">#5</span
 						><span>Lazy-loaded image (<code>data-*</code> attributes)</span>
 					</h3>
 					<p class="expect">
@@ -499,9 +535,9 @@
 &lt;img src=&quot;placeholder.gif&quot; data-srcset=&quot;s.jpg 600w, l.jpg 1200w&quot;&gt;
 &lt;img data-original=&quot;full.jpg&quot;&gt;</code></pre>
 				</section>
-				<section class="case" id="c-5">
+				<section class="case" id="c-6">
 					<h3>
-						<span class="tag">#5</span
+						<span class="tag">#6</span
 						><span>SVG file in <code>&lt;img&gt;</code></span>
 					</h3>
 					<p class="expect">
@@ -529,9 +565,9 @@
 &lt;img src=&quot;data:image/svg+xml;base64,...&quot;&gt;
 &lt;img src=&quot;data:image/svg+xml;utf8,%3Csvg ...&quot;&gt;</code></pre>
 				</section>
-				<section class="case" id="c-6">
+				<section class="case" id="c-7">
 					<h3>
-						<span class="tag">#6</span
+						<span class="tag">#7</span
 						><span><code>&lt;input type=&quot;image&quot;&gt;</code></span>
 					</h3>
 					<p class="expect">
@@ -556,9 +592,9 @@
 			<h2>CSS images</h2>
 			<p>Images that come from stylesheets, not from markup.</p>
 			<div class="grid">
-				<section class="case" id="c-7">
+				<section class="case" id="c-8">
 					<h3>
-						<span class="tag">#7</span
+						<span class="tag">#8</span
 						><span>CSS <code>background-image</code></span>
 					</h3>
 					<p class="expect">
@@ -586,9 +622,9 @@
 .dark { background: linear-gradient(#0006,#0006), url(hero.jpg) }
 .icon { background: url(sprite.png) -120px 0 no-repeat }</code></pre>
 				</section>
-				<section class="case" id="c-8">
+				<section class="case" id="c-9">
 					<h3>
-						<span class="tag">#8</span
+						<span class="tag">#9</span
 						><span>Pseudo-element background (<code>::before</code>)</span>
 					</h3>
 					<p class="expect">
@@ -599,9 +635,9 @@
 					><code>.card::before { content: &quot;&quot;; position: absolute; inset: 0;
                 background: url(bg.jpg) center/cover }</code></pre>
 				</section>
-				<section class="case" id="c-9">
+				<section class="case" id="c-10">
 					<h3>
-						<span class="tag">#9</span
+						<span class="tag">#10</span
 						><span>CSS <code>content: url()</code></span>
 					</h3>
 					<p class="expect">
@@ -627,9 +663,9 @@
 					<pre><code>.badge::after { content: url(badge.png) }
 img.swapped { content: url(other.png) }</code></pre>
 				</section>
-				<section class="case" id="c-10">
+				<section class="case" id="c-11">
 					<h3>
-						<span class="tag">#10</span
+						<span class="tag">#11</span
 						><span
 							><code>list-style-image</code>, <code>border-image</code>,
 							<code>mask-image</code></span
@@ -659,9 +695,9 @@ img.swapped { content: url(other.png) }</code></pre>
 .frame { border-image: url(frame.png) 30 round }
 .icon { mask-image: url(icon.svg) }</code></pre>
 				</section>
-				<section class="case" id="c-11">
+				<section class="case" id="c-12">
 					<h3>
-						<span class="tag">#11</span><span>CSS <code>image-set()</code></span>
+						<span class="tag">#12</span><span>CSS <code>image-set()</code></span>
 					</h3>
 					<p class="expect">
 						No menu item.
@@ -676,9 +712,9 @@ img.swapped { content: url(other.png) }</code></pre>
 			<h2>SVG</h2>
 			<p>Vector graphics and images placed inside SVG.</p>
 			<div class="grid">
-				<section class="case" id="c-12">
+				<section class="case" id="c-13">
 					<h3>
-						<span class="tag">#12</span
+						<span class="tag">#13</span
 						><span>Inline <code>&lt;svg&gt;</code></span>
 					</h3>
 					<p class="expect">
@@ -727,9 +763,9 @@ img.swapped { content: url(other.png) }</code></pre>
 					><code>&lt;svg viewBox=&quot;0 0 240 160&quot;&gt;&lt;circle cx=&quot;80&quot; cy=&quot;76&quot; r=&quot;38&quot;/&gt;...&lt;/svg&gt;
 &lt;svg&gt;&lt;use href=&quot;#icon-star&quot;/&gt;&lt;/svg&gt;</code></pre>
 				</section>
-				<section class="case" id="c-13">
+				<section class="case" id="c-14">
 					<h3>
-						<span class="tag">#13</span
+						<span class="tag">#14</span
 						><span
 							><code>&lt;image&gt;</code>
 							inside <code>&lt;svg&gt;</code></span
@@ -767,9 +803,9 @@ img.swapped { content: url(other.png) }</code></pre>
   &lt;image xlink:href=&quot;b.png&quot; x=&quot;220&quot; width=&quot;200&quot; height=&quot;140&quot;/&gt;
 &lt;/svg&gt;</code></pre>
 				</section>
-				<section class="case" id="c-14">
+				<section class="case" id="c-15">
 					<h3>
-						<span class="tag">#14</span><span>SVG without a size</span>
+						<span class="tag">#15</span><span>SVG without a size</span>
 					</h3>
 					<p class="expect">
 						Opens the SVG. It has no size of its own, only a <code>viewBox</code>, so the browser makes one up, and the viewer scales it around its center without a jump.
@@ -785,9 +821,9 @@ img.swapped { content: url(other.png) }</code></pre>
 			<h2>Canvas</h2>
 			<p>An image drawn by script.</p>
 			<div class="grid">
-				<section class="case" id="c-15">
+				<section class="case" id="c-16">
 					<h3>
-						<span class="tag">#15</span
+						<span class="tag">#16</span
 						><span><code>&lt;canvas&gt;</code> (2D and WebGL)</span>
 					</h3>
 					<p class="expect">
@@ -818,9 +854,9 @@ ctx.drawImage(img, 0, 0);  canvas.toBlob(cb)</code></pre>
 			<h2>Embedded documents</h2>
 			<p>Images inside other documents or other elements.</p>
 			<div class="grid">
-				<section class="case" id="c-16">
+				<section class="case" id="c-17">
 					<h3>
-						<span class="tag">#16</span
+						<span class="tag">#17</span
 						><span
 							><code>&lt;object&gt;</code>
 							and <code>&lt;embed&gt;</code></span
@@ -854,9 +890,9 @@ ctx.drawImage(img, 0, 0);  canvas.toBlob(cb)</code></pre>
 					><code>&lt;object data=&quot;pic.png&quot; type=&quot;image/png&quot;&gt;&lt;/object&gt;
 &lt;embed src=&quot;pic.png&quot; type=&quot;image/png&quot;&gt;</code></pre>
 				</section>
-				<section class="case" id="c-17">
+				<section class="case" id="c-18">
 					<h3>
-						<span class="tag">#17</span
+						<span class="tag">#18</span
 						><span><code>&lt;iframe&gt;</code> containing an image</span>
 					</h3>
 					<p class="expect">
@@ -874,9 +910,9 @@ ctx.drawImage(img, 0, 0);  canvas.toBlob(cb)</code></pre>
 					<pre
 					><code>&lt;iframe srcdoc=&quot;&lt;img src=pic.png&gt;&quot;&gt;&lt;/iframe&gt;</code></pre>
 				</section>
-				<section class="case" id="c-18">
+				<section class="case" id="c-19">
 					<h3>
-						<span class="tag">#18</span><span>Image written into an <code>about:blank</code> popup</span>
+						<span class="tag">#19</span><span>Image written into an <code>about:blank</code> popup</span>
 					</h3>
 					<p class="expect">
 						Opens the image in the popup, without the reload prompt. The popup is <code>about:blank</code>, which the content scripts are injected into. From a file url this needs "Allow access to file URLs".
@@ -887,9 +923,9 @@ ctx.drawImage(img, 0, 0);  canvas.toBlob(cb)</code></pre>
 					<pre><code>const popup = window.open();
 popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></pre>
 				</section>
-				<section class="case" id="c-19">
+				<section class="case" id="c-20">
 					<h3>
-						<span class="tag">#19</span
+						<span class="tag">#20</span
 						><span
 							>Image map (<code>&lt;map&gt;</code>
 							and <code>&lt;area&gt;</code>)</span
@@ -928,9 +964,9 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 			<h2>Legacy</h2>
 			<p>Old attributes that browsers still honor.</p>
 			<div class="grid">
-				<section class="case" id="c-20">
+				<section class="case" id="c-21">
 					<h3>
-						<span class="tag">#20</span
+						<span class="tag">#21</span
 						><span>Legacy <code>background</code> attribute</span>
 					</h3>
 					<p class="expect">
@@ -968,9 +1004,9 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 			<h2>Load errors</h2>
 			<p>What the viewer does when a candidate doesn't load.</p>
 			<div class="grid">
-				<section class="case" id="c-21">
+				<section class="case" id="c-22">
 					<h3>
-						<span class="tag">#21</span><span>Broken image</span>
+						<span class="tag">#22</span><span>Broken image</span>
 					</h3>
 					<p class="expect">
 						Nothing loads: the error, with only the close button.
@@ -980,9 +1016,9 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 					</div>
 					<pre><code>&lt;img src=&quot;missing-image.png&quot; width=&quot;220&quot; height=&quot;60&quot;&gt;</code></pre>
 				</section>
-				<section class="case" id="c-22">
+				<section class="case" id="c-23">
 					<h3>
-						<span class="tag">#22</span><span>Corrupt image</span>
+						<span class="tag">#23</span><span>Corrupt image</span>
 					</h3>
 					<p class="expect">
 						Nothing loads: the file is only the PNG signature and fails to decode.
@@ -992,9 +1028,9 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 					</div>
 					<pre><code>&lt;img src=&quot;data:image/png;base64,iVBORw0KGgo=&quot;&gt;</code></pre>
 				</section>
-				<section class="case" id="c-23">
+				<section class="case" id="c-24">
 					<h3>
-						<span class="tag">#23</span><span>Thumbnail inside a link to a missing image</span>
+						<span class="tag">#24</span><span>Thumbnail inside a link to a missing image</span>
 					</h3>
 					<p class="expect">
 						The link fails, so the viewer falls back to the thumbnail and opens it.
@@ -1004,9 +1040,9 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 					</div>
 					<pre><code>&lt;a href=&quot;missing-image.png&quot;&gt;&lt;img src=&quot;thumb.svg&quot;&gt;&lt;/a&gt;</code></pre>
 				</section>
-				<section class="case" id="c-24">
+				<section class="case" id="c-25">
 					<h3>
-						<span class="tag">#24</span><span>Thumbnail inside a link to a corrupt image</span>
+						<span class="tag">#25</span><span>Thumbnail inside a link to a corrupt image</span>
 					</h3>
 					<p class="expect">
 						The file behind the link fails to decode, so the viewer falls back to the thumbnail.
@@ -1016,9 +1052,9 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 					</div>
 					<pre><code>&lt;a href=&quot;data:image/png;base64,iVBORw0KGgo=&quot;&gt;&lt;img src=&quot;thumb.svg&quot;&gt;&lt;/a&gt;</code></pre>
 				</section>
-				<section class="case" id="c-25">
+				<section class="case" id="c-26">
 					<h3>
-						<span class="tag">#25</span><span>Largest candidate missing</span>
+						<span class="tag">#26</span><span>Largest candidate missing</span>
 					</h3>
 					<p class="expect">
 						The 4x candidate fails, so the viewer falls back to the next larger one: the 2x candidate on a 1x display, or the url of the menu on a 2x display, where the page shows the 2x one already. On a display above 2x the page picks the 4x one too, and the image is broken on the page as well.
@@ -1039,9 +1075,9 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 			<h2>Traps</h2>
 			<p>Cases where the element under the pointer is not the image.</p>
 			<div class="grid">
-				<section class="case" id="c-26">
+				<section class="case" id="c-27">
 					<h3>
-						<span class="tag trap">#26</span
+						<span class="tag trap">#27</span
 						><span>Transparent overlay above the image</span>
 					</h3>
 					<p class="expect">
@@ -1060,9 +1096,9 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 					<pre
 					><code>&lt;div style=&quot;position:relative&quot;&gt;&lt;img src=&quot;a.jpg&quot;&gt;&lt;a href=&quot;#&quot; style=&quot;position:absolute;inset:0&quot;&gt;&lt;/a&gt;&lt;/div&gt;</code></pre>
 				</section>
-				<section class="case" id="c-27">
+				<section class="case" id="c-28">
 					<h3>
-						<span class="tag trap">#27</span
+						<span class="tag trap">#28</span
 						><span>Image with <code>pointer-events: none</code></span>
 					</h3>
 					<p class="expect">
@@ -1079,17 +1115,17 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 					</div>
 					<pre><code>.pe img { pointer-events: none }</code></pre>
 				</section>
-				<section class="case" id="c-28">
-					<h3><span class="tag trap">#28</span><span>Open shadow root</span></h3>
+				<section class="case" id="c-29">
+					<h3><span class="tag trap">#29</span><span>Open shadow root</span></h3>
 					<p class="expect">
 						Opens the full image, the 2x candidate of the srcset: <code>elementsFromPoint()</code> stops at the host, but the frame looks into the shadow root.
 					</p>
 					<div class="stage"><div id="shadow-open"></div></div>
 					<pre><code>host.attachShadow({ mode: &#x27;open&#x27; })</code></pre>
 				</section>
-				<section class="case" id="c-29">
+				<section class="case" id="c-30">
 					<h3>
-						<span class="tag trap">#29</span><span>Closed shadow root</span>
+						<span class="tag trap">#30</span><span>Closed shadow root</span>
 					</h3>
 					<p class="expect">
 						Opens the full image, the 2x candidate of the srcset: <code>elementsFromPoint()</code> stops at the host, but the frame looks into the shadow root.
@@ -1098,9 +1134,9 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 					<pre
 					><code>host.attachShadow({ mode: &#x27;closed&#x27; })</code></pre>
 				</section>
-				<section class="case" id="c-30">
+				<section class="case" id="c-31">
 					<h3>
-						<span class="tag trap">#30</span
+						<span class="tag trap">#31</span
 						><span>Thumbnail inside a link to the full image</span>
 					</h3>
 					<p class="expect">
@@ -1119,9 +1155,9 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 					<pre
 					><code>&lt;a href=&quot;full.jpg&quot;&gt;&lt;img src=&quot;thumb.jpg&quot;&gt;&lt;/a&gt;</code></pre>
 				</section>
-				<section class="case" id="c-31">
+				<section class="case" id="c-32">
 					<h3>
-						<span class="tag trap">#31</span><span>Thumbnail inside a link to a blob url</span>
+						<span class="tag trap">#32</span><span>Thumbnail inside a link to a blob url</span>
 					</h3>
 					<p class="expect">
 						Opens the thumbnail. A <code>blob:</code> url says nothing about what it holds, so a link to one is skipped on purpose.
@@ -1134,9 +1170,9 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 					</div>
 					<pre><code>&lt;a href=&quot;blob:https://...&quot;&gt;&lt;img src=&quot;thumb.jpg&quot;&gt;&lt;/a&gt;</code></pre>
 				</section>
-				<section class="case" id="c-32">
+				<section class="case" id="c-33">
 					<h3>
-						<span class="tag trap">#32</span
+						<span class="tag trap">#33</span
 						><span>Images created by JavaScript</span>
 					</h3>
 					<p class="expect">
@@ -1152,9 +1188,9 @@ popup.document.write(&#x27;&lt;img src=&quot;pic.png&quot;&gt;&#x27;);</code></p
 im.srcset = &#x27;a.jpg 400w, b.jpg 1200w&#x27;;
 im.src = URL.createObjectURL(blob);</code></pre>
 				</section>
-				<section class="case" id="c-33">
+				<section class="case" id="c-34">
 					<h3>
-						<span class="tag trap">#33</span
+						<span class="tag trap">#34</span
 						><span>Rotated image, <code>object-fit</code>, circular clip</span>
 					</h3>
 					<p class="expect">
@@ -1171,9 +1207,9 @@ im.src = URL.createObjectURL(blob);</code></pre>
 					<pre><code>.clip { overflow: hidden; border-radius: 50% }
 .clip img { object-fit: cover; transform: rotate(6deg) scale(1.25) }</code></pre>
 				</section>
-				<section class="case" id="c-34">
+				<section class="case" id="c-35">
 					<h3>
-						<span class="tag trap">#34</span
+						<span class="tag trap">#35</span
 						><span>Text on top of a background image</span>
 					</h3>
 					<p class="expect">
