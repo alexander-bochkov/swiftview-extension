@@ -1,5 +1,5 @@
 import { MESSAGE_TYPE } from "@shared/constants";
-import type { FindMediaCandidatesMessage } from "@shared/types";
+import type { Message } from "@shared/types";
 import { collectMediaCandidates } from "./collect-media-candidates";
 import { ContextMenuTracker } from "./context-menu-tracker";
 import { findMediaElement } from "./find-media-element";
@@ -7,13 +7,11 @@ import { findMediaElement } from "./find-media-element";
 const contextMenuTracker = new ContextMenuTracker();
 contextMenuTracker.init();
 
-browser.runtime.onMessage.addListener(
-	({ srcUrl, type }: FindMediaCandidatesMessage, _, sendResponse) => {
-		if (type !== MESSAGE_TYPE.FIND_MEDIA_CANDIDATES) return;
+browser.runtime.onMessage.addListener((message: Message, _, sendResponse) => {
+	if (message.type !== MESSAGE_TYPE.FIND_MEDIA_CANDIDATES) return;
 
-		const { point } = contextMenuTracker;
-		const media = point && findMediaElement(document, point, srcUrl);
+	const { point } = contextMenuTracker;
+	const media = point && findMediaElement(document, point, message.srcUrl);
 
-		sendResponse(media && collectMediaCandidates(media, srcUrl));
-	},
-);
+	sendResponse(media && collectMediaCandidates(media, message.srcUrl));
+});
