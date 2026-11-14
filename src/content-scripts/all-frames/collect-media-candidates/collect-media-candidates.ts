@@ -1,7 +1,7 @@
 import { MEDIA_TYPE } from "@shared/constants";
 import type { MediaCandidate, MediaElement, Optional } from "@shared/types";
-import { findLargerImages } from "./find-larger-images";
 import { findLinkedMedia } from "./find-linked-media";
+import { findSrcsetImages } from "./find-srcset-images";
 
 const dedupe = (
 	candidates: readonly Optional<MediaCandidate>[],
@@ -19,7 +19,7 @@ const collectImageCandidates = (
 ): MediaCandidate[] =>
 	dedupe([
 		findLinkedMedia(image),
-		...findLargerImages(image),
+		...findSrcsetImages(image),
 		{ type: MEDIA_TYPE.IMAGE, url: srcUrl },
 	]);
 

@@ -3,14 +3,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { collectMediaCandidates } from "./collect-media-candidates";
 
 const mocks = vi.hoisted(() => ({
-	findLargerImages: vi.fn<() => { type: string; url: string }[]>(() => []),
 	findLinkedMedia: vi.fn<() => { type: string; url: string } | undefined>(
 		() => undefined,
 	),
+	findSrcsetImages: vi.fn<() => { type: string; url: string }[]>(() => []),
 }));
 
-vi.mock("./find-larger-images", () => ({
-	findLargerImages: mocks.findLargerImages,
+vi.mock("./find-srcset-images", () => ({
+	findSrcsetImages: mocks.findSrcsetImages,
 }));
 
 vi.mock("./find-linked-media", () => ({
@@ -38,9 +38,9 @@ afterEach(() => {
 
 describe("collectMediaCandidates", () => {
 	describe("of an image", () => {
-		it("lists the link, the larger urls and the url of the menu, in that order", () => {
+		it("lists the link, the srcset urls and the url of the menu, in that order", () => {
 			mocks.findLinkedMedia.mockReturnValueOnce(LINK);
-			mocks.findLargerImages.mockReturnValueOnce([LARGE, MEDIUM]);
+			mocks.findSrcsetImages.mockReturnValueOnce([LARGE, MEDIUM]);
 
 			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([
 				LINK,
@@ -56,10 +56,10 @@ describe("collectMediaCandidates", () => {
 			expect(mocks.findLinkedMedia).toHaveBeenCalledExactlyOnceWith(image);
 		});
 
-		it("looks for the larger urls of the image", () => {
+		it("looks for the srcset urls of the image", () => {
 			collectMediaCandidates(image, PHOTO_URL);
 
-			expect(mocks.findLargerImages).toHaveBeenCalledExactlyOnceWith(image);
+			expect(mocks.findSrcsetImages).toHaveBeenCalledExactlyOnceWith(image);
 		});
 
 		it("lists a linked video before the image", () => {
@@ -68,7 +68,7 @@ describe("collectMediaCandidates", () => {
 			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([CLIP, PHOTO]);
 		});
 
-		it("lists only the url of the menu without a link and larger urls", () => {
+		it("lists only the url of the menu without a link and srcset urls", () => {
 			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([PHOTO]);
 		});
 	});
@@ -78,11 +78,11 @@ describe("collectMediaCandidates", () => {
 			expect(collectMediaCandidates(video, CLIP_URL)).toEqual([CLIP]);
 		});
 
-		it("doesn't look for a link or larger urls", () => {
+		it("doesn't look for a link or srcset urls", () => {
 			collectMediaCandidates(video, CLIP_URL);
 
 			expect(mocks.findLinkedMedia).not.toHaveBeenCalled();
-			expect(mocks.findLargerImages).not.toHaveBeenCalled();
+			expect(mocks.findSrcsetImages).not.toHaveBeenCalled();
 		});
 	});
 
@@ -93,8 +93,8 @@ describe("collectMediaCandidates", () => {
 			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([PHOTO]);
 		});
 
-		it("drops a larger url that is the url of the menu", () => {
-			mocks.findLargerImages.mockReturnValueOnce([LARGE, PHOTO]);
+		it("drops a srcset url that is the url of the menu", () => {
+			mocks.findSrcsetImages.mockReturnValueOnce([LARGE, PHOTO]);
 
 			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([LARGE, PHOTO]);
 		});
@@ -104,7 +104,7 @@ describe("collectMediaCandidates", () => {
 				type: MEDIA_TYPE.VIDEO,
 				url: LARGE_URL,
 			});
-			mocks.findLargerImages.mockReturnValueOnce([LARGE]);
+			mocks.findSrcsetImages.mockReturnValueOnce([LARGE]);
 
 			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([
 				{ type: MEDIA_TYPE.VIDEO, url: LARGE_URL },
