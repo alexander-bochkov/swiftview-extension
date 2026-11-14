@@ -6,10 +6,8 @@ const isMediaElement = (el: Element): el is MediaElement =>
 const hasUrl = (media: MediaElement, url: string): boolean =>
 	media.currentSrc === url || media.src === url;
 
-const getShadowRoot = (element: Element): Nullable<ShadowRoot> =>
-	element instanceof HTMLElement
-		? browser.dom.openOrClosedShadowRoot(element)
-		: null;
+const getShadowRoot = (el: Element): Nullable<ShadowRoot> =>
+	el instanceof HTMLElement ? browser.dom.openOrClosedShadowRoot(el) : null;
 
 export const findMediaElement = (
 	root: DocumentOrShadowRoot,

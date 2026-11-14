@@ -18,12 +18,14 @@ vi.mock("./find-linked-media", () => ({
 }));
 
 const CLIP_URL = "https://example.com/clip.mp4";
+const FULL_URL = "https://example.com/clip-full.mp4";
 const LARGE_URL = "https://example.com/photo-large.png";
 const LINK_URL = "https://example.com/photo-full.png";
 const MEDIUM_URL = "https://example.com/photo-medium.png";
 const PHOTO_URL = "https://example.com/photo.png";
 
 const CLIP = { type: MEDIA_TYPE.VIDEO, url: CLIP_URL };
+const FULL = { type: MEDIA_TYPE.VIDEO, url: FULL_URL };
 const LARGE = { type: MEDIA_TYPE.IMAGE, url: LARGE_URL };
 const LINK = { type: MEDIA_TYPE.IMAGE, url: LINK_URL };
 const MEDIUM = { type: MEDIA_TYPE.IMAGE, url: MEDIUM_URL };
@@ -74,15 +76,26 @@ describe("collectMediaCandidates", () => {
 	});
 
 	describe("of a video", () => {
-		it("lists only the url of the menu", () => {
-			expect(collectMediaCandidates(video, CLIP_URL)).toEqual([CLIP]);
+		it("lists the link and the url of the menu, in that order", () => {
+			mocks.findLinkedMedia.mockReturnValueOnce(FULL);
+
+			expect(collectMediaCandidates(video, CLIP_URL)).toEqual([FULL, CLIP]);
 		});
 
-		it("doesn't look for a link or srcset urls", () => {
+		it("looks for the link around the video", () => {
 			collectMediaCandidates(video, CLIP_URL);
 
-			expect(mocks.findLinkedMedia).not.toHaveBeenCalled();
+			expect(mocks.findLinkedMedia).toHaveBeenCalledExactlyOnceWith(video);
+		});
+
+		it("doesn't look for srcset urls", () => {
+			collectMediaCandidates(video, CLIP_URL);
+
 			expect(mocks.findSrcsetImages).not.toHaveBeenCalled();
+		});
+
+		it("lists only the url of the menu without a link", () => {
+			expect(collectMediaCandidates(video, CLIP_URL)).toEqual([CLIP]);
 		});
 	});
 
@@ -91,6 +104,12 @@ describe("collectMediaCandidates", () => {
 			mocks.findLinkedMedia.mockReturnValueOnce(PHOTO);
 
 			expect(collectMediaCandidates(image, PHOTO_URL)).toEqual([PHOTO]);
+		});
+
+		it("drops a link to the url of the menu around a video", () => {
+			mocks.findLinkedMedia.mockReturnValueOnce(CLIP);
+
+			expect(collectMediaCandidates(video, CLIP_URL)).toEqual([CLIP]);
 		});
 
 		it("drops a srcset url that is the url of the menu", () => {
