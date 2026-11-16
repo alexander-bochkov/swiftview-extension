@@ -14,7 +14,12 @@ export const VideoViewer = ({ onClose, video }: VideoViewerProps) => {
 	// change the volume.
 	useLayoutEffect(() => {
 		video.controls = true;
+		video.muted = true;
+
 		video.focus();
+		video.play().catch(() => {
+			// Blocked or interrupted
+		});
 	}, [video]);
 
 	return (
