@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ContentScriptContext } from "wxt/utils/content-script-context";
-import { MEDIA_TYPE, MESSAGE_TYPE } from "@/shared/constants";
+import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate } from "@/shared/types";
 import contentScript from "./index";
 
@@ -10,8 +10,11 @@ const mocks = vi.hoisted(() => ({
 		() => null,
 	),
 	init: vi.fn(),
+	onMessage: vi.fn(),
 	point: null as { x: number; y: number } | null,
 }));
+
+vi.mock("@/shared/messaging", () => ({ onMessage: mocks.onMessage }));
 
 vi.mock("./collect-media-candidates", () => ({
 	collectMediaCandidates: mocks.collectMediaCandidates,
@@ -40,25 +43,16 @@ const CANDIDATES = [
 	{ type: MEDIA_TYPE.IMAGE, url: PHOTO_URL },
 ];
 
-const MESSAGE = {
-	srcUrl: PHOTO_URL,
-	type: MESSAGE_TYPE.FIND_MEDIA_CANDIDATES,
-};
-
-const sendResponse = vi.fn();
-
-const onMessage = (
-	message: unknown,
-	sender: Browser.runtime.MessageSender,
-	sendResponse: (response: unknown) => void,
-) => fakeBrowser.runtime.onMessage.trigger(message, sender, sendResponse);
+// Calls the listener the script registered, as the message would, and returns
+// its answer.
+const findMediaCandidates = () =>
+	mocks.onMessage.mock.lastCall?.[1]({ data: PHOTO_URL });
 
 // The script doesn't use its context.
 const ctx = undefined as unknown as ContentScriptContext;
 
-// The listener is registered again for every test, on a fresh fake browser.
+// The listener is registered again for every test.
 beforeEach(() => {
-	fakeBrowser.reset();
 	contentScript.main(ctx);
 });
 
@@ -71,13 +65,20 @@ describe("on load", () => {
 	it("initializes the context menu tracker", () => {
 		expect(mocks.init).toHaveBeenCalledOnce();
 	});
+
+	it("listens for the message to find the candidates", () => {
+		expect(mocks.onMessage).toHaveBeenCalledExactlyOnceWith(
+			"findMediaCandidates",
+			expect.any(Function),
+		);
+	});
 });
 
 describe("on message", () => {
 	it("finds the media of the menu with its point and url", () => {
 		mocks.point = POINT;
 
-		onMessage(MESSAGE, {}, sendResponse);
+		findMediaCandidates();
 
 		expect(mocks.findMediaElement).toHaveBeenCalledExactlyOnceWith(
 			document,
@@ -87,7 +88,7 @@ describe("on message", () => {
 	});
 
 	it("looks for no media without a point before a menu opens", () => {
-		onMessage(MESSAGE, {}, sendResponse);
+		findMediaCandidates();
 
 		expect(mocks.findMediaElement).not.toHaveBeenCalled();
 	});
@@ -98,7 +99,7 @@ describe("on message", () => {
 		mocks.point = POINT;
 		mocks.findMediaElement.mockReturnValueOnce(image);
 
-		onMessage(MESSAGE, {}, sendResponse);
+		findMediaCandidates();
 
 		expect(mocks.collectMediaCandidates).toHaveBeenCalledExactlyOnceWith(
 			image,
@@ -106,31 +107,16 @@ describe("on message", () => {
 		);
 	});
 
-	it("responds with the candidates", () => {
+	it("answers with the candidates", () => {
 		mocks.point = POINT;
 		mocks.findMediaElement.mockReturnValueOnce(document.createElement("img"));
 		mocks.collectMediaCandidates.mockReturnValueOnce(CANDIDATES);
 
-		onMessage(MESSAGE, {}, sendResponse);
-
-		expect(sendResponse).toHaveBeenCalledExactlyOnceWith(CANDIDATES);
+		expect(findMediaCandidates()).toBe(CANDIDATES);
 	});
 
-	it("responds with null without the media of the menu", () => {
-		onMessage(MESSAGE, {}, sendResponse);
-
+	it("answers null without the media of the menu", () => {
+		expect(findMediaCandidates()).toBeNull();
 		expect(mocks.collectMediaCandidates).not.toHaveBeenCalled();
-		expect(sendResponse).toHaveBeenCalledExactlyOnceWith(null);
-	});
-
-	it("ignores a message of another type", () => {
-		onMessage(
-			{ candidates: CANDIDATES, type: MESSAGE_TYPE.OPEN_VIEWER },
-			{},
-			sendResponse,
-		);
-
-		expect(mocks.findMediaElement).not.toHaveBeenCalled();
-		expect(sendResponse).not.toHaveBeenCalled();
 	});
 });
