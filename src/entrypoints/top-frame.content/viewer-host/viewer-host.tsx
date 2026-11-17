@@ -1,5 +1,9 @@
-import { injectCSS } from "virtual:css-injected-by-js";
 import { createRoot, type Root } from "react-dom/client";
+import type { ContentScriptContext } from "wxt/utils/content-script-context";
+import {
+	createShadowRootUi,
+	type ShadowRootContentScriptUi,
+} from "wxt/utils/content-script-ui/shadow-root";
 import type { MediaCandidate, Nullable } from "@/shared/types";
 import { MediaViewer } from "../media-viewer";
 import { createFontFace } from "./fonts";
@@ -11,7 +15,11 @@ import { ScrollbarHider } from "./scrollbar-hider";
 import { TouchBlocker } from "./touch-blocker";
 import { WheelBlocker } from "./wheel-blocker";
 
+type Ui = ShadowRootContentScriptUi<Root>;
+
 export class ViewerHost {
+	private readonly ctx: ContentScriptContext;
+
 	// Started by init(), see there.
 	private readonly earlyBlockers = [
 		new KeyboardBlocker(),
@@ -22,12 +30,26 @@ export class ViewerHost {
 	private readonly blockers = [...this.earlyBlockers, new WheelBlocker()];
 	private readonly scrollbarHider = new ScrollbarHider();
 
+	private candidates: readonly MediaCandidate[] = [];
 	private fontFace: Nullable<FontFace> = null;
-	private host: Nullable<HTMLElement> = null;
-	private root: Nullable<Root> = null;
+	private isOpening = false;
+	// Set while the UI is in the page.
+	private mountedUi: Nullable<Ui> = null;
+	// Changed by every open and close, so an open still waiting for the UI can
+	// tell it was replaced.
+	private session = 0;
+	// Created on the first open and kept: WXT fetches the styles for each UI,
+	// and keeps each one until the context of the script is invalidated.
+	private ui: Nullable<Promise<Ui>> = null;
 
+	constructor(ctx: ContentScriptContext) {
+		this.ctx = ctx;
+	}
+
+	// True from open() on, while the UI is created, so the viewer isn't opened
+	// twice.
 	get isOpen(): boolean {
-		return this.host !== null;
+		return this.isOpening || this.mountedUi !== null;
 	}
 
 	// Adds the listeners of the blockers before the page adds its own, so they
@@ -43,46 +65,83 @@ export class ViewerHost {
 		for (const blocker of this.blockers) blocker.destroy();
 	}
 
-	open(candidates: readonly MediaCandidate[]): void {
+	async open(candidates: readonly MediaCandidate[]): Promise<void> {
 		this.close();
 
-		// Rendering errors arrive in onUncaughtError, this catch covers the
-		// synchronous ones.
+		const session = this.session;
+		this.isOpening = true;
+
 		try {
-			this.host = document.createElement("swiftview-root");
-			document.documentElement.append(this.host);
+			const ui = await this.getUi();
 
-			const shadowRoot = this.host.attachShadow({ mode: "closed" });
+			// Closed or opened again while the UI was created.
+			if (session !== this.session) return;
 
-			for (const blocker of this.blockers) blocker.block(shadowRoot);
-			this.scrollbarHider.hide();
-
-			injectCSS({ target: shadowRoot });
-
-			this.fontFace = createFontFace();
-			document.fonts.add(this.fontFace);
-
-			this.root = createRoot(shadowRoot, { onUncaughtError: this.handleError });
-			this.root.render(
-				<MediaViewer candidates={candidates} onClose={() => this.close()} />,
-			);
+			this.isOpening = false;
+			this.candidates = candidates;
+			this.mountedUi = ui;
+			// Rendering errors arrive in onUncaughtError, the catch covers the
+			// synchronous ones.
+			ui.mount();
 		} catch (error) {
-			this.handleError(error);
+			if (session === this.session) this.handleError(error);
 		}
 	}
 
 	close(): void {
+		this.session++;
+		this.isOpening = false;
+
+		this.mountedUi?.remove();
+	}
+
+	private getUi(): Promise<Ui> {
+		this.ui ??= createShadowRootUi(this.ctx, {
+			anchor: document.documentElement,
+			// viewer-host.css resets the host itself. The reset of WXT is
+			// !important, so it would also reset the font set there.
+			inheritStyles: true,
+			mode: "closed",
+			name: "swiftview-root",
+			onMount: (container, shadowRoot) => this.mount(container, shadowRoot),
+			onRemove: (root) => this.unmount(root),
+			position: "inline",
+		}).catch((error: unknown) => {
+			// Created again on the next open.
+			this.ui = null;
+			throw error;
+		});
+
+		return this.ui;
+	}
+
+	private mount(container: HTMLElement, shadowRoot: ShadowRoot): Root {
+		for (const blocker of this.blockers) blocker.block(shadowRoot);
+		this.scrollbarHider.hide();
+
+		this.fontFace = createFontFace();
+		document.fonts.add(this.fontFace);
+
+		const root = createRoot(container, { onUncaughtError: this.handleError });
+		root.render(
+			<MediaViewer candidates={this.candidates} onClose={() => this.close()} />,
+		);
+
+		return root;
+	}
+
+	// Also run when WXT removes the UI on its own, once the context of the
+	// script is invalidated.
+	private unmount(root: Root | undefined): void {
+		this.mountedUi = null;
+
 		for (const blocker of this.blockers) blocker.unblock();
 		this.scrollbarHider.restore();
 
-		this.root?.unmount();
-		this.host?.remove();
+		root?.unmount();
 
 		if (this.fontFace) document.fonts.delete(this.fontFace);
-
 		this.fontFace = null;
-		this.root = null;
-		this.host = null;
 	}
 
 	private handleError = (error: unknown): void => {

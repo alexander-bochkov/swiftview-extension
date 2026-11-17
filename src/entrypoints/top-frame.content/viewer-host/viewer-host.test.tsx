@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 
-import { injectCSS } from "virtual:css-injected-by-js";
 import { act, useEffect } from "react";
 import {
 	afterEach,
@@ -12,6 +11,7 @@ import {
 	type MockInstance,
 	vi,
 } from "vitest";
+import { ContentScriptContext } from "wxt/utils/content-script-context";
 import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate } from "@/shared/types";
 import { FONT_FAMILY } from "./fonts";
@@ -23,13 +23,10 @@ type ViewerProps = {
 };
 
 const mocks = vi.hoisted(() => ({
-	injectCSS: vi.fn(),
 	MediaViewer: vi.fn(),
 	onUnmount: vi.fn(),
 }));
 
-// The stylesheet comes from a Vite virtual module that only exists in a build.
-vi.mock("virtual:css-injected-by-js", () => ({ injectCSS: mocks.injectCSS }));
 vi.mock("../media-viewer", () => ({ MediaViewer: mocks.MediaViewer }));
 
 const PHOTO: MediaCandidate = {
@@ -50,6 +47,7 @@ const FakeViewer = (): null => {
 
 describe("ViewerHost", () => {
 	let consoleError: MockInstance<typeof console.error>;
+	let ctx: ContentScriptContext;
 	let pageController: AbortController;
 	let viewerHost: ViewerHost;
 
@@ -64,8 +62,8 @@ describe("ViewerHost", () => {
 	};
 
 	// React renders inside act, so the render has finished when it returns.
-	const open = (candidates: readonly MediaCandidate[] = [PHOTO]) => {
-		act(() => viewerHost.open(candidates));
+	const open = async (candidates: readonly MediaCandidate[] = [PHOTO]) => {
+		await act(() => viewerHost.open(candidates));
 	};
 
 	const close = () => {
@@ -141,11 +139,15 @@ describe("ViewerHost", () => {
 		});
 
 		pageController = new AbortController();
-		viewerHost = new ViewerHost();
+		// Without the options of the script, WXT loads no styles.
+		ctx = new ContentScriptContext("top-frame");
+		viewerHost = new ViewerHost(ctx);
 	});
 
 	afterEach(() => {
 		act(() => viewerHost.destroy());
+		// Before the next test starts a newer copy, which would invalidate it.
+		ctx.abort();
 		pageController.abort();
 
 		for (const host of getHosts()) host.remove();
@@ -161,14 +163,14 @@ describe("ViewerHost", () => {
 			expect(viewerHost.isOpen).toBe(false);
 		});
 
-		it("is true after open", () => {
-			open();
+		it("is true after open", async () => {
+			await open();
 
 			expect(viewerHost.isOpen).toBe(true);
 		});
 
-		it("is false after close", () => {
-			open();
+		it("is false after close", async () => {
+			await open();
 			close();
 
 			expect(viewerHost.isOpen).toBe(false);
@@ -189,21 +191,21 @@ describe("ViewerHost", () => {
 			return listener;
 		};
 
-		it("hides the keys from window listeners the page added after it", () => {
+		it("hides the keys from window listeners the page added after it", async () => {
 			viewerHost.init();
 			const listener = listenOnWindow("keydown");
 
-			open();
+			await open();
 			pressKey(document.body, "t");
 
 			expect(listener).not.toHaveBeenCalled();
 		});
 
-		it("hides the mouse buttons from window listeners the page added after it", () => {
+		it("hides the mouse buttons from window listeners the page added after it", async () => {
 			viewerHost.init();
 			const listener = listenOnWindow("mousedown");
 
-			open();
+			await open();
 			document.body.dispatchEvent(
 				new MouseEvent("mousedown", { bubbles: true, composed: true }),
 			);
@@ -219,17 +221,17 @@ describe("ViewerHost", () => {
 	});
 
 	describe("destroy", () => {
-		it("closes the viewer", () => {
-			open();
+		it("closes the viewer", async () => {
+			await open();
 			act(() => viewerHost.destroy());
 
 			expect(viewerHost.isOpen).toBe(false);
 			expect(getHosts()).toHaveLength(0);
 		});
 
-		it("unlocks the page", () => {
+		it("unlocks the page", async () => {
 			viewerHost.init();
-			open();
+			await open();
 			act(() => viewerHost.destroy());
 
 			expectPageUnlocked();
@@ -237,38 +239,30 @@ describe("ViewerHost", () => {
 	});
 
 	describe("open", () => {
-		it("adds one host to the document element", () => {
-			open();
+		it("adds one host to the document element", async () => {
+			await open();
 
 			expect(getHosts()).toHaveLength(1);
 			expect(getHosts()[0]?.parentElement).toBe(document.documentElement);
 		});
 
-		it("attaches a closed shadow root", () => {
-			open();
+		it("attaches a closed shadow root", async () => {
+			await open();
 
 			// A closed shadow root is not reachable through the host.
 			expect(getHosts()[0]?.shadowRoot).toBeNull();
 		});
 
-		it("injects the styles into the shadow root", () => {
-			open();
-
-			expect(injectCSS).toHaveBeenCalledExactlyOnceWith({
-				target: expect.any(ShadowRoot),
-			});
-		});
-
-		it("renders the viewer with the candidates", () => {
-			open([CLIP, PHOTO]);
+		it("renders the viewer with the candidates", async () => {
+			await open([CLIP, PHOTO]);
 
 			expect(getViewerProps().candidates).toEqual([CLIP, PHOTO]);
 		});
 
-		it("hides the events of the page from the page", () => {
+		it("hides the events of the page from the page", async () => {
 			const listener = listenOnPage();
 
-			open();
+			await open();
 			pressKey(document.body, "t");
 
 			expect(listener).not.toHaveBeenCalled();
@@ -276,13 +270,13 @@ describe("ViewerHost", () => {
 
 		it.each(["click", "contextmenu", "pointerdown", "touchstart"])(
 			"hides %s of the viewer from the page",
-			(type) => {
+			async (type) => {
 				const listener = vi.fn();
 				document.addEventListener(type, listener, {
 					signal: pageController.signal,
 				});
 
-				open();
+				await open();
 				getHosts()[0]?.dispatchEvent(
 					new Event(type, { bubbles: true, composed: true }),
 				);
@@ -291,10 +285,10 @@ describe("ViewerHost", () => {
 			},
 		);
 
-		it("hides the events of the viewer from the page", () => {
+		it("hides the events of the viewer from the page", async () => {
 			const listener = listenOnPage();
 
-			open();
+			await open();
 			const host = getHosts()[0];
 			if (!host) throw new Error("No host");
 			pressKey(host, "t");
@@ -302,34 +296,72 @@ describe("ViewerHost", () => {
 			expect(listener).not.toHaveBeenCalled();
 		});
 
-		it("keeps the page from scrolling with the keys of the page", () => {
-			open();
+		it("keeps the page from scrolling with the keys of the page", async () => {
+			await open();
 
 			expect(pressKey(document.body, "ArrowDown").defaultPrevented).toBe(true);
 		});
 
-		it("keeps the page from scrolling with the keys of the viewer", () => {
-			open();
+		it("keeps the page from scrolling with the keys of the viewer", async () => {
+			await open();
 			const host = getHosts()[0];
 			if (!host) throw new Error("No host");
 
 			expect(pressKey(host, "ArrowDown").defaultPrevented).toBe(true);
 		});
 
-		it("replaces the previous viewer when opened again", () => {
-			open();
-			const first = getHosts()[0];
-
-			open();
+		it("replaces the previous viewer when opened again", async () => {
+			await open([PHOTO]);
+			await open([CLIP]);
 
 			expect(getHosts()).toHaveLength(1);
-			expect(getHosts()[0]).not.toBe(first);
-			expect(first?.isConnected).toBe(false);
+			expect(mocks.onUnmount).toHaveBeenCalledOnce();
+			expect(getViewerProps().candidates).toEqual([CLIP]);
 			expect(viewerHost.isOpen).toBe(true);
 		});
 
-		it("adds Inter from the files of the extension to the document", () => {
-			open();
+		// WXT fetches the styles for each UI and keeps each one until the context
+		// of the script is invalidated.
+		it("reuses the host when opened again", async () => {
+			await open();
+			const first = getHosts()[0];
+			close();
+			await open();
+
+			expect(getHosts()[0]).toBe(first);
+		});
+
+		it("is open while the viewer is created", async () => {
+			const opening = viewerHost.open([PHOTO]);
+
+			expect(viewerHost.isOpen).toBe(true);
+
+			await act(() => opening);
+		});
+
+		it("drops an open that a close replaced", async () => {
+			const opening = viewerHost.open([PHOTO]);
+			close();
+			await act(() => opening);
+
+			expect(viewerHost.isOpen).toBe(false);
+			expect(getHosts()).toHaveLength(0);
+			expect(mocks.MediaViewer).not.toHaveBeenCalled();
+			expectPageUnlocked();
+		});
+
+		it("shows only the latest of two opens", async () => {
+			const first = viewerHost.open([PHOTO]);
+			const second = viewerHost.open([CLIP]);
+			await act(() => Promise.all([first, second]));
+
+			expect(getHosts()).toHaveLength(1);
+			expect(mocks.MediaViewer).toHaveBeenCalledOnce();
+			expect(getViewerProps().candidates).toEqual([CLIP]);
+		});
+
+		it("adds Inter from the files of the extension to the document", async () => {
+			await open();
 
 			expect([...fonts]).toEqual([
 				{
@@ -340,38 +372,38 @@ describe("ViewerHost", () => {
 			]);
 		});
 
-		it("keeps one font when opened again", () => {
-			open();
-			open();
+		it("keeps one font when opened again", async () => {
+			await open();
+			await open();
 
 			expect(fonts.size).toBe(1);
 		});
 	});
 
 	describe("close", () => {
-		it("removes the host", () => {
-			open();
+		it("removes the host", async () => {
+			await open();
 			close();
 
 			expect(getHosts()).toHaveLength(0);
 		});
 
-		it("unlocks the page", () => {
-			open();
+		it("unlocks the page", async () => {
+			await open();
 			close();
 
 			expectPageUnlocked();
 		});
 
-		it("removes the font from the document", () => {
-			open();
+		it("removes the font from the document", async () => {
+			await open();
 			close();
 
 			expect(fonts.size).toBe(0);
 		});
 
-		it("unmounts the React tree", () => {
-			open();
+		it("unmounts the React tree", async () => {
+			await open();
 			expect(mocks.onUnmount).not.toHaveBeenCalled();
 
 			close();
@@ -384,16 +416,16 @@ describe("ViewerHost", () => {
 			expect(viewerHost.isOpen).toBe(false);
 		});
 
-		it("can be called twice", () => {
-			open();
+		it("can be called twice", async () => {
+			await open();
 			close();
 
 			expect(() => close()).not.toThrow();
 			expect(mocks.onUnmount).toHaveBeenCalledOnce();
 		});
 
-		it("is called by the onClose callback of the viewer", () => {
-			open();
+		it("is called by the onClose callback of the viewer", async () => {
+			await open();
 
 			act(() => getViewerProps().onClose());
 
@@ -401,10 +433,10 @@ describe("ViewerHost", () => {
 			expect(getHosts()).toHaveLength(0);
 		});
 
-		it("allows opening again", () => {
-			open();
+		it("allows opening again", async () => {
+			await open();
 			close();
-			open();
+			await open();
 
 			expect(viewerHost.isOpen).toBe(true);
 			expect(getHosts()).toHaveLength(1);
@@ -423,7 +455,7 @@ describe("ViewerHost", () => {
 			Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", false);
 
 			try {
-				viewerHost.open([PHOTO]);
+				void viewerHost.open([PHOTO]);
 
 				await vi.waitFor(() => expect(viewerHost.isOpen).toBe(false));
 			} finally {
@@ -435,13 +467,13 @@ describe("ViewerHost", () => {
 			expect(getHosts()).toHaveLength(0);
 		});
 
-		it("logs and closes when setting up the host throws", () => {
-			const error = new Error("styles failed");
-			mocks.injectCSS.mockImplementationOnce(() => {
+		it("logs and closes when setting up the host throws", async () => {
+			const error = new Error("font failed");
+			vi.spyOn(fonts, "add").mockImplementationOnce(() => {
 				throw error;
 			});
 
-			expect(() => open()).not.toThrow();
+			await expect(open()).resolves.toBeUndefined();
 
 			expect(consoleError).toHaveBeenCalledWith(error);
 			expect(viewerHost.isOpen).toBe(false);
@@ -449,13 +481,13 @@ describe("ViewerHost", () => {
 			expectPageUnlocked();
 		});
 
-		it("can open again after a failure", () => {
-			mocks.injectCSS.mockImplementationOnce(() => {
-				throw new Error("styles failed");
+		it("can open again after a failure", async () => {
+			vi.spyOn(fonts, "add").mockImplementationOnce(() => {
+				throw new Error("font failed");
 			});
 
-			open();
-			open();
+			await open();
+			await open();
 
 			expect(viewerHost.isOpen).toBe(true);
 			expect(getHosts()).toHaveLength(1);
