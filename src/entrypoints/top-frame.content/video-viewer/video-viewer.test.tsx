@@ -46,6 +46,12 @@ describe("VideoViewer", () => {
 		expect(video.controls).toBe(true);
 	});
 
+	it("loops the video", () => {
+		const { video } = renderViewer();
+
+		expect(video.loop).toBe(true);
+	});
+
 	it("focuses the video for the keys of the controls", () => {
 		const { focus } = renderViewer();
 
