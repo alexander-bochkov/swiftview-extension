@@ -1,6 +1,12 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { MEDIA_TYPE, MESSAGE_TYPE } from "@/shared/constants";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { MEDIA_TYPE } from "@/shared/constants";
 import { findMediaCandidates } from "./find-media-candidates";
+
+const mocks = vi.hoisted(() => ({
+	sendMessage: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+}));
+
+vi.mock("@/shared/messaging", () => ({ sendMessage: mocks.sendMessage }));
 
 const BEST_URL = "https://example.com/photo-large.png";
 const FRAME_ID = 5;
@@ -10,13 +16,9 @@ const TAB_ID = 7;
 const BEST = { type: MEDIA_TYPE.IMAGE, url: BEST_URL };
 const PHOTO = { type: MEDIA_TYPE.IMAGE, url: PHOTO_URL };
 
-const sendMessage = vi.fn<() => Promise<unknown>>(() =>
-	Promise.resolve([BEST, PHOTO]),
-);
-
-// A spy is typed by the last overload of an API, the one with a callback, so
-// it calls a mock of the promise form, which the code uses.
-vi.spyOn(fakeBrowser.tabs, "sendMessage").mockImplementation(sendMessage);
+beforeEach(() => {
+	mocks.sendMessage.mockResolvedValue([BEST, PHOTO]);
+});
 
 afterEach(() => {
 	vi.clearAllMocks();
@@ -26,10 +28,10 @@ describe("findMediaCandidates", () => {
 	it("asks the frame of the menu with the url of the menu", async () => {
 		await findMediaCandidates(TAB_ID, FRAME_ID, PHOTO);
 
-		expect(sendMessage).toHaveBeenCalledExactlyOnceWith(
-			TAB_ID,
-			{ srcUrl: PHOTO_URL, type: MESSAGE_TYPE.FIND_MEDIA_CANDIDATES },
-			{ frameId: FRAME_ID },
+		expect(mocks.sendMessage).toHaveBeenCalledExactlyOnceWith(
+			"findMediaCandidates",
+			PHOTO_URL,
+			{ frameId: FRAME_ID, tabId: TAB_ID },
 		);
 	});
 
@@ -41,13 +43,13 @@ describe("findMediaCandidates", () => {
 	});
 
 	it("returns the media of the menu when the frame has no candidates", async () => {
-		sendMessage.mockResolvedValueOnce(null);
+		mocks.sendMessage.mockResolvedValueOnce(null);
 
 		expect(await findMediaCandidates(TAB_ID, FRAME_ID, PHOTO)).toEqual([PHOTO]);
 	});
 
 	it("returns the media of the menu without a script in the frame", async () => {
-		sendMessage.mockRejectedValueOnce(new Error("No receiving end"));
+		mocks.sendMessage.mockRejectedValueOnce(new Error("No receiving end"));
 
 		expect(await findMediaCandidates(TAB_ID, FRAME_ID, PHOTO)).toEqual([PHOTO]);
 	});
@@ -60,7 +62,7 @@ describe("findMediaCandidates", () => {
 		["a list with a url that isn't a string", [{ type: "image", url: 1 }]],
 		["a list with a null entry", [BEST, null]],
 	])("returns the media of the menu on %s", async (_, response) => {
-		sendMessage.mockResolvedValueOnce(response);
+		mocks.sendMessage.mockResolvedValueOnce(response);
 
 		expect(await findMediaCandidates(TAB_ID, FRAME_ID, PHOTO)).toEqual([PHOTO]);
 	});

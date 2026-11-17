@@ -1,5 +1,4 @@
-import { MESSAGE_TYPE } from "@/shared/constants";
-import type { Message } from "@/shared/types";
+import { onMessage } from "@/shared/messaging";
 import { ViewerHost } from "./viewer-host";
 
 export default defineContentScript({
@@ -8,12 +7,8 @@ export default defineContentScript({
 		const viewerHost = new ViewerHost();
 		viewerHost.init();
 
-		browser.runtime.onMessage.addListener((message: Message) => {
-			if (message.type !== MESSAGE_TYPE.OPEN_VIEWER || viewerHost.isOpen) {
-				return;
-			}
-
-			viewerHost.open(message.candidates);
+		onMessage("openViewer", ({ data: candidates }) => {
+			if (!viewerHost.isOpen) viewerHost.open(candidates);
 		});
 	},
 	matchAboutBlank: true,
