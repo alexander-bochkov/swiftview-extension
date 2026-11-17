@@ -1,19 +1,8 @@
 import react from "@vitejs/plugin-react";
-import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
 import svgr from "vite-plugin-svgr";
 import { defineConfig } from "wxt";
 
 export default defineConfig({
-	hooks: {
-		// WXT builds each entrypoint separately, and the plugin fails a build
-		// with no CSS to inject, so it's added to the top frame's build only.
-		"vite:build:extendConfig": (entrypoints, viteConfig) => {
-			if (!entrypoints.some(({ name }) => name === "top-frame")) return;
-
-			viteConfig.plugins ??= [];
-			viteConfig.plugins.push(cssInjectedByJsPlugin());
-		},
-	},
 	manifest: {
 		default_locale: "en",
 		description: "__MSG_extension@description__",

@@ -52,7 +52,8 @@ export class EventBlocker<Type extends EventType> {
 			// No signal: the viewer may close while one of its events is still
 			// being dispatched (Escape, a click on the backdrop). unblock() would
 			// remove the listener before the event bubbles to the host, and the
-			// page would see it. The listeners go away with the host.
+			// page would see it. The listeners stay on the host, which is out of
+			// the page while the viewer is closed, and aren't added twice.
 			root.host.addEventListener(type, this.handleHostEvent);
 		}
 	}
