@@ -1,4 +1,3 @@
-import { t } from "@/shared/i18n";
 import { MENU_ITEM_ID } from "../constants";
 import { shouldAskForFileAccess } from "./should-ask-for-file-access";
 
@@ -24,14 +23,17 @@ const getMenuItemState = async (
 	url?: string,
 ): Promise<{ enabled: boolean; title: string }> => {
 	if (await shouldAskForFileAccess(url)) {
-		return { enabled: true, title: t("context_menu@allow_file_access") };
+		return {
+			enabled: true,
+			title: browser.i18n.getMessage("context_menu@allow_file_access"),
+		};
 	}
 
 	const enabled = await canContentScriptsRunOnPage(tabId);
 
 	return {
 		enabled,
-		title: t(
+		title: browser.i18n.getMessage(
 			enabled
 				? "context_menu@open_with_swiftview"
 				: "context_menu@not_available_on_page",

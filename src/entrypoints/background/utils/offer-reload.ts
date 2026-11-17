@@ -1,9 +1,7 @@
-import { t } from "@/shared/i18n";
-
 export const offerReload = async (tabId: number): Promise<void> => {
 	try {
 		await browser.scripting.executeScript({
-			args: [t("confirm_dialog@reload_page")],
+			args: [browser.i18n.getMessage("confirm_dialog@reload_page")],
 			func: (message: string) => {
 				if (confirm(message)) location.reload();
 			},

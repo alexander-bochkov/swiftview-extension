@@ -1,5 +1,4 @@
 import { MEDIA_TYPE } from "@/shared/constants";
-import { t } from "@/shared/i18n";
 import { MENU_ITEM_ID } from "./constants";
 import {
 	findMediaCandidates,
@@ -20,7 +19,7 @@ export default defineBackground({
 				{
 					contexts: [MEDIA_TYPE.IMAGE, MEDIA_TYPE.VIDEO],
 					id: MENU_ITEM_ID,
-					title: t("context_menu@open_with_swiftview"),
+					title: browser.i18n.getMessage("context_menu@open_with_swiftview"),
 				},
 				syncMenuWithActiveTab,
 			);
