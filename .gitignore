@@ -1,3 +1,4 @@
+.output
 .vitest
-dist
+.wxt
 node_modules

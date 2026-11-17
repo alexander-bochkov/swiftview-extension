@@ -1,0 +1,11 @@
+{
+	"compilerOptions": {
+		"erasableSyntaxOnly": true,
+		"jsx": "react-jsx",
+		"types": [
+			"vite-plugin-css-injected-by-js/client",
+			"vite-plugin-svgr/client"
+		]
+	},
+	"extends": "./.wxt/tsconfig.json"
+}
