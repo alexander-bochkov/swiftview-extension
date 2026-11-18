@@ -8,6 +8,7 @@ import type { MediaCandidate, Nullable } from "@/shared/types";
 import { MediaViewer } from "../media-viewer";
 import { createFontFace } from "./fonts";
 import "./viewer-host.css";
+import { EscapeKeyLock } from "./escape-key-lock";
 import { KeyboardBlocker } from "./keyboard-blocker";
 import { MouseBlocker } from "./mouse-blocker";
 import { PointerBlocker } from "./pointer-blocker";
@@ -28,6 +29,7 @@ export class ViewerHost {
 		new TouchBlocker(),
 	];
 	private readonly blockers = [...this.earlyBlockers, new WheelBlocker()];
+	private readonly escapeKeyLock = new EscapeKeyLock();
 	private readonly scrollbarHider = new ScrollbarHider();
 
 	private candidates: readonly MediaCandidate[] = [];
@@ -117,6 +119,7 @@ export class ViewerHost {
 
 	private mount(container: HTMLElement, shadowRoot: ShadowRoot): Root {
 		for (const blocker of this.blockers) blocker.block(shadowRoot);
+		this.escapeKeyLock.lock();
 		this.scrollbarHider.hide();
 
 		this.fontFace = createFontFace();
@@ -136,6 +139,7 @@ export class ViewerHost {
 		this.mountedUi = null;
 
 		for (const blocker of this.blockers) blocker.unblock();
+		this.escapeKeyLock.unlock();
 		this.scrollbarHider.restore();
 
 		root?.unmount();
