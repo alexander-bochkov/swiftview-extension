@@ -13,7 +13,7 @@ const IMAGE_FORMATS = [
 	"webp",
 ];
 
-const VIDEO_FORMATS = ["m4v", "mov", "mp4", "ogv", "webm"];
+const VIDEO_FORMATS = ["m4v", "mov", "mp4", "webm"];
 
 const createAnchor = (href?: string, ...children: Element[]) => {
 	const anchor = document.createElement("a");
@@ -77,7 +77,7 @@ describe("findLinkedMedia", () => {
 			);
 		});
 
-		it.each(["photo.pdf", "photo.html", "photo", "photo.png.zip"])(
+		it.each(["photo.pdf", "photo.html", "photo", "photo.png.zip", "clip.ogv"])(
 			"finds nothing behind a link to %s",
 			(name) => {
 				const image = createLinkedImage(`https://example.com/${name}`);
