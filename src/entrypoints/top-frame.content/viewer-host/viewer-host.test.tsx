@@ -380,6 +380,40 @@ describe("ViewerHost", () => {
 		});
 	});
 
+	describe("over an element of the page in fullscreen", () => {
+		const keyboard = { lock: vi.fn(() => Promise.resolve()), unlock: vi.fn() };
+
+		// jsdom implements neither the Keyboard Lock API nor the Fullscreen API.
+		beforeEach(() => {
+			Object.defineProperty(navigator, "keyboard", {
+				configurable: true,
+				value: keyboard,
+			});
+			Object.defineProperty(document, "fullscreenElement", {
+				configurable: true,
+				value: document.createElement("video"),
+			});
+		});
+
+		afterEach(() => {
+			Reflect.deleteProperty(navigator, "keyboard");
+			Reflect.deleteProperty(document, "fullscreenElement");
+		});
+
+		it("locks Escape, so the viewer gets it", async () => {
+			await open();
+
+			expect(keyboard.lock).toHaveBeenCalledExactlyOnceWith(["Escape"]);
+		});
+
+		it("unlocks Escape on close", async () => {
+			await open();
+			close();
+
+			expect(keyboard.unlock).toHaveBeenCalledOnce();
+		});
+	});
+
 	describe("close", () => {
 		it("removes the host", async () => {
 			await open();
