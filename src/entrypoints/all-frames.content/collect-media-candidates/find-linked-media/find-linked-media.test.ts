@@ -15,6 +15,23 @@ const IMAGE_FORMATS = [
 
 const VIDEO_FORMATS = ["m4v", "mov", "mp4", "webm"];
 
+const IMAGE_MIME_TYPES = [
+	"image/avif",
+	"image/bmp",
+	"image/gif",
+	"image/jpeg",
+	"image/png",
+	"image/svg+xml",
+	"image/webp",
+];
+
+const VIDEO_MIME_TYPES = [
+	"video/mp4",
+	"video/quicktime",
+	"video/webm",
+	"video/x-m4v",
+];
+
 const createAnchor = (href?: string, ...children: Element[]) => {
 	const anchor = document.createElement("a");
 	if (href !== undefined) anchor.href = href;
@@ -77,14 +94,20 @@ describe("findLinkedMedia", () => {
 			);
 		});
 
-		it.each(["photo.pdf", "photo.html", "photo", "photo.png.zip", "clip.ogv"])(
-			"finds nothing behind a link to %s",
-			(name) => {
-				const image = createLinkedImage(`https://example.com/${name}`);
+		it.each([
+			"photo.pdf",
+			"photo.html",
+			"photo",
+			"photo.",
+			"v1.2/photo",
+			"png",
+			"photo.png.zip",
+			"clip.ogv",
+		])("finds nothing behind a link to %s", (name) => {
+			const image = createLinkedImage(`https://example.com/${name}`);
 
-				expect(findLinkedMedia(image)).toBeUndefined();
-			},
-		);
+			expect(findLinkedMedia(image)).toBeUndefined();
+		});
 	});
 
 	describe("protocols", () => {
@@ -102,17 +125,20 @@ describe("findLinkedMedia", () => {
 	});
 
 	describe("data urls", () => {
-		it.each(IMAGE_FORMATS)("finds an image in a data url with %s", (format) => {
-			const href = `data:image/${format};base64,AAAA`;
+		it.each(IMAGE_MIME_TYPES)(
+			"finds an image in a data url with %s",
+			(type) => {
+				const href = `data:${type};base64,AAAA`;
 
-			expect(findLinkedMedia(createLinkedImage(href))).toEqual({
-				type: MEDIA_TYPE.IMAGE,
-				url: href,
-			});
-		});
+				expect(findLinkedMedia(createLinkedImage(href))).toEqual({
+					type: MEDIA_TYPE.IMAGE,
+					url: href,
+				});
+			},
+		);
 
-		it.each(VIDEO_FORMATS)("finds a video in a data url with %s", (format) => {
-			const href = `data:video/${format};base64,AAAA`;
+		it.each(VIDEO_MIME_TYPES)("finds a video in a data url with %s", (type) => {
+			const href = `data:${type};base64,AAAA`;
 
 			expect(findLinkedMedia(createLinkedImage(href))).toEqual({
 				type: MEDIA_TYPE.VIDEO,
@@ -149,6 +175,9 @@ describe("findLinkedMedia", () => {
 			"data:image/x-icon;base64,AAAA",
 			"data:image/png.foo;base64,AAAA",
 			"data:image/svg+json,AAAA",
+			"data:image/jpg;base64,AAAA",
+			"data:image/svg,%3Csvg%3E%3C/svg%3E",
+			"data:video/mov;base64,AAAA",
 			"data:video/ogg;base64,AAAA",
 			"data:,hello",
 		])("rejects %s", (href) => {
