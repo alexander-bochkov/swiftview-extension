@@ -3,6 +3,15 @@ import svgr from "vite-plugin-svgr";
 import { defineConfig } from "wxt";
 
 export default defineConfig({
+	hooks: {
+		// WXT gives its runner the config of the first start only, and
+		// web-ext takes the start url out of the list it gets, so "o + enter"
+		// would open about:blank. The runner's config field is internal to WXT,
+		// so check "o + enter" after updating WXT.
+		"config:resolved": (wxt) => {
+			Reflect.set(wxt.runner, "config", wxt.config);
+		},
+	},
 	manifest: {
 		default_locale: "en",
 		description: "__MSG_extension@description__",
@@ -33,4 +42,12 @@ export default defineConfig({
 		},
 		plugins: [react(), svgr()],
 	}),
+	webExt: {
+		// web-ext adds --disable-blink-features=AutomationControlled, so sites
+		// don't take the browser for a bot. Chrome warns about the flag in a
+		// bar above every page, unless it runs as a test.
+		chromiumArgs: ["--test-type"],
+		// The test page, as a file url resolved from this file.
+		startUrls: [new URL("test-pages/index.html", import.meta.url).href],
+	},
 });
