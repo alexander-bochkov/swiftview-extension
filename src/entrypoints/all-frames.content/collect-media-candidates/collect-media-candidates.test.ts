@@ -88,6 +88,15 @@ describe("collectMediaCandidates", () => {
 			expect(mocks.findLinkedMedia).toHaveBeenCalledExactlyOnceWith(video);
 		});
 
+		// The link wins whatever its type, so the viewer shows the image instead
+		// of the video. Kept on purpose for now: a link may lead to a larger copy,
+		// e.g. a GIF behind a video that plays it.
+		it("lists a linked image before the video", () => {
+			mocks.findLinkedMedia.mockReturnValueOnce(LINK);
+
+			expect(collectMediaCandidates(video, CLIP_URL)).toEqual([LINK, CLIP]);
+		});
+
 		it("doesn't look for srcset urls", () => {
 			collectMediaCandidates(video, CLIP_URL);
 
