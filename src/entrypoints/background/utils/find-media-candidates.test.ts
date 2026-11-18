@@ -29,7 +29,7 @@ describe("findMediaCandidates", () => {
 		await findMediaCandidates(TAB_ID, FRAME_ID, PHOTO);
 
 		expect(mocks.sendMessage).toHaveBeenCalledExactlyOnceWith(
-			"findMediaCandidates",
+			"FIND_MEDIA_CANDIDATES",
 			PHOTO_URL,
 			{ frameId: FRAME_ID, tabId: TAB_ID },
 		);

@@ -26,7 +26,7 @@ describe("openViewer", () => {
 		await openViewer(TAB_ID, CANDIDATES);
 
 		expect(mocks.sendMessage).toHaveBeenCalledExactlyOnceWith(
-			"openViewer",
+			"OPEN_VIEWER",
 			CANDIDATES,
 			{ frameId: 0, tabId: TAB_ID },
 		);
