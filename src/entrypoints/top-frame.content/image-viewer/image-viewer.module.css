@@ -4,6 +4,8 @@
 	position: absolute;
 	top: 0;
 	left: 0;
+	/* Focused by the code, for the keys, so without a focus ring. */
+	outline: none;
 	transition: transform 150ms ease-out;
 
 	img {
