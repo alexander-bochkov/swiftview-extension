@@ -25,7 +25,7 @@ const EXTENSIONS: Readonly<Record<MediaType, readonly string[]>> = {
 		"svg",
 		"webp",
 	],
-	[MEDIA_TYPE.VIDEO]: ["m4v", "mp4", "ogv", "webm"],
+	[MEDIA_TYPE.VIDEO]: ["m4v", "mov", "mp4", "ogv", "webm"],
 };
 
 const hasExtension = (type: MediaType, extension: string): boolean =>

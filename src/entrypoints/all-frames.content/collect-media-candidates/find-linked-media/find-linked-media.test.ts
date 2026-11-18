@@ -13,7 +13,7 @@ const IMAGE_FORMATS = [
 	"webp",
 ];
 
-const VIDEO_FORMATS = ["m4v", "mp4", "ogv", "webm"];
+const VIDEO_FORMATS = ["m4v", "mov", "mp4", "ogv", "webm"];
 
 const createAnchor = (href?: string, ...children: Element[]) => {
 	const anchor = document.createElement("a");
