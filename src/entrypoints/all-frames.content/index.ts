@@ -9,7 +9,7 @@ export default defineContentScript({
 		const contextMenuTracker = new ContextMenuTracker();
 		contextMenuTracker.init();
 
-		onMessage("findMediaCandidates", ({ data: srcUrl }) => {
+		onMessage("FIND_MEDIA_CANDIDATES", ({ data: srcUrl }) => {
 			const { point } = contextMenuTracker;
 			const media = point && findMediaElement(document, point, srcUrl);
 

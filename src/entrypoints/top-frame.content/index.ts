@@ -8,7 +8,7 @@ export default defineContentScript({
 		const viewerHost = new ViewerHost(ctx);
 		viewerHost.init();
 
-		onMessage("openViewer", ({ data: candidates }) => {
+		onMessage("OPEN_VIEWER", ({ data: candidates }) => {
 			if (!viewerHost.isOpen) void viewerHost.open(candidates);
 		});
 	},

@@ -53,7 +53,7 @@ describe("on load", () => {
 
 	it("listens for the message to open the viewer", () => {
 		expect(mocks.onMessage).toHaveBeenCalledExactlyOnceWith(
-			"openViewer",
+			"OPEN_VIEWER",
 			expect.any(Function),
 		);
 	});

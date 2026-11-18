@@ -68,7 +68,7 @@ describe("on load", () => {
 
 	it("listens for the message to find the candidates", () => {
 		expect(mocks.onMessage).toHaveBeenCalledExactlyOnceWith(
-			"findMediaCandidates",
+			"FIND_MEDIA_CANDIDATES",
 			expect.any(Function),
 		);
 	});

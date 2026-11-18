@@ -8,7 +8,7 @@ export const openViewer = async (
 	try {
 		// The viewer runs only in the top frame, which gives it the whole page,
 		// even for media inside iframes.
-		await sendMessage("openViewer", candidates, { frameId: 0, tabId });
+		await sendMessage("OPEN_VIEWER", candidates, { frameId: 0, tabId });
 		return true;
 	} catch {
 		// No content script in the tab. Chrome adds it only to pages loaded after
