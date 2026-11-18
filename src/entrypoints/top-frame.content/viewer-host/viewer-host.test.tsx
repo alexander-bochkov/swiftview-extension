@@ -477,6 +477,107 @@ describe("ViewerHost", () => {
 		});
 	});
 
+	describe("removed by the page", () => {
+		// Mutation observers call back in a microtask, which act waits for.
+		const removeFromPage = async (node: ChildNode) => {
+			await act(async () => node.remove());
+		};
+
+		const getHost = () => {
+			const host = getHosts()[0];
+			if (!host) throw new Error("No host");
+
+			return host;
+		};
+
+		it("closes the viewer when the page removes the host", async () => {
+			await open();
+			await removeFromPage(getHost());
+
+			expect(viewerHost.isOpen).toBe(false);
+			expect(mocks.onUnmount).toHaveBeenCalledOnce();
+			expect(fonts.size).toBe(0);
+		});
+
+		it("unlocks the page when the page removes the host", async () => {
+			viewerHost.init();
+			await open();
+			await removeFromPage(getHost());
+
+			expectPageUnlocked();
+		});
+
+		it("opens again after the page removed the host", async () => {
+			await open();
+			await removeFromPage(getHost());
+			await open([CLIP]);
+
+			expect(viewerHost.isOpen).toBe(true);
+			expect(getHosts()).toHaveLength(1);
+			expect(getViewerProps().candidates).toEqual([CLIP]);
+		});
+
+		it("keeps the viewer open when the page changes around the host", async () => {
+			await open();
+			const element = document.createElement("div");
+			document.documentElement.append(element);
+			await removeFromPage(element);
+
+			expect(viewerHost.isOpen).toBe(true);
+		});
+
+		// The host is reused, see "reuses the host when opened again".
+		it("closes a viewer opened again when the page removes the host", async () => {
+			await open();
+			close();
+			await open();
+			await removeFromPage(getHost());
+
+			expect(viewerHost.isOpen).toBe(false);
+			expect(mocks.onUnmount).toHaveBeenCalledTimes(2);
+		});
+
+		describe("with <html> replaced", () => {
+			let pageRoot: HTMLElement;
+
+			beforeEach(() => {
+				pageRoot = document.documentElement;
+			});
+
+			afterEach(() => {
+				if (document.documentElement !== pageRoot) {
+					document.replaceChild(pageRoot, document.documentElement);
+				}
+			});
+
+			const replaceRoot = async () => {
+				await act(async () => {
+					document.replaceChild(
+						document.createElement("html"),
+						document.documentElement,
+					);
+				});
+			};
+
+			it("closes the viewer", async () => {
+				await open();
+				await replaceRoot();
+
+				expect(viewerHost.isOpen).toBe(false);
+				expect(mocks.onUnmount).toHaveBeenCalledOnce();
+			});
+
+			it("opens again in the new <html>", async () => {
+				await open();
+				await replaceRoot();
+				await open();
+
+				expect(getHosts()).toHaveLength(1);
+				expect(getHost().parentElement).toBe(document.documentElement);
+			});
+		});
+	});
+
 	describe("errors", () => {
 		it("logs and closes when the viewer throws while rendering", async () => {
 			const error = new Error("render failed");

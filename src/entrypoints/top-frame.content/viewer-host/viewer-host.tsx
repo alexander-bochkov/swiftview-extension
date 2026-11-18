@@ -12,6 +12,7 @@ import { EscapeKeyLock } from "./escape-key-lock";
 import { KeyboardBlocker } from "./keyboard-blocker";
 import { MouseBlocker } from "./mouse-blocker";
 import { PointerBlocker } from "./pointer-blocker";
+import { RemovalObserver } from "./removal-observer";
 import { ScrollbarHider } from "./scrollbar-hider";
 import { TouchBlocker } from "./touch-blocker";
 import { WheelBlocker } from "./wheel-blocker";
@@ -30,6 +31,7 @@ export class ViewerHost {
 	];
 	private readonly blockers = [...this.earlyBlockers, new WheelBlocker()];
 	private readonly escapeKeyLock = new EscapeKeyLock();
+	private readonly removalObserver = new RemovalObserver();
 	private readonly scrollbarHider = new ScrollbarHider();
 
 	private candidates: readonly MediaCandidate[] = [];
@@ -99,7 +101,9 @@ export class ViewerHost {
 
 	private getUi(): Promise<Ui> {
 		this.ui ??= createShadowRootUi(this.ctx, {
-			anchor: document.documentElement,
+			// Found on each open: a page may replace <html>, and the UI would be
+			// added to the old one, out of the document.
+			anchor: () => document.documentElement,
 			// viewer-host.css resets the host itself. The reset of WXT is
 			// !important, so it would also reset the font set there.
 			inheritStyles: true,
@@ -122,6 +126,11 @@ export class ViewerHost {
 		this.escapeKeyLock.lock();
 		this.scrollbarHider.hide();
 
+		// A page may remove the host, see RemovalObserver. The viewer would be
+		// gone, but the blockers would keep the page blocked, and the viewer
+		// would count as open, so it couldn't be opened again.
+		this.removalObserver.observe(shadowRoot.host, () => this.close());
+
 		this.fontFace = createFontFace();
 		document.fonts.add(this.fontFace);
 
@@ -140,6 +149,7 @@ export class ViewerHost {
 
 		for (const blocker of this.blockers) blocker.unblock();
 		this.escapeKeyLock.unlock();
+		this.removalObserver.disconnect();
 		this.scrollbarHider.restore();
 
 		root?.unmount();
