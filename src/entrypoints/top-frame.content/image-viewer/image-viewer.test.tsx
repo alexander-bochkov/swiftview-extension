@@ -146,6 +146,13 @@ describe("ImageViewer", () => {
 			expect(getToolNames()).toEqual(["x-mark"]);
 			expect(box.style.display).toBe("none");
 		});
+
+		// A box hidden by `display` can't be focused in a browser.
+		it("doesn't focus the hidden image", () => {
+			const { box } = renderViewer();
+
+			expect(document.activeElement).not.toBe(box);
+		});
 	});
 
 	describe("once the container size is known", () => {
@@ -172,6 +179,19 @@ describe("ImageViewer", () => {
 			renderReadyViewer();
 
 			expect(screen.getByText("50%")).toBeDefined();
+		});
+
+		it("focuses the image for the keys of the viewer", () => {
+			const { box } = renderReadyViewer();
+
+			expect(document.activeElement).toBe(box);
+		});
+
+		it("doesn't scroll to the image it focuses", () => {
+			const focus = vi.spyOn(HTMLElement.prototype, "focus");
+			renderReadyViewer();
+
+			expect(focus).toHaveBeenCalledWith({ preventScroll: true });
 		});
 
 		it("sizes the box of the image to the natural size", () => {

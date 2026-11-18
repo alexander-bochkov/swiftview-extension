@@ -24,7 +24,7 @@ type UseImageOptions = {
 // pointer handlers listen on it.
 type UseImageReturn = ReturnType<typeof useImageDrag> &
 	ReturnType<typeof useImageZoom> &
-	Pick<ComponentProps<"div">, "ref" | "style">;
+	Pick<ComponentProps<"div">, "ref" | "style" | "tabIndex">;
 
 export const useImage = ({
 	containerRef,
@@ -45,6 +45,17 @@ export const useImage = ({
 		image.draggable = false;
 	}, [image]);
 
+	const isReady = selectIsReady(store.state);
+
+	// Focused for the keys of the viewer, like Escape to close it. The viewer
+	// replaces the toolbar of the loading media, so the focus of its close
+	// button would fall back to the page, whose keys the viewer doesn't get.
+	// Once shown, as a box hidden by `display` can't be focused. Without the
+	// scroll, as the box can be larger than the container.
+	useLayoutEffect(() => {
+		if (isReady) boxRef.current?.focus({ preventScroll: true });
+	}, [isReady]);
+
 	const scaleX = scale * flip.x;
 	const scaleY = scale * flip.y;
 
@@ -61,7 +72,7 @@ export const useImage = ({
 			// around a different center.
 			...naturalSize,
 			// Hidden by `display`, so the image appears fitted without a transition.
-			display: selectIsReady(store.state) ? undefined : "none",
+			display: isReady ? undefined : "none",
 			// Each function transforms the coordinate space left to right.
 			// `translate()` must come first, so it moves the image by screen px. After
 			// `scale()`, it would be multiplied by the scale and reversed by a flip.
@@ -69,5 +80,7 @@ export const useImage = ({
 			// screen axes, not the rotated image axes.
 			transform: `translate(${translate.x}px, ${translate.y}px) scale(${scaleX}, ${scaleY}) rotate(${rotation}deg)`,
 		},
+		// Focusable from the code only, see above.
+		tabIndex: -1,
 	};
 };
