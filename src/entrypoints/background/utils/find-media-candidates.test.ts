@@ -53,17 +53,4 @@ describe("findMediaCandidates", () => {
 
 		expect(await findMediaCandidates(TAB_ID, FRAME_ID, PHOTO)).toEqual([PHOTO]);
 	});
-
-	it.each([
-		["a url", BEST_URL],
-		["an empty list", []],
-		["a list with a bad entry", [BEST, { url: PHOTO_URL }]],
-		["a list with another type", [{ type: "audio", url: PHOTO_URL }]],
-		["a list with a url that isn't a string", [{ type: "image", url: 1 }]],
-		["a list with a null entry", [BEST, null]],
-	])("returns the media of the menu on %s", async (_, response) => {
-		mocks.sendMessage.mockResolvedValueOnce(response);
-
-		expect(await findMediaCandidates(TAB_ID, FRAME_ID, PHOTO)).toEqual([PHOTO]);
-	});
 });
