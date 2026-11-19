@@ -3,33 +3,64 @@ import { MEDIA_TYPE } from "@/shared/constants";
 import { findLinkedMedia } from "./find-linked-media";
 
 const IMAGE_FORMATS = [
+	"apng",
 	"avif",
+	"avifs",
 	"bmp",
+	"cur",
 	"gif",
+	"ico",
+	"jfif",
+	"jpe",
 	"jpeg",
 	"jpg",
+	"jps",
+	"jxl",
+	"mpo",
+	"pjp",
+	"pjpeg",
 	"png",
 	"svg",
 	"webp",
 ];
 
-const VIDEO_FORMATS = ["m4v", "mov", "mp4", "webm"];
+const VIDEO_FORMATS = [
+	"3g2",
+	"3gp",
+	"m3u8",
+	"m4v",
+	"mkv",
+	"mov",
+	"mp4",
+	"ogv",
+	"webm",
+];
 
 const IMAGE_MIME_TYPES = [
+	"image/apng",
 	"image/avif",
 	"image/bmp",
 	"image/gif",
 	"image/jpeg",
+	"image/jxl",
 	"image/png",
 	"image/svg+xml",
+	"image/vnd.microsoft.icon",
 	"image/webp",
+	"image/x-icon",
 ];
 
 const VIDEO_MIME_TYPES = [
+	"application/vnd.apple.mpegurl",
+	"application/x-mpegurl",
+	"video/3gpp",
+	"video/3gpp2",
 	"video/mp4",
+	"video/ogg",
 	"video/quicktime",
 	"video/webm",
 	"video/x-m4v",
+	"video/x-matroska",
 ];
 
 const createAnchor = (href?: string, ...children: Element[]) => {
@@ -102,7 +133,7 @@ describe("findLinkedMedia", () => {
 			"v1.2/photo",
 			"png",
 			"photo.png.zip",
-			"clip.ogv",
+			"clip.avi",
 		])("finds nothing behind a link to %s", (name) => {
 			const image = createLinkedImage(`https://example.com/${name}`);
 
@@ -172,13 +203,13 @@ describe("findLinkedMedia", () => {
 		it.each([
 			"data:text/html,<h1>Hi</h1>",
 			"data:application/pdf;base64,AAAA",
-			"data:image/x-icon;base64,AAAA",
+			"data:image/tiff;base64,AAAA",
 			"data:image/png.foo;base64,AAAA",
 			"data:image/svg+json,AAAA",
 			"data:image/jpg;base64,AAAA",
 			"data:image/svg,%3Csvg%3E%3C/svg%3E",
 			"data:video/mov;base64,AAAA",
-			"data:video/ogg;base64,AAAA",
+			"data:video/x-msvideo;base64,AAAA",
 			"data:,hello",
 		])("rejects %s", (href) => {
 			expect(findLinkedMedia(createLinkedImage(href))).toBeUndefined();
