@@ -22,16 +22,16 @@ const TYPE_FINDERS: Readonly<
 	"https:": findTypeByExtension,
 };
 
-const findAnchor = (element: Element): Optional<HTMLAnchorElement> => {
-	const anchor = element.closest("a[href]");
+const findAnchor = (el: Element): Optional<HTMLAnchorElement> => {
+	const anchor = el.closest("a[href]");
 	if (anchor instanceof HTMLAnchorElement) return anchor;
 
-	const root = element.getRootNode();
+	const root = el.getRootNode();
 	if (root instanceof ShadowRoot) return findAnchor(root.host);
 };
 
-export const findLinkedMedia = (element: Element): Optional<MediaCandidate> => {
-	const anchor = findAnchor(element);
+export const findLinkedMedia = (el: Element): Optional<MediaCandidate> => {
+	const anchor = findAnchor(el);
 
 	// For an invalid url the anchor reports the protocol ":" and an empty path.
 	const type = anchor && TYPE_FINDERS[anchor.protocol]?.(anchor.pathname);

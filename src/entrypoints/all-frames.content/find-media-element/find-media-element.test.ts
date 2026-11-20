@@ -145,7 +145,7 @@ describe("findMediaElement", () => {
 
 			// jsdom keeps a closed root to itself, like the browser does for a page.
 			vi.spyOn(browser.dom, "openOrClosedShadowRoot").mockImplementation(
-				(element) => (element === host ? root : null),
+				(el) => (el === host ? root : null),
 			);
 			elementsFromPoint.mockReturnValueOnce([host]);
 
