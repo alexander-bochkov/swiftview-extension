@@ -1,10 +1,10 @@
 # Linked media formats
 
-Why `FORMATS` in [constants.ts](constants.ts) has the extensions it has.
+## Formats we could support
 
-## Supported formats
-
-Everything in `FORMATS` on 2026-11-19.
+Formats Chrome opens, see the test results below, with their extensions and
+MIME types. `FORMATS` has only the most common of them. The list is what
+`FORMATS` had on 2026-11-19.
 
 ### Images
 
@@ -68,7 +68,7 @@ Before the test, the list had `avif`, `bmp`, `gif`, `jpeg`, `jpg`, `png`,
 `3g2`, `cur`, `ico`, `jfif`, `jpe`, `pjp` and `pjpeg` had no sample files, so
 they weren't tested. They went in because Chrome decodes their formats.
 
-## Test results: images in the list
+## Test results: images
 
 | Extension                     | MIME type                              | Result                                                         |
 | ----------------------------- | -------------------------------------- | -------------------------------------------------------------- |
@@ -86,7 +86,7 @@ they weren't tested. They went in because Chrome decodes their formats.
 | `svg`                         | image/svg+xml                          | 7/7                                                            |
 | `webp`                        | image/webp                             | 23/23                                                          |
 
-## Test results: videos in the list
+## Test results: videos
 
 Result columns:
 
