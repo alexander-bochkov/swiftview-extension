@@ -8,8 +8,8 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/shared/messaging", () => ({ sendMessage: mocks.sendMessage }));
 
-const LARGE_URL = "https://example.com/photo-large.png";
 const FRAME_ID = 5;
+const LARGE_URL = "https://example.com/photo-large.png";
 const PHOTO_URL = "https://example.com/photo.png";
 const TAB_ID = 7;
 

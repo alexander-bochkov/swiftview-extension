@@ -1,5 +1,5 @@
 import { MENU_ITEM_ID } from "../constants";
-import { shouldAskForFileAccess } from "./should-ask-for-file-access";
+import { shouldAskForFileAccess } from "../should-ask-for-file-access";
 
 let lastSyncId = 0;
 
