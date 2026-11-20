@@ -7,7 +7,7 @@ type Style = {
 };
 
 // Hides the scrollbars of the page while the viewer is open. Scrolling itself
-// is prevented by the blockers, per event, as `overflow: hidden` misses pages
+// is prevented per event, see ViewerHost, as `overflow: hidden` misses pages
 // that scroll an inner element. The hidden scrollbars are made up for with
 // padding and a larger scroll area, though pages sized with `vw` may still
 // reflow.
