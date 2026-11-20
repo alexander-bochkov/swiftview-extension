@@ -1,4 +1,8 @@
 {
+	"alert_dialog@already_open": {
+		"description": "Alert shown when the context menu item is used on the image or video already open in the viewer.",
+		"message": "This image or video is already open in SwiftView."
+	},
 	"confirm_dialog@reload_page": {
 		"description": "Confirm dialog shown when the page was opened before the extension was installed, updated or re-enabled, so it has to be reloaded before an image or a video can be opened.",
 		"message": "SwiftView can't open images or videos on this page until it's reloaded. Reload now?"

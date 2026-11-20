@@ -8,7 +8,12 @@ export default defineContentScript({
 		const viewerHost = new ViewerHost(ctx);
 
 		onMessage("OPEN_VIEWER", ({ data: candidates }) => {
-			if (!viewerHost.isOpen) void viewerHost.open(candidates);
+			if (viewerHost.isOpen) {
+				alert(browser.i18n.getMessage("alert_dialog@already_open"));
+				return;
+			}
+
+			void viewerHost.open(candidates);
 		});
 	},
 	matchAboutBlank: true,

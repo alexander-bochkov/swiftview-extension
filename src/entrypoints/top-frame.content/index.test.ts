@@ -4,6 +4,7 @@ import { MEDIA_TYPE } from "@/shared/constants";
 import contentScript from "./index";
 
 const mocks = vi.hoisted(() => ({
+	alert: vi.fn(),
 	isOpen: false,
 	onMessage: vi.fn(),
 	open: vi.fn(),
@@ -67,11 +68,37 @@ describe("on message", () => {
 		expect(mocks.open).toHaveBeenCalledExactlyOnceWith([]);
 	});
 
-	it("ignores the message while the viewer is open", () => {
-		mocks.isOpen = true;
+	describe("while the viewer is open", () => {
+		beforeEach(() => {
+			mocks.isOpen = true;
+			vi.stubGlobal("alert", mocks.alert);
+		});
+
+		afterEach(() => {
+			vi.unstubAllGlobals();
+		});
+
+		it("doesn't open the viewer again", () => {
+			openViewer(PHOTO);
+
+			expect(mocks.open).not.toHaveBeenCalled();
+		});
+
+		it("tells that the media is already open", () => {
+			openViewer(PHOTO);
+
+			expect(mocks.alert).toHaveBeenCalledExactlyOnceWith(
+				"This image or video is already open in SwiftView.",
+			);
+		});
+	});
+
+	it("doesn't alert while the viewer is closed", () => {
+		vi.stubGlobal("alert", mocks.alert);
 
 		openViewer(PHOTO);
 
-		expect(mocks.open).not.toHaveBeenCalled();
+		expect(mocks.alert).not.toHaveBeenCalled();
+		vi.unstubAllGlobals();
 	});
 });
