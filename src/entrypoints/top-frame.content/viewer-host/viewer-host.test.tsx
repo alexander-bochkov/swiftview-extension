@@ -578,6 +578,64 @@ describe("ViewerHost", () => {
 		});
 	});
 
+	describe("once the extension is gone", () => {
+		// Restored after each test by hand: fakeBrowser.reset() doesn't put it
+		// back.
+		const extensionId = fakeBrowser.runtime.id;
+
+		// Chrome takes the id of the extension from the script, and the watcher
+		// sees it on its next check.
+		const removeExtension = () => {
+			Reflect.set(fakeBrowser.runtime, "id", undefined);
+			act(() => vi.advanceTimersByTime(1000));
+		};
+
+		// Only the interval of the watcher: React and WXT keep their timers.
+		beforeEach(() => {
+			vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+		});
+
+		afterEach(() => {
+			Reflect.set(fakeBrowser.runtime, "id", extensionId);
+			vi.useRealTimers();
+		});
+
+		it("closes the viewer", async () => {
+			await open();
+			removeExtension();
+
+			expect(viewerHost.isOpen).toBe(false);
+			expect(getHosts()).toHaveLength(0);
+			expect(mocks.onUnmount).toHaveBeenCalledOnce();
+			expect(fonts.size).toBe(0);
+		});
+
+		it("unlocks the page", async () => {
+			viewerHost.init();
+			await open();
+			removeExtension();
+
+			expectPageUnlocked();
+		});
+
+		it("keeps the viewer open while the extension is there", async () => {
+			await open();
+			act(() => vi.advanceTimersByTime(10_000));
+
+			expect(viewerHost.isOpen).toBe(true);
+		});
+
+		it("stops watching once the viewer is closed", async () => {
+			const abort = vi.spyOn(ctx, "abort");
+
+			await open();
+			close();
+			removeExtension();
+
+			expect(abort).not.toHaveBeenCalled();
+		});
+	});
+
 	describe("errors", () => {
 		it("logs and closes when the viewer throws while rendering", async () => {
 			const error = new Error("render failed");
