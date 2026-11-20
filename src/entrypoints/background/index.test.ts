@@ -19,29 +19,34 @@ const mocks = vi.hoisted(() => ({
 	syncMenuWithActiveTab: vi.fn(() => Promise.resolve()),
 }));
 
-// Only the helpers that reach outside the script are mocked.
-vi.mock("./utils", async (importOriginal) => ({
-	...(await importOriginal<typeof import("./utils")>()),
+// Only the modules that reach outside the script are mocked.
+vi.mock("./find-media-candidates", () => ({
 	findMediaCandidates: mocks.findMediaCandidates,
-	offerReload: mocks.offerReload,
+}));
+vi.mock("./offer-reload", () => ({ offerReload: mocks.offerReload }));
+vi.mock("./open-extension-settings", () => ({
 	openExtensionSettings: mocks.openExtensionSettings,
-	openViewer: mocks.openViewer,
+}));
+vi.mock("./open-viewer", () => ({ openViewer: mocks.openViewer }));
+vi.mock("./should-ask-for-file-access", () => ({
 	shouldAskForFileAccess: mocks.shouldAskForFileAccess,
+}));
+vi.mock("./sync-menu-with-active-tab", () => ({
 	syncMenuWithActiveTab: mocks.syncMenuWithActiveTab,
 }));
 
-const LARGE_URL = "https://example.com/photo-large.png";
 const CLIP_URL = "https://example.com/clip.mp4";
 const FILE_URL = "file:///C:/photos/index.html";
 const IFRAME_ID = 5;
+const LARGE_URL = "https://example.com/photo-large.png";
 const MENU_ITEM_ID = "media";
 const PHOTO_URL = "https://example.com/photo.png";
 const TAB_ID = 7;
 const WINDOW_ID = 3;
 const WINDOW_ID_NONE = -1;
 
-const LARGE = { type: MEDIA_TYPE.IMAGE, url: LARGE_URL };
 const CLIP = { type: MEDIA_TYPE.VIDEO, url: CLIP_URL };
+const LARGE = { type: MEDIA_TYPE.IMAGE, url: LARGE_URL };
 const PHOTO = { type: MEDIA_TYPE.IMAGE, url: PHOTO_URL };
 
 const PHOTO_CLICK = {

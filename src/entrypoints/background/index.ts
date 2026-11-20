@@ -1,14 +1,12 @@
 import { MEDIA_TYPE } from "@/shared/constants";
 import { MENU_ITEM_ID } from "./constants";
-import {
-	findMediaCandidates,
-	isMediaType,
-	offerReload,
-	openExtensionSettings,
-	openViewer,
-	shouldAskForFileAccess,
-	syncMenuWithActiveTab,
-} from "./utils";
+import { findMediaCandidates } from "./find-media-candidates";
+import { isMediaType } from "./is-media-type";
+import { offerReload } from "./offer-reload";
+import { openExtensionSettings } from "./open-extension-settings";
+import { openViewer } from "./open-viewer";
+import { shouldAskForFileAccess } from "./should-ask-for-file-access";
+import { syncMenuWithActiveTab } from "./sync-menu-with-active-tab";
 
 export default defineBackground({
 	main() {
