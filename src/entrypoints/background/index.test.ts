@@ -30,7 +30,7 @@ vi.mock("./utils", async (importOriginal) => ({
 	syncMenuWithActiveTab: mocks.syncMenuWithActiveTab,
 }));
 
-const BEST_URL = "https://example.com/photo-large.png";
+const LARGE_URL = "https://example.com/photo-large.png";
 const CLIP_URL = "https://example.com/clip.mp4";
 const FILE_URL = "file:///C:/photos/index.html";
 const IFRAME_ID = 5;
@@ -40,7 +40,7 @@ const TAB_ID = 7;
 const WINDOW_ID = 3;
 const WINDOW_ID_NONE = -1;
 
-const BEST = { type: MEDIA_TYPE.IMAGE, url: BEST_URL };
+const LARGE = { type: MEDIA_TYPE.IMAGE, url: LARGE_URL };
 const CLIP = { type: MEDIA_TYPE.VIDEO, url: CLIP_URL };
 const PHOTO = { type: MEDIA_TYPE.IMAGE, url: PHOTO_URL };
 
@@ -166,13 +166,13 @@ describe("on menu item click", () => {
 	});
 
 	it("opens the candidates", async () => {
-		mocks.findMediaCandidates.mockResolvedValueOnce([BEST, PHOTO]);
+		mocks.findMediaCandidates.mockResolvedValueOnce([LARGE, PHOTO]);
 
 		await onClicked(PHOTO_CLICK, { id: TAB_ID });
 
 		expect(mocks.findMediaCandidates).toHaveBeenCalledBefore(mocks.openViewer);
 		expect(mocks.openViewer).toHaveBeenCalledExactlyOnceWith(TAB_ID, [
-			BEST,
+			LARGE,
 			PHOTO,
 		]);
 		expect(mocks.offerReload).not.toHaveBeenCalled();

@@ -69,12 +69,12 @@ const findSourceCandidates = (
 
 	if (!(picture instanceof HTMLPictureElement)) return;
 
-	for (const element of picture.children) {
+	for (const el of picture.children) {
 		// Only the <source> elements before the image take part in the choice.
-		if (element === image) break;
-		if (!(element instanceof HTMLSourceElement)) continue;
+		if (el === image) break;
+		if (!(el instanceof HTMLSourceElement)) continue;
 
-		const candidates = getCandidates(element.srcset, image.baseURI);
+		const candidates = getCandidates(el.srcset, image.baseURI);
 
 		if (candidates.some(({ url }) => url === image.currentSrc)) {
 			return candidates;

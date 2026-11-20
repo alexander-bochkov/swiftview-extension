@@ -14,10 +14,10 @@ export const findMediaElement = (
 	point: Point,
 	srcUrl: string,
 ): Nullable<MediaElement> => {
-	for (const element of root.elementsFromPoint(point.x, point.y)) {
-		if (isMediaElement(element) && hasUrl(element, srcUrl)) return element;
+	for (const el of root.elementsFromPoint(point.x, point.y)) {
+		if (isMediaElement(el) && hasUrl(el, srcUrl)) return el;
 
-		const shadowRoot = getShadowRoot(element);
+		const shadowRoot = getShadowRoot(el);
 		const media = shadowRoot && findMediaElement(shadowRoot, point, srcUrl);
 
 		if (media) return media;

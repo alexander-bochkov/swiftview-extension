@@ -30,9 +30,9 @@ const collectVideoCandidates = (
 	dedupe([findLinkedMedia(video), { type: MEDIA_TYPE.VIDEO, url: srcUrl }]);
 
 export const collectMediaCandidates = (
-	element: MediaElement,
+	el: MediaElement,
 	srcUrl: string,
 ): MediaCandidate[] =>
-	element instanceof HTMLImageElement
-		? collectImageCandidates(element, srcUrl)
-		: collectVideoCandidates(element, srcUrl);
+	el instanceof HTMLImageElement
+		? collectImageCandidates(el, srcUrl)
+		: collectVideoCandidates(el, srcUrl);

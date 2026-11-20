@@ -15,7 +15,7 @@ Object.assign(fakeBrowser.i18n, {
 Object.assign(fakeBrowser, {
 	dom: {
 		// Open roots only: jsdom keeps a closed root to itself.
-		openOrClosedShadowRoot: (element: HTMLElement) => element.shadowRoot,
+		openOrClosedShadowRoot: (el: HTMLElement) => el.shadowRoot,
 	},
 });
 
