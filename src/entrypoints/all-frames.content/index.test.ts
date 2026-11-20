@@ -6,9 +6,9 @@ import contentScript from "./index";
 
 const mocks = vi.hoisted(() => ({
 	collectMediaCandidates: vi.fn<() => MediaCandidate[]>(() => []),
-	findMediaElement: vi.fn<() => HTMLImageElement | HTMLVideoElement | null>(
-		() => null,
-	),
+	findMediaElement: vi.fn<
+		() => HTMLImageElement | HTMLVideoElement | undefined
+	>(() => undefined),
 	init: vi.fn(),
 	onMessage: vi.fn(),
 	point: null as { x: number; y: number } | null,

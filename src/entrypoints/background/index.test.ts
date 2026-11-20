@@ -9,7 +9,7 @@ type ClickedListener = (
 ) => Promise<void>;
 
 const mocks = vi.hoisted(() => ({
-	findMediaCandidates: vi.fn<() => Promise<readonly MediaCandidate[]>>(() =>
+	findMediaCandidates: vi.fn<() => Promise<MediaCandidate[]>>(() =>
 		Promise.resolve([]),
 	),
 	offerReload: vi.fn(() => Promise.resolve()),

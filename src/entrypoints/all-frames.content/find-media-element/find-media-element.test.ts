@@ -122,7 +122,7 @@ describe("findMediaElement", () => {
 			createImage(OTHER_URL),
 		]);
 
-		expect(findMediaElement(document, POINT, PHOTO_URL)).toBeNull();
+		expect(findMediaElement(document, POINT, PHOTO_URL)).toBeUndefined();
 	});
 
 	describe("in a shadow root", () => {

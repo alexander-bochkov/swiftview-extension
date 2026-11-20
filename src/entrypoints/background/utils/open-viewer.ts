@@ -3,7 +3,7 @@ import type { MediaCandidate } from "@/shared/types";
 
 export const openViewer = async (
 	tabId: number,
-	candidates: readonly MediaCandidate[],
+	candidates: MediaCandidate[],
 ): Promise<boolean> => {
 	try {
 		// The viewer runs only in the top frame, which gives it the whole page,

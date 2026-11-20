@@ -45,13 +45,13 @@ const updateMenuItem = async (tabId: number, url?: string): Promise<void> => {
 	const syncId = ++lastSyncId;
 	const state = await getMenuItemState(tabId, url);
 
-	// A newer sync started while this one was running
+	// A newer sync started while this one was running.
 	if (syncId !== lastSyncId) return;
 
 	try {
 		await browser.contextMenus.update(MENU_ITEM_ID, state);
 	} catch {
-		// The menu item hasn't yet been created by onInstalled
+		// The menu item hasn't yet been created by onInstalled.
 	}
 };
 

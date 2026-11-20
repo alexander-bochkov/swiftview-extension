@@ -13,7 +13,7 @@ export default defineContentScript({
 			const { point } = contextMenuTracker;
 			const media = point && findMediaElement(document, point, srcUrl);
 
-			return media && collectMediaCandidates(media, srcUrl);
+			return media ? collectMediaCandidates(media, srcUrl) : null;
 		});
 	},
 	matchAboutBlank: true,
