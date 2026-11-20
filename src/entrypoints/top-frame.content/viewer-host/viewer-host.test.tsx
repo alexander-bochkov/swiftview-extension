@@ -328,37 +328,77 @@ describe("ViewerHost", () => {
 		});
 	});
 
-	describe("over an element of the page in fullscreen", () => {
-		const keyboard = { lock: vi.fn(() => Promise.resolve()), unlock: vi.fn() };
+	describe("fullscreen", () => {
+		const exitFullscreen = vi.fn(() => Promise.resolve());
 
-		// jsdom implements neither the Keyboard Lock API nor the Fullscreen API.
-		beforeEach(() => {
-			Object.defineProperty(navigator, "keyboard", {
-				configurable: true,
-				value: keyboard,
-			});
+		// jsdom doesn't implement the Fullscreen API.
+		const setFullscreen = (element: Element | null) =>
 			Object.defineProperty(document, "fullscreenElement", {
 				configurable: true,
-				value: document.createElement("video"),
+				value: element,
 			});
+
+		beforeEach(() => {
+			document.exitFullscreen = exitFullscreen;
 		});
 
 		afterEach(() => {
-			Reflect.deleteProperty(navigator, "keyboard");
 			Reflect.deleteProperty(document, "fullscreenElement");
+			Reflect.deleteProperty(document, "exitFullscreen");
+			exitFullscreen.mockReset();
+			exitFullscreen.mockImplementation(() => Promise.resolve());
 		});
 
-		it("locks Escape, so the viewer gets it", async () => {
+		it("exits the fullscreen of a page element", async () => {
+			setFullscreen(document.createElement("video"));
+
 			await open();
 
-			expect(keyboard.lock).toHaveBeenCalledExactlyOnceWith(["Escape"]);
+			expect(exitFullscreen).toHaveBeenCalledOnce();
+			expect(viewerHost.isOpen).toBe(true);
 		});
 
-		it("unlocks Escape on close", async () => {
-			await open();
-			close();
+		it("shows the viewer once the fullscreen is left", async () => {
+			let leave = () => {};
+			exitFullscreen.mockImplementation(
+				() =>
+					new Promise<void>((resolve) => {
+						leave = resolve;
+					}),
+			);
+			setFullscreen(document.createElement("video"));
 
-			expect(keyboard.unlock).toHaveBeenCalledOnce();
+			const opening = viewerHost.open([PHOTO]);
+			// Long enough for the UI, which waits for the styles.
+			await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+			expect(getHosts()).toHaveLength(0);
+
+			leave();
+			await act(() => opening);
+
+			expect(getHosts()).toHaveLength(1);
+		});
+
+		it("opens even if the fullscreen can't be left", async () => {
+			exitFullscreen.mockImplementation(() =>
+				Promise.reject(new TypeError("Not in fullscreen")),
+			);
+			setFullscreen(document.createElement("video"));
+
+			await open();
+
+			expect(viewerHost.isOpen).toBe(true);
+			expect(getHosts()).toHaveLength(1);
+		});
+
+		// The fullscreen of the browser itself (F11) has no element.
+		it("leaves the fullscreen of the browser", async () => {
+			setFullscreen(null);
+
+			await open();
+
+			expect(exitFullscreen).not.toHaveBeenCalled();
 		});
 	});
 

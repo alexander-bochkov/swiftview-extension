@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { VideoViewer } from "./video-viewer";
 
 // The buttons contain only an icon, so render its name to make them queryable.
@@ -102,95 +102,16 @@ describe("VideoViewer", () => {
 		expect(onClose).toHaveBeenCalledOnce();
 	});
 
-	describe("Escape in fullscreen", () => {
-		const exitFullscreen = vi.fn(() => Promise.resolve());
+	// Chrome itself exits the fullscreen of the video with Escape, and doesn't
+	// send the key then. Otherwise the key closes the viewer.
+	it("lets Escape through to close the viewer", () => {
 		const onPageKeyDown = vi.fn();
+		document.addEventListener("keydown", onPageKeyDown);
+		const { video } = renderViewer();
 
-		// jsdom doesn't implement the Fullscreen API.
-		const setFullscreen = (element: Element | null) =>
-			Object.defineProperty(document, "fullscreenElement", {
-				configurable: true,
-				value: element,
-			});
+		fireEvent.keyDown(video, { code: "Escape" });
+		document.removeEventListener("keydown", onPageKeyDown);
 
-		beforeEach(() => {
-			document.exitFullscreen = exitFullscreen;
-			document.addEventListener("keydown", onPageKeyDown);
-		});
-
-		afterEach(() => {
-			document.removeEventListener("keydown", onPageKeyDown);
-			Reflect.deleteProperty(document, "fullscreenElement");
-			exitFullscreen.mockReset();
-		});
-
-		it("exits the fullscreen of the video", () => {
-			const { video } = renderViewer();
-			setFullscreen(video);
-
-			fireEvent.keyDown(video, { code: "Escape" });
-
-			expect(exitFullscreen).toHaveBeenCalledOnce();
-		});
-
-		it("keeps the key from closing the viewer", () => {
-			const { video } = renderViewer();
-			setFullscreen(video);
-
-			fireEvent.keyDown(video, { code: "Escape" });
-
-			expect(onPageKeyDown).not.toHaveBeenCalled();
-		});
-
-		it("lets the key close the viewer out of fullscreen", () => {
-			const { video } = renderViewer();
-			setFullscreen(null);
-
-			fireEvent.keyDown(video, { code: "Escape" });
-
-			expect(exitFullscreen).not.toHaveBeenCalled();
-			expect(onPageKeyDown).toHaveBeenCalledOnce();
-		});
-
-		it("lets the key close the viewer over another element in fullscreen", () => {
-			const { video } = renderViewer();
-			setFullscreen(document.createElement("video"));
-
-			fireEvent.keyDown(video, { code: "Escape" });
-
-			expect(exitFullscreen).not.toHaveBeenCalled();
-			expect(onPageKeyDown).toHaveBeenCalledOnce();
-		});
-
-		it("ignores the other keys", () => {
-			const { video } = renderViewer();
-			setFullscreen(video);
-
-			fireEvent.keyDown(video, { code: "Space" });
-
-			expect(exitFullscreen).not.toHaveBeenCalled();
-		});
-
-		it("ignores a fullscreen that ended in the meantime", async () => {
-			exitFullscreen.mockImplementation(() =>
-				Promise.reject(new TypeError("Not in fullscreen")),
-			);
-			const { video } = renderViewer();
-			setFullscreen(video);
-
-			fireEvent.keyDown(video, { code: "Escape" });
-
-			await new Promise((resolve) => setTimeout(resolve));
-		});
-
-		it("stops listening once unmounted", () => {
-			const { video } = renderViewer();
-			setFullscreen(video);
-			cleanup();
-
-			fireEvent.keyDown(video, { code: "Escape" });
-
-			expect(exitFullscreen).not.toHaveBeenCalled();
-		});
+		expect(onPageKeyDown).toHaveBeenCalledOnce();
 	});
 });
