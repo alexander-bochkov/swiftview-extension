@@ -132,8 +132,7 @@ export class ViewerHost {
 			this.ctx.abort("Content script context invalidated"),
 		);
 
-		this.fontFace = createFontFace();
-		document.fonts.add(this.fontFace);
+		this.addFont();
 
 		const root = createRoot(container, { onUncaughtError: this.handleError });
 		root.render(
@@ -158,6 +157,19 @@ export class ViewerHost {
 
 		if (this.fontFace) document.fonts.delete(this.fontFace);
 		this.fontFace = null;
+	}
+
+	// Without the font, the viewer falls back to sans-serif, see
+	// viewer-host.css, so a failure is logged and the viewer stays. A file that
+	// fails to load isn't one: the browser loads it on use and falls back itself.
+	private addFont(): void {
+		try {
+			const fontFace = createFontFace();
+			document.fonts.add(fontFace);
+			this.fontFace = fontFace;
+		} catch (error) {
+			console.error(error);
+		}
 	}
 
 	private handleError = (error: unknown): void => {
