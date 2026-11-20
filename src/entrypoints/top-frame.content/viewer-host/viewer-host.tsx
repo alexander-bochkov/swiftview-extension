@@ -9,6 +9,7 @@ import { MediaViewer } from "../media-viewer";
 import { createFontFace } from "./fonts";
 import "./viewer-host.css";
 import { EscapeKeyLock } from "./escape-key-lock";
+import { ExtensionWatcher } from "./extension-watcher";
 import { KeyboardBlocker } from "./keyboard-blocker";
 import { MouseBlocker } from "./mouse-blocker";
 import { PointerBlocker } from "./pointer-blocker";
@@ -31,6 +32,7 @@ export class ViewerHost {
 	];
 	private readonly blockers = [...this.earlyBlockers, new WheelBlocker()];
 	private readonly escapeKeyLock = new EscapeKeyLock();
+	private readonly extensionWatcher = new ExtensionWatcher();
 	private readonly removalObserver = new RemovalObserver();
 	private readonly scrollbarHider = new ScrollbarHider();
 
@@ -131,6 +133,13 @@ export class ViewerHost {
 		// would count as open, so it couldn't be opened again.
 		this.removalObserver.observe(shadowRoot.host, () => this.close());
 
+		// The extension may go away while the viewer is open, and the viewer
+		// would keep the page blocked. Invalidating the context lets WXT remove
+		// the UI, as it would for a newer copy of the script, see unmount().
+		this.extensionWatcher.watch(() =>
+			this.ctx.abort("Content script context invalidated"),
+		);
+
 		this.fontFace = createFontFace();
 		document.fonts.add(this.fontFace);
 
@@ -149,6 +158,7 @@ export class ViewerHost {
 
 		for (const blocker of this.blockers) blocker.unblock();
 		this.escapeKeyLock.unlock();
+		this.extensionWatcher.stop();
 		this.removalObserver.disconnect();
 		this.scrollbarHider.restore();
 
