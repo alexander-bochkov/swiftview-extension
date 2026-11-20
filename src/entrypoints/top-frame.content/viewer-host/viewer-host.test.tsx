@@ -93,13 +93,29 @@ describe("ViewerHost", () => {
 		return e;
 	};
 
+	const turnWheel = (target: EventTarget): WheelEvent => {
+		const e = new WheelEvent("wheel", {
+			bubbles: true,
+			cancelable: true,
+			composed: true,
+		});
+		target.dispatchEvent(e);
+
+		return e;
+	};
+
 	// Checks the page is back to normal: it sees its events and can scroll.
-	const expectPageUnlocked = () => {
+	// The isolation of the viewer ends after the event in progress, see
+	// isolateViewer().
+	const expectPageUnlocked = async () => {
+		await act(() => new Promise((resolve) => setTimeout(resolve)));
+
 		const listener = listenOnPage();
-		const e = pressKey(document.body, "ArrowDown");
+		const key = pressKey(document.body, "ArrowDown");
 
 		expect(listener).toHaveBeenCalledOnce();
-		expect(e.defaultPrevented).toBe(false);
+		expect(key.defaultPrevented).toBe(false);
+		expect(turnWheel(document.body).defaultPrevented).toBe(false);
 	};
 
 	beforeAll(() => {
@@ -145,7 +161,7 @@ describe("ViewerHost", () => {
 	});
 
 	afterEach(() => {
-		act(() => viewerHost.destroy());
+		act(() => viewerHost.close());
 		// Before the next test starts a newer copy, which would invalidate it.
 		ctx.abort();
 		pageController.abort();
@@ -177,67 +193,6 @@ describe("ViewerHost", () => {
 		});
 	});
 
-	describe("init", () => {
-		// Stands for the page: a capture listener it adds to the window after the
-		// content script ran.
-		const listenOnWindow = (type: string) => {
-			const listener = vi.fn();
-
-			window.addEventListener(type, listener, {
-				capture: true,
-				signal: pageController.signal,
-			});
-
-			return listener;
-		};
-
-		it("hides the keys from window listeners the page added after it", async () => {
-			viewerHost.init();
-			const listener = listenOnWindow("keydown");
-
-			await open();
-			pressKey(document.body, "t");
-
-			expect(listener).not.toHaveBeenCalled();
-		});
-
-		it("hides the mouse buttons from window listeners the page added after it", async () => {
-			viewerHost.init();
-			const listener = listenOnWindow("mousedown");
-
-			await open();
-			document.body.dispatchEvent(
-				new MouseEvent("mousedown", { bubbles: true, composed: true }),
-			);
-
-			expect(listener).not.toHaveBeenCalled();
-		});
-
-		it("leaves the page alone while nothing is open", () => {
-			viewerHost.init();
-
-			expectPageUnlocked();
-		});
-	});
-
-	describe("destroy", () => {
-		it("closes the viewer", async () => {
-			await open();
-			act(() => viewerHost.destroy());
-
-			expect(viewerHost.isOpen).toBe(false);
-			expect(getHosts()).toHaveLength(0);
-		});
-
-		it("unlocks the page", async () => {
-			viewerHost.init();
-			await open();
-			act(() => viewerHost.destroy());
-
-			expectPageUnlocked();
-		});
-	});
-
 	describe("open", () => {
 		it("adds one host to the document element", async () => {
 			await open();
@@ -257,15 +212,6 @@ describe("ViewerHost", () => {
 			await open([CLIP, PHOTO]);
 
 			expect(getViewerProps().candidates).toEqual([CLIP, PHOTO]);
-		});
-
-		it("hides the events of the page from the page", async () => {
-			const listener = listenOnPage();
-
-			await open();
-			pressKey(document.body, "t");
-
-			expect(listener).not.toHaveBeenCalled();
 		});
 
 		it.each(["click", "contextmenu", "pointerdown", "touchstart"])(
@@ -296,18 +242,20 @@ describe("ViewerHost", () => {
 			expect(listener).not.toHaveBeenCalled();
 		});
 
-		it("keeps the page from scrolling with the keys of the page", async () => {
-			await open();
-
-			expect(pressKey(document.body, "ArrowDown").defaultPrevented).toBe(true);
-		});
-
 		it("keeps the page from scrolling with the keys of the viewer", async () => {
 			await open();
 			const host = getHosts()[0];
 			if (!host) throw new Error("No host");
 
 			expect(pressKey(host, "ArrowDown").defaultPrevented).toBe(true);
+		});
+
+		it("keeps the page from scrolling with the wheel over the viewer", async () => {
+			await open();
+			const host = getHosts()[0];
+			if (!host) throw new Error("No host");
+
+			expect(turnWheel(host).defaultPrevented).toBe(true);
 		});
 
 		it("replaces the previous viewer when opened again", async () => {
@@ -347,7 +295,7 @@ describe("ViewerHost", () => {
 			expect(viewerHost.isOpen).toBe(false);
 			expect(getHosts()).toHaveLength(0);
 			expect(mocks.MediaViewer).not.toHaveBeenCalled();
-			expectPageUnlocked();
+			await expectPageUnlocked();
 		});
 
 		it("shows only the latest of two opens", async () => {
@@ -426,7 +374,7 @@ describe("ViewerHost", () => {
 			await open();
 			close();
 
-			expectPageUnlocked();
+			await expectPageUnlocked();
 		});
 
 		it("removes the font from the document", async () => {
@@ -500,11 +448,10 @@ describe("ViewerHost", () => {
 		});
 
 		it("unlocks the page when the page removes the host", async () => {
-			viewerHost.init();
 			await open();
 			await removeFromPage(getHost());
 
-			expectPageUnlocked();
+			await expectPageUnlocked();
 		});
 
 		it("opens again after the page removed the host", async () => {
@@ -611,11 +558,10 @@ describe("ViewerHost", () => {
 		});
 
 		it("unlocks the page", async () => {
-			viewerHost.init();
 			await open();
 			removeExtension();
 
-			expectPageUnlocked();
+			await expectPageUnlocked();
 		});
 
 		it("keeps the viewer open while the extension is there", async () => {
@@ -671,7 +617,7 @@ describe("ViewerHost", () => {
 			expect(consoleError).toHaveBeenCalledWith(error);
 			expect(viewerHost.isOpen).toBe(false);
 			expect(getHosts()).toHaveLength(0);
-			expectPageUnlocked();
+			await expectPageUnlocked();
 		});
 
 		it("can open again after a failure", async () => {

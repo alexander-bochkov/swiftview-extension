@@ -10,27 +10,15 @@ import { createFontFace } from "./fonts";
 import "./viewer-host.css";
 import { EscapeKeyLock } from "./escape-key-lock";
 import { ExtensionWatcher } from "./extension-watcher";
-import { KeyboardBlocker } from "./keyboard-blocker";
-import { MouseBlocker } from "./mouse-blocker";
-import { PointerBlocker } from "./pointer-blocker";
+import { isolateViewer } from "./isolate-viewer";
 import { RemovalObserver } from "./removal-observer";
 import { ScrollbarHider } from "./scrollbar-hider";
-import { TouchBlocker } from "./touch-blocker";
-import { WheelBlocker } from "./wheel-blocker";
 
 type Ui = ShadowRootContentScriptUi<Root>;
 
 export class ViewerHost {
 	private readonly ctx: ContentScriptContext;
 
-	// Started by init(), see there.
-	private readonly earlyBlockers = [
-		new KeyboardBlocker(),
-		new MouseBlocker(),
-		new PointerBlocker(),
-		new TouchBlocker(),
-	];
-	private readonly blockers = [...this.earlyBlockers, new WheelBlocker()];
 	private readonly escapeKeyLock = new EscapeKeyLock();
 	private readonly extensionWatcher = new ExtensionWatcher();
 	private readonly removalObserver = new RemovalObserver();
@@ -44,6 +32,8 @@ export class ViewerHost {
 	// Changed by every open and close, so an open still waiting for the UI can
 	// tell it was replaced.
 	private session = 0;
+	// Set while the UI is in the page, see isolateViewer().
+	private stopIsolation: Nullable<() => void> = null;
 	// Created on the first open and kept: WXT fetches the styles for each UI,
 	// and keeps each one until the context of the script is invalidated.
 	private ui: Nullable<Promise<Ui>> = null;
@@ -56,19 +46,6 @@ export class ViewerHost {
 	// twice.
 	get isOpen(): boolean {
 		return this.isOpening || this.mountedUi !== null;
-	}
-
-	// Adds the listeners of the blockers before the page adds its own, so they
-	// see the events first. Not the wheel: a listener that isn't passive, kept
-	// for the life of the page, would slow down its scrolling.
-	init(): void {
-		for (const blocker of this.earlyBlockers) blocker.init();
-	}
-
-	destroy(): void {
-		this.close();
-
-		for (const blocker of this.blockers) blocker.destroy();
 	}
 
 	async open(candidates: readonly MediaCandidate[]): Promise<void> {
@@ -124,13 +101,13 @@ export class ViewerHost {
 	}
 
 	private mount(container: HTMLElement, shadowRoot: ShadowRoot): Root {
-		for (const blocker of this.blockers) blocker.block(shadowRoot);
+		this.stopIsolation = isolateViewer(shadowRoot);
 		this.escapeKeyLock.lock();
 		this.scrollbarHider.hide();
 
 		// A page may remove the host, see RemovalObserver. The viewer would be
-		// gone, but the blockers would keep the page blocked, and the viewer
-		// would count as open, so it couldn't be opened again.
+		// gone, but the page would stay blocked, and the viewer would count as
+		// open, so it couldn't be opened again.
 		this.removalObserver.observe(shadowRoot.host, () => this.close());
 
 		// The extension may go away while the viewer is open, and the viewer
@@ -156,7 +133,8 @@ export class ViewerHost {
 	private unmount(root: Root | undefined): void {
 		this.mountedUi = null;
 
-		for (const blocker of this.blockers) blocker.unblock();
+		this.stopIsolation?.();
+		this.stopIsolation = null;
 		this.escapeKeyLock.unlock();
 		this.extensionWatcher.stop();
 		this.removalObserver.disconnect();

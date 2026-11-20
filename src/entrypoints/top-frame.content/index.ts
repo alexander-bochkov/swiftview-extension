@@ -6,7 +6,6 @@ export default defineContentScript({
 	cssInjectionMode: "ui",
 	main(ctx) {
 		const viewerHost = new ViewerHost(ctx);
-		viewerHost.init();
 
 		onMessage("OPEN_VIEWER", ({ data: candidates }) => {
 			if (!viewerHost.isOpen) void viewerHost.open(candidates);

@@ -4,7 +4,6 @@ import { MEDIA_TYPE } from "@/shared/constants";
 import contentScript from "./index";
 
 const mocks = vi.hoisted(() => ({
-	init: vi.fn(),
 	isOpen: false,
 	onMessage: vi.fn(),
 	open: vi.fn(),
@@ -18,7 +17,6 @@ vi.mock("./viewer-host", () => ({
 			return mocks.isOpen;
 		}
 
-		init = mocks.init;
 		open = mocks.open;
 	},
 }));
@@ -47,10 +45,6 @@ afterEach(() => {
 });
 
 describe("on load", () => {
-	it("initializes the viewer host", () => {
-		expect(mocks.init).toHaveBeenCalledOnce();
-	});
-
 	it("listens for the message to open the viewer", () => {
 		expect(mocks.onMessage).toHaveBeenCalledExactlyOnceWith(
 			"OPEN_VIEWER",
