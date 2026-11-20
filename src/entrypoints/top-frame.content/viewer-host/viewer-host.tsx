@@ -71,8 +71,10 @@ export class ViewerHost {
 		try {
 			const [ui] = await Promise.all([this.getUi(), exitPageFullscreen()]);
 
-			// Closed or opened again while the UI was created.
-			if (session !== this.session) return;
+			// Closed or opened again while the UI was created, or the extension
+			// is gone, see ExtensionWatcher. WXT removed the UI then, before it
+			// was mounted, and wouldn't remove it again.
+			if (session !== this.session || this.ctx.isInvalid) return;
 
 			this.isOpening = false;
 			this.candidates = candidates;

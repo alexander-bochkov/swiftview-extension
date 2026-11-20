@@ -587,6 +587,28 @@ describe("ViewerHost", () => {
 			vi.useRealTimers();
 		});
 
+		describe("while the viewer is created", () => {
+			it("doesn't show it once the context is invalidated", async () => {
+				const opening = viewerHost.open([PHOTO]);
+				ctx.abort();
+				await act(() => opening);
+
+				expect(getHosts()).toHaveLength(0);
+				expect(mocks.MediaViewer).not.toHaveBeenCalled();
+				await expectPageUnlocked();
+			});
+
+			// Before WXT notices, see ExtensionWatcher.
+			it("doesn't show it once the extension is gone", async () => {
+				const opening = viewerHost.open([PHOTO]);
+				Reflect.set(fakeBrowser.runtime, "id", undefined);
+				await act(() => opening);
+
+				expect(getHosts()).toHaveLength(0);
+				expect(mocks.MediaViewer).not.toHaveBeenCalled();
+			});
+		});
+
 		it("closes the viewer", async () => {
 			await open();
 			removeExtension();
