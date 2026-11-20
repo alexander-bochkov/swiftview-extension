@@ -8,7 +8,6 @@ import type { MediaCandidate, Nullable } from "@/shared/types";
 import { MediaViewer } from "../media-viewer";
 import { createFontFace } from "./fonts";
 import "./viewer-host.css";
-import { EscapeKeyLock } from "./escape-key-lock";
 import { ExtensionWatcher } from "./extension-watcher";
 import { isolateViewer } from "./isolate-viewer";
 import { RemovalObserver } from "./removal-observer";
@@ -16,10 +15,25 @@ import { ScrollbarHider } from "./scrollbar-hider";
 
 type Ui = ShadowRootContentScriptUi<Root>;
 
+// Chrome takes Escape to exit the fullscreen of an element, and doesn't send
+// the key to the page. Over a page element in fullscreen, e.g. a video, the
+// viewer wouldn't close, and the fullscreen of its own video would end that
+// of the page element too. Only secure pages could lock the key. So the page
+// element leaves its fullscreen before the viewer opens. The fullscreen of the
+// browser itself (F11) has no element, and stays.
+const exitPageFullscreen = async (): Promise<void> => {
+	if (!document.fullscreenElement) return;
+
+	try {
+		await document.exitFullscreen();
+	} catch {
+		// Left in the meantime
+	}
+};
+
 export class ViewerHost {
 	private readonly ctx: ContentScriptContext;
 
-	private readonly escapeKeyLock = new EscapeKeyLock();
 	private readonly extensionWatcher = new ExtensionWatcher();
 	private readonly removalObserver = new RemovalObserver();
 	private readonly scrollbarHider = new ScrollbarHider();
@@ -55,7 +69,7 @@ export class ViewerHost {
 		this.isOpening = true;
 
 		try {
-			const ui = await this.getUi();
+			const [ui] = await Promise.all([this.getUi(), exitPageFullscreen()]);
 
 			// Closed or opened again while the UI was created.
 			if (session !== this.session) return;
@@ -102,7 +116,6 @@ export class ViewerHost {
 
 	private mount(container: HTMLElement, shadowRoot: ShadowRoot): Root {
 		this.stopIsolation = isolateViewer(shadowRoot);
-		this.escapeKeyLock.lock();
 		this.scrollbarHider.hide();
 
 		// A page may remove the host, see RemovalObserver. The viewer would be
@@ -135,7 +148,6 @@ export class ViewerHost {
 
 		this.stopIsolation?.();
 		this.stopIsolation = null;
-		this.escapeKeyLock.unlock();
 		this.extensionWatcher.stop();
 		this.removalObserver.disconnect();
 		this.scrollbarHider.restore();
