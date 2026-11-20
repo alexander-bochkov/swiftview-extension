@@ -15,6 +15,7 @@ import { ContentScriptContext } from "wxt/utils/content-script-context";
 import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate } from "@/shared/types";
 import { FONT_FAMILY } from "./fonts";
+import { ScrollbarHider } from "./scrollbar-hider";
 import { ViewerHost } from "./viewer-host";
 
 type ViewerProps = {
@@ -325,6 +326,66 @@ describe("ViewerHost", () => {
 			await open();
 
 			expect(fonts.size).toBe(1);
+		});
+
+		describe("without the font", () => {
+			it("logs and shows the viewer when the font can't be added", async () => {
+				const error = new Error("font failed");
+				vi.spyOn(fonts, "add").mockImplementationOnce(() => {
+					throw error;
+				});
+
+				await open();
+
+				expect(consoleError).toHaveBeenCalledWith(error);
+				expect(viewerHost.isOpen).toBe(true);
+				expect(getHosts()).toHaveLength(1);
+				expect(mocks.MediaViewer).toHaveBeenCalledOnce();
+			});
+
+			it("logs and shows the viewer when the font can't be created", async () => {
+				const error = new SyntaxError("Invalid descriptor");
+				vi.stubGlobal(
+					"FontFace",
+					class {
+						constructor() {
+							throw error;
+						}
+					},
+				);
+
+				await open();
+
+				expect(consoleError).toHaveBeenCalledWith(error);
+				expect(viewerHost.isOpen).toBe(true);
+				expect(mocks.MediaViewer).toHaveBeenCalledOnce();
+			});
+
+			it("closes as usual", async () => {
+				vi.spyOn(fonts, "add").mockImplementationOnce(() => {
+					throw new Error("font failed");
+				});
+				const remove = vi.spyOn(fonts, "delete");
+
+				await open();
+				close();
+
+				expect(viewerHost.isOpen).toBe(false);
+				expect(getHosts()).toHaveLength(0);
+				expect(remove).not.toHaveBeenCalled();
+			});
+
+			it("adds the font on the next open", async () => {
+				vi.spyOn(fonts, "add").mockImplementationOnce(() => {
+					throw new Error("font failed");
+				});
+
+				await open();
+				close();
+				await open();
+
+				expect(fonts.size).toBe(1);
+			});
 		});
 	});
 
@@ -669,8 +730,8 @@ describe("ViewerHost", () => {
 		});
 
 		it("logs and closes when setting up the host throws", async () => {
-			const error = new Error("font failed");
-			vi.spyOn(fonts, "add").mockImplementationOnce(() => {
+			const error = new Error("setup failed");
+			vi.spyOn(ScrollbarHider.prototype, "hide").mockImplementationOnce(() => {
 				throw error;
 			});
 
@@ -683,8 +744,8 @@ describe("ViewerHost", () => {
 		});
 
 		it("can open again after a failure", async () => {
-			vi.spyOn(fonts, "add").mockImplementationOnce(() => {
-				throw new Error("font failed");
+			vi.spyOn(ScrollbarHider.prototype, "hide").mockImplementationOnce(() => {
+				throw new Error("setup failed");
 			});
 
 			await open();
