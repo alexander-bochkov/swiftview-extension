@@ -13,7 +13,7 @@ export default defineContentScript({
 				return;
 			}
 
-			void viewerHost.open(candidates);
+			viewerHost.open(candidates);
 		});
 	},
 	matchAboutBlank: true,

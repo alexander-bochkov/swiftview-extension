@@ -37,7 +37,7 @@ export const useBlockingTransition = ({
 
 		const controller = new AbortController();
 
-		void Promise.allSettled(transitions).then(() => {
+		Promise.allSettled(transitions).then(() => {
 			if (controller.signal.aborted) return;
 
 			dispatch({ type: "ADVANCE_BLOCKING_TRANSITION" });

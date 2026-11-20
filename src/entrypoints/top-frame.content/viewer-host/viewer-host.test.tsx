@@ -717,7 +717,7 @@ describe("ViewerHost", () => {
 			Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", false);
 
 			try {
-				void viewerHost.open([PHOTO]);
+				viewerHost.open([PHOTO]);
 
 				await vi.waitFor(() => expect(viewerHost.isOpen).toBe(false));
 			} finally {

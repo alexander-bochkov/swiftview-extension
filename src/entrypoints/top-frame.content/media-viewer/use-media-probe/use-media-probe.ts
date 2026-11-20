@@ -35,7 +35,7 @@ export const useMediaProbe = (
 		};
 
 		setProbe(LOADING);
-		void run();
+		run();
 
 		return () => controller.abort();
 	}, [candidates]);
