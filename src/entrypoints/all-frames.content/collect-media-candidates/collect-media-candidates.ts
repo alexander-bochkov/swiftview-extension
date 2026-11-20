@@ -3,9 +3,7 @@ import type { MediaCandidate, MediaElement, Optional } from "@/shared/types";
 import { findLinkedMedia } from "./find-linked-media";
 import { findSrcsetImages } from "./find-srcset-images";
 
-const dedupe = (
-	candidates: readonly Optional<MediaCandidate>[],
-): MediaCandidate[] =>
+const dedupe = (candidates: Optional<MediaCandidate>[]): MediaCandidate[] =>
 	candidates
 		.filter((candidate) => !!candidate)
 		.filter(

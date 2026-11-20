@@ -3,9 +3,8 @@ import type { MediaType } from "@/shared/types";
 
 const { IMAGE, VIDEO } = MEDIA_TYPE;
 
-// Which formats Chrome can show, tested on real files: see formats.md.
 const FORMATS = [
-	// image
+	// Images.
 	{ extensions: ["apng"], mimeTypes: ["image/apng"], type: IMAGE },
 	{ extensions: ["avif", "avifs"], mimeTypes: ["image/avif"], type: IMAGE },
 	{ extensions: ["bmp"], mimeTypes: ["image/bmp"], type: IMAGE },
@@ -24,7 +23,7 @@ const FORMATS = [
 	{ extensions: ["png"], mimeTypes: ["image/png"], type: IMAGE },
 	{ extensions: ["svg"], mimeTypes: ["image/svg+xml"], type: IMAGE },
 	{ extensions: ["webp"], mimeTypes: ["image/webp"], type: IMAGE },
-	// video
+	// Videos.
 	{ extensions: ["3g2"], mimeTypes: ["video/3gpp2"], type: VIDEO },
 	{ extensions: ["3gp"], mimeTypes: ["video/3gpp"], type: VIDEO },
 	{

@@ -5,7 +5,7 @@ export const findMediaCandidates = async (
 	tabId: number,
 	frameId: number,
 	srcCandidate: MediaCandidate,
-): Promise<readonly MediaCandidate[]> => {
+): Promise<MediaCandidate[]> => {
 	try {
 		const response = await sendMessage(
 			"FIND_MEDIA_CANDIDATES",

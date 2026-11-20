@@ -9,6 +9,6 @@ export const offerReload = async (tabId: number): Promise<void> => {
 			target: { tabId },
 		});
 	} catch {
-		// The tab was closed or navigated away in the meantime
+		// The tab was closed or navigated away in the meantime.
 	}
 };

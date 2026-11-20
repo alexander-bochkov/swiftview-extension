@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { offerReload } from "./offer-reload";
 
-type Injection = {
-	readonly args: [string];
-	readonly func: (message: string) => void;
-};
+type Injection = Readonly<{
+	args: [string];
+	func: (message: string) => void;
+}>;
 
 const MESSAGE =
 	"SwiftView can't open images or videos on this page until it's reloaded. Reload now?";
