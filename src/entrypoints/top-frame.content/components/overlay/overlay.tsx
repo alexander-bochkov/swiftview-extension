@@ -38,7 +38,7 @@ export const Overlay = ({
 		// A cancelled one rejects, so it's settled rather than fulfilled.
 		const transitions = dialog.getAnimations().map(({ finished }) => finished);
 
-		void Promise.allSettled(transitions).then(() => {
+		Promise.allSettled(transitions).then(() => {
 			// The dialog may have been removed in the meantime, together with
 			// whatever `onClose` would close.
 			if (dialog.isConnected) onClose();
