@@ -7,13 +7,8 @@ export default defineConfig({
 	plugins: [WxtVitest(), svgr()],
 	test: {
 		environment: "jsdom",
-		exclude: [
-			...configDefaults.exclude,
-			// Snapshots of earlier code, kept for reference and not maintained.
-			".experiments/**",
-			// A copy of the code from before WXT, until it's deleted.
-			".old/**",
-		],
+		// Snapshots of earlier code, kept for reference and not maintained.
+		exclude: [...configDefaults.exclude, ".experiments/**"],
 		setupFiles: ["vitest.setup.ts"],
 	},
 });
