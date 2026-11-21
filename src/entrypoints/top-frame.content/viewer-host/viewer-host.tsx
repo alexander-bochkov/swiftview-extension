@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import type { ContentScriptContext } from "wxt/utils/content-script-context";
 import {
@@ -5,7 +6,7 @@ import {
 	type ShadowRootContentScriptUi,
 } from "wxt/utils/content-script-ui/shadow-root";
 import type { MediaCandidate, Nullable } from "@/shared/types";
-import { MediaViewer } from "../media-viewer";
+import type { ViewerProps } from "../types";
 import { createFontFace } from "./fonts";
 import "./viewer-host.css";
 import { ExtensionWatcher } from "./extension-watcher";
@@ -33,12 +34,13 @@ const exitPageFullscreen = async (): Promise<void> => {
 
 export class ViewerHost {
 	private readonly ctx: ContentScriptContext;
+	private readonly Viewer: ComponentType<ViewerProps>;
 
 	private readonly extensionWatcher = new ExtensionWatcher();
 	private readonly removalObserver = new RemovalObserver();
 	private readonly scrollbarHider = new ScrollbarHider();
 
-	private candidates: readonly MediaCandidate[] = [];
+	private candidates: MediaCandidate[] = [];
 	private fontFace: Nullable<FontFace> = null;
 	private isOpening = false;
 	// Set while the UI is in the page.
@@ -52,8 +54,9 @@ export class ViewerHost {
 	// and keeps each one until the context of the script is invalidated.
 	private ui: Nullable<Promise<Ui>> = null;
 
-	constructor(ctx: ContentScriptContext) {
+	constructor(ctx: ContentScriptContext, Viewer: ComponentType<ViewerProps>) {
 		this.ctx = ctx;
+		this.Viewer = Viewer;
 	}
 
 	// True from open() on, while the UI is created, so the viewer isn't opened
@@ -62,7 +65,7 @@ export class ViewerHost {
 		return this.isOpening || this.mountedUi !== null;
 	}
 
-	async open(candidates: readonly MediaCandidate[]): Promise<void> {
+	async open(candidates: MediaCandidate[]): Promise<void> {
 		this.close();
 
 		const session = this.session;
@@ -136,7 +139,7 @@ export class ViewerHost {
 
 		const root = createRoot(container, { onUncaughtError: this.handleError });
 		root.render(
-			<MediaViewer candidates={this.candidates} onClose={() => this.close()} />,
+			<this.Viewer candidates={this.candidates} onClose={() => this.close()} />,
 		);
 
 		return root;

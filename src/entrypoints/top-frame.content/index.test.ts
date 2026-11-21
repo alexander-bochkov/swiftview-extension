@@ -5,15 +5,23 @@ import contentScript from "./index";
 
 const mocks = vi.hoisted(() => ({
 	alert: vi.fn(),
+	createViewerHost: vi.fn(),
 	isOpen: false,
+	MediaViewer: vi.fn(),
 	onMessage: vi.fn(),
 	open: vi.fn(),
 }));
 
 vi.mock("@/shared/messaging", () => ({ onMessage: mocks.onMessage }));
 
+vi.mock("./media-viewer", () => ({ MediaViewer: mocks.MediaViewer }));
+
 vi.mock("./viewer-host", () => ({
 	ViewerHost: class {
+		constructor(...args: unknown[]) {
+			mocks.createViewerHost(...args);
+		}
+
 		get isOpen(): boolean {
 			return mocks.isOpen;
 		}
@@ -32,8 +40,8 @@ const PHOTO = { type: MEDIA_TYPE.IMAGE, url: PHOTO_URL };
 const openViewer = (...candidates: object[]) =>
 	mocks.onMessage.mock.lastCall?.[1]({ data: candidates });
 
-// The script doesn't use its context.
-const ctx = undefined as unknown as ContentScriptContext;
+// The script only passes its context on to the viewer host.
+const ctx = {} as ContentScriptContext;
 
 // The listener is registered again for every test.
 beforeEach(() => {
@@ -46,6 +54,13 @@ afterEach(() => {
 });
 
 describe("on load", () => {
+	it("creates the viewer host with the context and the media viewer", () => {
+		expect(mocks.createViewerHost).toHaveBeenCalledExactlyOnceWith(
+			ctx,
+			mocks.MediaViewer,
+		);
+	});
+
 	it("listens for the message to open the viewer", () => {
 		expect(mocks.onMessage).toHaveBeenCalledExactlyOnceWith(
 			"OPEN_VIEWER",
