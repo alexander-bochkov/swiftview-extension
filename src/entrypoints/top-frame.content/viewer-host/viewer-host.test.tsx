@@ -100,7 +100,7 @@ describe("ViewerHost", () => {
 
 	// Checks the page is back to normal: it sees its events and can scroll.
 	// The isolation of the viewer ends after the event in progress, see
-	// isolateViewer().
+	// ViewerIsolator.release().
 	const expectPageUnlocked = async () => {
 		await act(() => new Promise((resolve) => setTimeout(resolve)));
 

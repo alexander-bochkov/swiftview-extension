@@ -5,10 +5,10 @@ import type { MediaCandidate, Nullable } from "@/shared/types";
 import type { ViewerProps } from "../types";
 import { exitElementFullscreen } from "./exit-element-fullscreen";
 import { ExtensionLossObserver } from "./extension-loss-observer";
-import { isolateViewer } from "./isolate-viewer";
 import { RemovalObserver } from "./removal-observer";
 import { ScrollbarHider } from "./scrollbar-hider";
 import { ViewerFont } from "./viewer-font";
+import { ViewerIsolator } from "./viewer-isolator";
 
 type Ui = ShadowRootContentScriptUi<Root>;
 
@@ -20,6 +20,7 @@ export class ViewerHost {
 	private readonly removalObserver = new RemovalObserver();
 	private readonly scrollbarHider = new ScrollbarHider();
 	private readonly viewerFont = new ViewerFont();
+	private readonly viewerIsolator = new ViewerIsolator();
 
 	private candidates: MediaCandidate[] = [];
 	private isOpening = false;
@@ -28,8 +29,6 @@ export class ViewerHost {
 	// Changed by every open and close, so an open still waiting for the UI can
 	// tell it was replaced.
 	private session = 0;
-	// Set while the UI is in the page, see isolateViewer().
-	private stopIsolation: Nullable<() => void> = null;
 	// Created on the first open and kept: WXT fetches the styles for each UI,
 	// and keeps each one until the context of the script is invalidated.
 	private ui: Nullable<Promise<Ui>> = null;
@@ -97,7 +96,7 @@ export class ViewerHost {
 	}
 
 	private mount(container: HTMLElement, shadowRoot: ShadowRoot): Root {
-		this.stopIsolation = isolateViewer(shadowRoot);
+		this.viewerIsolator.isolate(shadowRoot);
 		this.scrollbarHider.hide();
 
 		// A page may remove the host, see RemovalObserver. The viewer would be
@@ -130,8 +129,7 @@ export class ViewerHost {
 	private unmount(root: Root | undefined): void {
 		this.mountedUi = null;
 
-		this.stopIsolation?.();
-		this.stopIsolation = null;
+		this.viewerIsolator.release();
 		this.extensionLossObserver.disconnect();
 		this.removalObserver.disconnect();
 		this.scrollbarHider.restore();
