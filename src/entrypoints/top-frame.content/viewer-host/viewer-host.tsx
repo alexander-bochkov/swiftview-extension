@@ -9,28 +9,13 @@ import type { MediaCandidate, Nullable } from "@/shared/types";
 import type { ViewerProps } from "../types";
 import { createFontFace } from "./fonts";
 import "./viewer-host.css";
+import { exitElementFullscreen } from "./exit-element-fullscreen";
 import { ExtensionWatcher } from "./extension-watcher";
 import { isolateViewer } from "./isolate-viewer";
 import { RemovalObserver } from "./removal-observer";
 import { ScrollbarHider } from "./scrollbar-hider";
 
 type Ui = ShadowRootContentScriptUi<Root>;
-
-// Chrome takes Escape to exit the fullscreen of an element, and doesn't send
-// the key to the page. Over a page element in fullscreen, e.g. a video, the
-// viewer wouldn't close, and the fullscreen of its own video would end that
-// of the page element too. Only secure pages could lock the key. So the page
-// element leaves its fullscreen before the viewer opens. The fullscreen of the
-// browser itself (F11) has no element, and stays.
-const exitPageFullscreen = async (): Promise<void> => {
-	if (!document.fullscreenElement) return;
-
-	try {
-		await document.exitFullscreen();
-	} catch {
-		// Left in the meantime
-	}
-};
 
 export class ViewerHost {
 	private readonly ctx: ContentScriptContext;
@@ -72,7 +57,7 @@ export class ViewerHost {
 		this.isOpening = true;
 
 		try {
-			const [ui] = await Promise.all([this.getUi(), exitPageFullscreen()]);
+			const [ui] = await Promise.all([this.getUi(), exitElementFullscreen()]);
 
 			// Closed or opened again while the UI was created, or the extension
 			// is gone, see ExtensionWatcher. WXT removed the UI then, before it

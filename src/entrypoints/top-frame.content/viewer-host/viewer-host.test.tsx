@@ -434,27 +434,6 @@ describe("ViewerHost", () => {
 
 			expect(getHosts()).toHaveLength(1);
 		});
-
-		it("opens even if the fullscreen can't be left", async () => {
-			exitFullscreen.mockImplementation(() =>
-				Promise.reject(new TypeError("Not in fullscreen")),
-			);
-			setFullscreen(document.createElement("video"));
-
-			await open();
-
-			expect(viewerHost.isOpen).toBe(true);
-			expect(getHosts()).toHaveLength(1);
-		});
-
-		// The fullscreen of the browser itself (F11) has no element.
-		it("leaves the fullscreen of the browser", async () => {
-			setFullscreen(null);
-
-			await open();
-
-			expect(exitFullscreen).not.toHaveBeenCalled();
-		});
 	});
 
 	describe("close", () => {
