@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POINTER_BUTTON } from "@/shared/constants";
-import { isolateViewer } from "./isolate-viewer";
+import { ViewerIsolator } from "./viewer-isolator";
 
 // Not in POINTER_BUTTON, as the code has no use for it.
 const SECONDARY_BUTTON = 2;
@@ -17,14 +17,14 @@ const SCROLL_KEYS = [
 	"PageUp",
 ];
 
-const STOPPED_TYPES = [
-	"keydown",
-	"keypress",
-	"keyup",
+const STOPPED_EVENT_TYPES = [
 	"auxclick",
 	"click",
 	"contextmenu",
 	"dblclick",
+	"keydown",
+	"keypress",
+	"keyup",
 	"mousedown",
 	"mouseup",
 	"pointerdown",
@@ -67,15 +67,15 @@ const isPrevented = (target: EventTarget, event: Event): boolean => {
 	return event.defaultPrevented;
 };
 
-// The stop is done by a timer, see isolateViewer().
+// The release is done by a timer, see ViewerIsolator.
 const flushTimers = () => new Promise((resolve) => setTimeout(resolve));
 
-describe("isolateViewer", () => {
+describe("ViewerIsolator", () => {
 	// The viewer: a button in a shadow root, like the toolbar.
 	let button: HTMLButtonElement;
 	let host: HTMLElement;
 	let root: ShadowRoot;
-	let stop: () => void;
+	let viewerIsolator: ViewerIsolator;
 	// Stands for the page and its listeners.
 	let pageController: AbortController;
 
@@ -98,11 +98,12 @@ describe("isolateViewer", () => {
 		document.body.append(host);
 		pageController = new AbortController();
 
-		stop = isolateViewer(root);
+		viewerIsolator = new ViewerIsolator();
+		viewerIsolator.isolate(root);
 	});
 
 	afterEach(async () => {
-		stop();
+		viewerIsolator.release();
 		await flushTimers();
 		pageController.abort();
 		host.remove();
@@ -110,13 +111,18 @@ describe("isolateViewer", () => {
 	});
 
 	describe("events", () => {
-		it.each(STOPPED_TYPES)("hides %s of the viewer from the page", (type) => {
-			const listener = listenOnDocument(type);
+		it.each(STOPPED_EVENT_TYPES)(
+			"hides %s of the viewer from the page",
+			(type) => {
+				const listener = listenOnDocument(type);
 
-			button.dispatchEvent(new Event(type, { bubbles: true, composed: true }));
+				button.dispatchEvent(
+					new Event(type, { bubbles: true, composed: true }),
+				);
 
-			expect(listener).not.toHaveBeenCalled();
-		});
+				expect(listener).not.toHaveBeenCalled();
+			},
+		);
 
 		it("lets the events reach the viewer", () => {
 			const listener = vi.fn();
@@ -137,7 +143,7 @@ describe("isolateViewer", () => {
 			expect(listener).toHaveBeenCalledOnce();
 		});
 
-		// They come before the host, see isolateViewer().
+		// They come before the host, see ViewerIsolator.
 		it("can't hide them from the capture listeners of the page", () => {
 			const listener = listenOnDocument("click", true);
 
@@ -284,13 +290,13 @@ describe("isolateViewer", () => {
 			expect(isPrevented(button, wheel())).toBe(true);
 		});
 
-		// See isolateViewer() for why at the window.
+		// See ViewerIsolator for why at the window.
 		it("listens to the wheel at the window, not passively", async () => {
-			stop();
+			viewerIsolator.release();
 			await flushTimers();
 			const addEventListener = vi.spyOn(window, "addEventListener");
 
-			stop = isolateViewer(root);
+			viewerIsolator.isolate(root);
 
 			expect(addEventListener).toHaveBeenCalledWith(
 				"wheel",
@@ -300,11 +306,11 @@ describe("isolateViewer", () => {
 		});
 	});
 
-	describe("stopped", () => {
-		// E.g. the Escape that closes the viewer, see isolateViewer().
+	describe("released", () => {
+		// E.g. the Escape that closes the viewer, see ViewerIsolator.
 		it("still hides an event of the viewer on its way", () => {
 			const listener = listenOnDocument("keydown");
-			button.addEventListener("keydown", () => stop());
+			button.addEventListener("keydown", () => viewerIsolator.release());
 
 			button.dispatchEvent(keyDown("Escape"));
 
@@ -313,7 +319,7 @@ describe("isolateViewer", () => {
 
 		describe("after the dispatch", () => {
 			beforeEach(async () => {
-				stop();
+				viewerIsolator.release();
 				await flushTimers();
 			});
 
@@ -346,5 +352,37 @@ describe("isolateViewer", () => {
 				expect(isPrevented(button, wheel())).toBe(false);
 			});
 		});
+
+		// E.g. the viewer closed and opened again right away.
+		it("keeps an isolation started before the timer", async () => {
+			viewerIsolator.release();
+			viewerIsolator.isolate(root);
+			await flushTimers();
+
+			const listener = listenOnDocument("click");
+			button.dispatchEvent(mouse("click", POINTER_BUTTON.MAIN));
+
+			expect(listener).not.toHaveBeenCalled();
+		});
+
+		it("does nothing when released again", async () => {
+			viewerIsolator.release();
+			viewerIsolator.release();
+			await flushTimers();
+
+			expect(isPrevented(button, keyDown("ArrowDown"))).toBe(false);
+		});
+	});
+
+	// Otherwise a release would leave the listeners of the second.
+	it("isolates once when isolated twice", async () => {
+		viewerIsolator.isolate(root);
+		viewerIsolator.release();
+		await flushTimers();
+
+		const listener = listenOnDocument("click");
+		button.dispatchEvent(mouse("click", POINTER_BUTTON.MAIN));
+
+		expect(listener).toHaveBeenCalledOnce();
 	});
 });
