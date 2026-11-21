@@ -1,25 +1,26 @@
 import type { Nullable } from "@/shared/types";
 
-// Calls back once an element is out of the document, also when it goes with
-// one of its ancestors. A page may remove what it didn't add, e.g. React clears
-// the children of <html> it doesn't know when it renders the whole document
-// again after a failed hydration.
+// Calls back once an element leaves the document, on its own or with an
+// ancestor. Pages do remove elements they didn't add: e.g. React, rendering
+// the whole document again after a failed hydration, clears the children of
+// <html> it doesn't know.
 export class RemovalObserver {
 	private observer: Nullable<MutationObserver> = null;
 
-	observe(element: Node, onRemove: () => void): void {
+	observe(el: Element, onRemove: () => void): void {
 		if (this.observer) return;
 
 		this.observer = new MutationObserver(() => {
-			if (element.isConnected) return;
+			if (el.isConnected) return;
 
 			this.disconnect();
 			onRemove();
 		});
 
-		// The children of each ancestor rather than the whole document, so the
-		// changes inside the page don't wake the observer up.
-		for (let node = element.parentNode; node; node = node.parentNode) {
+		// An element leaves with a change to the children of its parent, or of
+		// a further ancestor it goes with. Only those are watched, not the whole
+		// document, which would wake the observer on every change of the page.
+		for (let node = el.parentNode; node; node = node.parentNode) {
 			this.observer.observe(node, { childList: true });
 		}
 	}
