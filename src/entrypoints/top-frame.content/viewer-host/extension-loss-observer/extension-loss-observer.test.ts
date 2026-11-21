@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ExtensionWatcher } from "./extension-watcher";
+import { ExtensionLossObserver } from "./extension-loss-observer";
 
 const CHECK_INTERVAL = 500;
 
 // Restored after each test by hand: fakeBrowser.reset() doesn't put it back.
 const EXTENSION_ID = fakeBrowser.runtime.id;
 
-describe("ExtensionWatcher", () => {
-	let extensionWatcher: ExtensionWatcher;
+describe("ExtensionLossObserver", () => {
+	let extensionLossObserver: ExtensionLossObserver;
 	let onLost: () => void;
 
 	// Chrome takes the id of the extension from the script once it's gone.
@@ -17,18 +17,18 @@ describe("ExtensionWatcher", () => {
 
 	beforeEach(() => {
 		vi.useFakeTimers();
-		extensionWatcher = new ExtensionWatcher();
+		extensionLossObserver = new ExtensionLossObserver();
 		onLost = vi.fn();
 	});
 
 	afterEach(() => {
-		extensionWatcher.stop();
+		extensionLossObserver.disconnect();
 		Reflect.set(fakeBrowser.runtime, "id", EXTENSION_ID);
 		vi.useRealTimers();
 	});
 
 	it("calls back once the extension is gone", () => {
-		extensionWatcher.watch(onLost);
+		extensionLossObserver.observe(onLost);
 		removeExtension();
 		vi.advanceTimersByTime(CHECK_INTERVAL);
 
@@ -36,34 +36,34 @@ describe("ExtensionWatcher", () => {
 	});
 
 	it("doesn't call back while the extension is there", () => {
-		extensionWatcher.watch(onLost);
+		extensionLossObserver.observe(onLost);
 		vi.advanceTimersByTime(CHECK_INTERVAL * 10);
 
 		expect(onLost).not.toHaveBeenCalled();
 	});
 
 	it("calls back only once", () => {
-		extensionWatcher.watch(onLost);
+		extensionLossObserver.observe(onLost);
 		removeExtension();
 		vi.advanceTimersByTime(CHECK_INTERVAL * 10);
 
 		expect(onLost).toHaveBeenCalledOnce();
 	});
 
-	it("doesn't call back after stop", () => {
-		extensionWatcher.watch(onLost);
-		extensionWatcher.stop();
+	it("doesn't call back after disconnect", () => {
+		extensionLossObserver.observe(onLost);
+		extensionLossObserver.disconnect();
 		removeExtension();
 		vi.advanceTimersByTime(CHECK_INTERVAL);
 
 		expect(onLost).not.toHaveBeenCalled();
 	});
 
-	it("keeps the first callback while watching", () => {
+	it("keeps the first callback while observing", () => {
 		const other = vi.fn();
 
-		extensionWatcher.watch(onLost);
-		extensionWatcher.watch(other);
+		extensionLossObserver.observe(onLost);
+		extensionLossObserver.observe(other);
 		removeExtension();
 		vi.advanceTimersByTime(CHECK_INTERVAL);
 
@@ -71,11 +71,11 @@ describe("ExtensionWatcher", () => {
 		expect(other).not.toHaveBeenCalled();
 	});
 
-	it("can watch again after stop", () => {
-		extensionWatcher.watch(vi.fn());
-		extensionWatcher.stop();
+	it("can watch again after disconnect", () => {
+		extensionLossObserver.observe(vi.fn());
+		extensionLossObserver.disconnect();
 
-		extensionWatcher.watch(onLost);
+		extensionLossObserver.observe(onLost);
 		removeExtension();
 		vi.advanceTimersByTime(CHECK_INTERVAL);
 

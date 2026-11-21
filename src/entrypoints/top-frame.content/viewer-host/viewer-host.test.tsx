@@ -604,14 +604,14 @@ describe("ViewerHost", () => {
 		// back.
 		const extensionId = fakeBrowser.runtime.id;
 
-		// Chrome takes the id of the extension from the script, and the watcher
+		// Chrome takes the id of the extension from the script, and the observer
 		// sees it on its next check.
 		const removeExtension = () => {
 			Reflect.set(fakeBrowser.runtime, "id", undefined);
 			act(() => vi.advanceTimersByTime(1000));
 		};
 
-		// Only the interval of the watcher: React and WXT keep their timers.
+		// Only the interval of the observer: React and WXT keep their timers.
 		beforeEach(() => {
 			vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
 		});
@@ -632,7 +632,7 @@ describe("ViewerHost", () => {
 				await expectPageUnlocked();
 			});
 
-			// Before WXT notices, see ExtensionWatcher.
+			// Before WXT notices, see ExtensionLossObserver.
 			it("doesn't show it once the extension is gone", async () => {
 				const opening = viewerHost.open([PHOTO]);
 				Reflect.set(fakeBrowser.runtime, "id", undefined);
