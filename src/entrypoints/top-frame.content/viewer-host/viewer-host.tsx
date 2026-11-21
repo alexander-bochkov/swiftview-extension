@@ -10,7 +10,7 @@ import type { ViewerProps } from "../types";
 import { createFontFace } from "./fonts";
 import "./viewer-host.css";
 import { exitElementFullscreen } from "./exit-element-fullscreen";
-import { ExtensionWatcher } from "./extension-watcher";
+import { ExtensionLossObserver } from "./extension-loss-observer";
 import { isolateViewer } from "./isolate-viewer";
 import { RemovalObserver } from "./removal-observer";
 import { ScrollbarHider } from "./scrollbar-hider";
@@ -21,7 +21,7 @@ export class ViewerHost {
 	private readonly ctx: ContentScriptContext;
 	private readonly Viewer: ComponentType<ViewerProps>;
 
-	private readonly extensionWatcher = new ExtensionWatcher();
+	private readonly extensionLossObserver = new ExtensionLossObserver();
 	private readonly removalObserver = new RemovalObserver();
 	private readonly scrollbarHider = new ScrollbarHider();
 
@@ -60,8 +60,8 @@ export class ViewerHost {
 			const [ui] = await Promise.all([this.getUi(), exitElementFullscreen()]);
 
 			// Closed or opened again while the UI was created, or the extension
-			// is gone, see ExtensionWatcher. WXT removed the UI then, before it
-			// was mounted, and wouldn't remove it again.
+			// is gone, see ExtensionLossObserver. WXT removed the UI then, before
+			// it was mounted, and wouldn't remove it again.
 			if (session !== this.session || this.ctx.isInvalid) return;
 
 			this.isOpening = false;
@@ -116,7 +116,7 @@ export class ViewerHost {
 		// The extension may go away while the viewer is open, and the viewer
 		// would keep the page blocked. Invalidating the context lets WXT remove
 		// the UI, as it would for a newer copy of the script, see unmount().
-		this.extensionWatcher.watch(() =>
+		this.extensionLossObserver.observe(() =>
 			this.ctx.abort("Content script context invalidated"),
 		);
 
@@ -137,7 +137,7 @@ export class ViewerHost {
 
 		this.stopIsolation?.();
 		this.stopIsolation = null;
-		this.extensionWatcher.stop();
+		this.extensionLossObserver.disconnect();
 		this.removalObserver.disconnect();
 		this.scrollbarHider.restore();
 
