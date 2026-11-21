@@ -64,7 +64,7 @@ describe("MediaViewer", () => {
 
 	const renderViewer = (
 		probe: MediaProbe,
-		candidates: readonly MediaCandidate[] = [PHOTO],
+		candidates: MediaCandidate[] = [PHOTO],
 	) => {
 		mocks.useMediaProbe.mockReturnValue(probe);
 

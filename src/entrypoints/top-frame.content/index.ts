@@ -1,11 +1,11 @@
 import { onMessage } from "@/shared/messaging";
+import { MediaViewer } from "./media-viewer";
 import { ViewerHost } from "./viewer-host";
 
 export default defineContentScript({
-	// The styles go into the shadow root of the viewer, see ViewerHost.
 	cssInjectionMode: "ui",
 	main(ctx) {
-		const viewerHost = new ViewerHost(ctx);
+		const viewerHost = new ViewerHost(ctx, MediaViewer);
 
 		onMessage("OPEN_VIEWER", ({ data: candidates }) => {
 			if (viewerHost.isOpen) {

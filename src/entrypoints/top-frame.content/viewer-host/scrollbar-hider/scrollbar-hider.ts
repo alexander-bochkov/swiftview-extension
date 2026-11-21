@@ -1,10 +1,10 @@
 import type { Nullable, Point } from "@/shared/types";
 
-type Style = {
-	readonly priority: string;
-	readonly property: string;
-	readonly value: string;
-};
+type Style = Readonly<{
+	priority: string;
+	property: string;
+	value: string;
+}>;
 
 // Hides the scrollbars of the page while the viewer is open. Scrolling itself
 // is prevented per event, see ViewerHost, as `overflow: hidden` misses pages

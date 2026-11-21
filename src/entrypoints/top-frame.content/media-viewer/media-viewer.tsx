@@ -1,17 +1,12 @@
 import { useRef } from "react";
-import type { MediaCandidate } from "@/shared/types";
 import { Loader, MediaError, Overlay, Toolbar } from "../components";
 import { ImageViewer } from "../image-viewer";
+import type { ViewerProps } from "../types";
 import { VideoViewer } from "../video-viewer";
 import styles from "./media-viewer.module.css";
 import { useMediaProbe } from "./use-media-probe";
 
-type MediaViewerProps = {
-	candidates: readonly MediaCandidate[];
-	onClose: () => void;
-};
-
-export const MediaViewer = ({ candidates, onClose }: MediaViewerProps) => {
+export const MediaViewer = ({ candidates, onClose }: ViewerProps) => {
 	const overlayRef = useRef<HTMLDialogElement>(null);
 	const probe = useMediaProbe(candidates);
 

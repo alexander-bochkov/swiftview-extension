@@ -14,21 +14,15 @@ import {
 import { ContentScriptContext } from "wxt/utils/content-script-context";
 import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate } from "@/shared/types";
+import type { ViewerProps } from "../types";
 import { FONT_FAMILY } from "./fonts";
 import { ScrollbarHider } from "./scrollbar-hider";
 import { ViewerHost } from "./viewer-host";
 
-type ViewerProps = {
-	readonly candidates: readonly MediaCandidate[];
-	readonly onClose: () => void;
-};
-
 const mocks = vi.hoisted(() => ({
-	MediaViewer: vi.fn(),
 	onUnmount: vi.fn(),
+	Viewer: vi.fn(),
 }));
-
-vi.mock("../media-viewer", () => ({ MediaViewer: mocks.MediaViewer }));
 
 const PHOTO: MediaCandidate = {
 	type: MEDIA_TYPE.IMAGE,
@@ -56,14 +50,14 @@ describe("ViewerHost", () => {
 		document.documentElement.querySelectorAll("swiftview-root");
 
 	const getViewerProps = (): ViewerProps => {
-		const props = mocks.MediaViewer.mock.lastCall?.[0];
+		const props = mocks.Viewer.mock.lastCall?.[0];
 		if (!props) throw new Error("Viewer was not rendered");
 
 		return props;
 	};
 
 	// React renders inside act, so the render has finished when it returns.
-	const open = async (candidates: readonly MediaCandidate[] = [PHOTO]) => {
+	const open = async (candidates: MediaCandidate[] = [PHOTO]) => {
 		await act(() => viewerHost.open(candidates));
 	};
 
@@ -129,7 +123,7 @@ describe("ViewerHost", () => {
 
 	beforeEach(() => {
 		consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-		mocks.MediaViewer.mockImplementation(FakeViewer);
+		mocks.Viewer.mockImplementation(FakeViewer);
 
 		fonts = new Set();
 		vi.stubGlobal(
@@ -158,7 +152,7 @@ describe("ViewerHost", () => {
 		pageController = new AbortController();
 		// Without the options of the script, WXT loads no styles.
 		ctx = new ContentScriptContext("top-frame");
-		viewerHost = new ViewerHost(ctx);
+		viewerHost = new ViewerHost(ctx, mocks.Viewer);
 	});
 
 	afterEach(() => {
@@ -295,7 +289,7 @@ describe("ViewerHost", () => {
 
 			expect(viewerHost.isOpen).toBe(false);
 			expect(getHosts()).toHaveLength(0);
-			expect(mocks.MediaViewer).not.toHaveBeenCalled();
+			expect(mocks.Viewer).not.toHaveBeenCalled();
 			await expectPageUnlocked();
 		});
 
@@ -305,7 +299,7 @@ describe("ViewerHost", () => {
 			await act(() => Promise.all([first, second]));
 
 			expect(getHosts()).toHaveLength(1);
-			expect(mocks.MediaViewer).toHaveBeenCalledOnce();
+			expect(mocks.Viewer).toHaveBeenCalledOnce();
 			expect(getViewerProps().candidates).toEqual([CLIP]);
 		});
 
@@ -340,7 +334,7 @@ describe("ViewerHost", () => {
 				expect(consoleError).toHaveBeenCalledWith(error);
 				expect(viewerHost.isOpen).toBe(true);
 				expect(getHosts()).toHaveLength(1);
-				expect(mocks.MediaViewer).toHaveBeenCalledOnce();
+				expect(mocks.Viewer).toHaveBeenCalledOnce();
 			});
 
 			it("logs and shows the viewer when the font can't be created", async () => {
@@ -358,7 +352,7 @@ describe("ViewerHost", () => {
 
 				expect(consoleError).toHaveBeenCalledWith(error);
 				expect(viewerHost.isOpen).toBe(true);
-				expect(mocks.MediaViewer).toHaveBeenCalledOnce();
+				expect(mocks.Viewer).toHaveBeenCalledOnce();
 			});
 
 			it("closes as usual", async () => {
@@ -655,7 +649,7 @@ describe("ViewerHost", () => {
 				await act(() => opening);
 
 				expect(getHosts()).toHaveLength(0);
-				expect(mocks.MediaViewer).not.toHaveBeenCalled();
+				expect(mocks.Viewer).not.toHaveBeenCalled();
 				await expectPageUnlocked();
 			});
 
@@ -666,7 +660,7 @@ describe("ViewerHost", () => {
 				await act(() => opening);
 
 				expect(getHosts()).toHaveLength(0);
-				expect(mocks.MediaViewer).not.toHaveBeenCalled();
+				expect(mocks.Viewer).not.toHaveBeenCalled();
 			});
 		});
 
@@ -708,7 +702,7 @@ describe("ViewerHost", () => {
 	describe("errors", () => {
 		it("logs and closes when the viewer throws while rendering", async () => {
 			const error = new Error("render failed");
-			mocks.MediaViewer.mockImplementation(() => {
+			mocks.Viewer.mockImplementation(() => {
 				throw error;
 			});
 
