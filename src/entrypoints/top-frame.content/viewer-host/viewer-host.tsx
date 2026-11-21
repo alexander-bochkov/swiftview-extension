@@ -1,19 +1,14 @@
 import type { ComponentType } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import type { ContentScriptContext } from "wxt/utils/content-script-context";
-import {
-	createShadowRootUi,
-	type ShadowRootContentScriptUi,
-} from "wxt/utils/content-script-ui/shadow-root";
 import type { MediaCandidate, Nullable } from "@/shared/types";
 import type { ViewerProps } from "../types";
-import { createFontFace } from "./fonts";
-import "./viewer-host.css";
 import { exitElementFullscreen } from "./exit-element-fullscreen";
 import { ExtensionLossObserver } from "./extension-loss-observer";
 import { isolateViewer } from "./isolate-viewer";
 import { RemovalObserver } from "./removal-observer";
 import { ScrollbarHider } from "./scrollbar-hider";
+import { ViewerFont } from "./viewer-font";
 
 type Ui = ShadowRootContentScriptUi<Root>;
 
@@ -24,9 +19,9 @@ export class ViewerHost {
 	private readonly extensionLossObserver = new ExtensionLossObserver();
 	private readonly removalObserver = new RemovalObserver();
 	private readonly scrollbarHider = new ScrollbarHider();
+	private readonly viewerFont = new ViewerFont();
 
 	private candidates: MediaCandidate[] = [];
-	private fontFace: Nullable<FontFace> = null;
 	private isOpening = false;
 	// Set while the UI is in the page.
 	private mountedUi: Nullable<Ui> = null;
@@ -87,9 +82,6 @@ export class ViewerHost {
 			// Found on each open: a page may replace <html>, and the UI would be
 			// added to the old one, out of the document.
 			anchor: () => document.documentElement,
-			// viewer-host.css resets the host itself. The reset of WXT is
-			// !important, so it would also reset the font set there.
-			inheritStyles: true,
 			mode: "closed",
 			name: "swiftview-root",
 			onMount: (container, shadowRoot) => this.mount(container, shadowRoot),
@@ -120,7 +112,10 @@ export class ViewerHost {
 			this.ctx.abort("Content script context invalidated"),
 		);
 
-		this.addFont();
+		this.viewerFont.add();
+		// On the container, as WXT resets the host with `all: initial
+		// !important`. The page can't reach it in the closed shadow root.
+		container.style.fontFamily = ViewerFont.fontFamily;
 
 		const root = createRoot(container, { onUncaughtError: this.handleError });
 		root.render(
@@ -143,21 +138,7 @@ export class ViewerHost {
 
 		root?.unmount();
 
-		if (this.fontFace) document.fonts.delete(this.fontFace);
-		this.fontFace = null;
-	}
-
-	// Without the font, the viewer falls back to sans-serif, see
-	// viewer-host.css, so a failure is logged and the viewer stays. A file that
-	// fails to load isn't one: the browser loads it on use and falls back itself.
-	private addFont(): void {
-		try {
-			const fontFace = createFontFace();
-			document.fonts.add(fontFace);
-			this.fontFace = fontFace;
-		} catch (error) {
-			console.error(error);
-		}
+		this.viewerFont.remove();
 	}
 
 	private handleError = (error: unknown): void => {
