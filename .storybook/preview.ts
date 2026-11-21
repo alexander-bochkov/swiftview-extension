@@ -1,5 +1,5 @@
 import type { Preview } from "@storybook/react-vite";
-import { createFontFace } from "../src/entrypoints/top-frame.content/viewer-host/fonts";
+import { ViewerFont } from "../src/entrypoints/top-frame.content/viewer-host/viewer-font";
 import { fakeBrowser } from "../src/shared/test-utils";
 import { withViewerFont } from "./decorators";
 
@@ -12,7 +12,7 @@ fakeBrowser.runtime.getURL = (path: string) => path;
 Reflect.set(globalThis, "browser", fakeBrowser);
 
 // The font of the viewer, as the viewer host adds it to the page.
-document.fonts.add(createFontFace());
+new ViewerFont().add();
 
 export default {
 	// Every component is shown inside the viewer host on a page.

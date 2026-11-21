@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, useEffect } from "react";
+import { act, createRef, useEffect } from "react";
 import {
 	afterEach,
 	beforeAll,
@@ -15,7 +15,6 @@ import { ContentScriptContext } from "wxt/utils/content-script-context";
 import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate } from "@/shared/types";
 import type { ViewerProps } from "../types";
-import { FONT_FAMILY } from "./fonts";
 import { ScrollbarHider } from "./scrollbar-hider";
 import { ViewerHost } from "./viewer-host";
 
@@ -303,16 +302,27 @@ describe("ViewerHost", () => {
 			expect(getViewerProps().candidates).toEqual([CLIP]);
 		});
 
-		it("adds Inter from the files of the extension to the document", async () => {
+		it("adds the font to the document", async () => {
 			await open();
 
-			expect([...fonts]).toEqual([
-				{
-					descriptors: { weight: "100 900" },
-					family: FONT_FAMILY,
-					source: `url(${fakeBrowser.runtime.getURL("/fonts/inter-variable.woff2")}) format("woff2")`,
-				},
+			expect([...fonts].map(({ family }) => family)).toEqual([
+				"SwiftView Inter",
 			]);
+		});
+
+		it("shows the viewer in the font", async () => {
+			const viewerRef = createRef<HTMLDivElement>();
+			mocks.Viewer.mockImplementation(() => <div ref={viewerRef} />);
+			// jsdom serializes the stack its own way, without the quotes.
+			const expected = document.createElement("div");
+			expected.style.fontFamily = '"SwiftView Inter", sans-serif';
+
+			await open();
+
+			// The viewer inherits it from the element it's rendered into.
+			expect(viewerRef.current?.parentElement?.style.fontFamily).toBe(
+				expected.style.fontFamily,
+			);
 		});
 
 		it("keeps one font when opened again", async () => {
@@ -322,64 +332,17 @@ describe("ViewerHost", () => {
 			expect(fonts.size).toBe(1);
 		});
 
-		describe("without the font", () => {
-			it("logs and shows the viewer when the font can't be added", async () => {
-				const error = new Error("font failed");
-				vi.spyOn(fonts, "add").mockImplementationOnce(() => {
-					throw error;
-				});
-
-				await open();
-
-				expect(consoleError).toHaveBeenCalledWith(error);
-				expect(viewerHost.isOpen).toBe(true);
-				expect(getHosts()).toHaveLength(1);
-				expect(mocks.Viewer).toHaveBeenCalledOnce();
+		// The failure itself is covered by ViewerFont.
+		it("shows the viewer when the font can't be added", async () => {
+			vi.spyOn(fonts, "add").mockImplementationOnce(() => {
+				throw new Error("font failed");
 			});
 
-			it("logs and shows the viewer when the font can't be created", async () => {
-				const error = new SyntaxError("Invalid descriptor");
-				vi.stubGlobal(
-					"FontFace",
-					class {
-						constructor() {
-							throw error;
-						}
-					},
-				);
+			await open();
 
-				await open();
-
-				expect(consoleError).toHaveBeenCalledWith(error);
-				expect(viewerHost.isOpen).toBe(true);
-				expect(mocks.Viewer).toHaveBeenCalledOnce();
-			});
-
-			it("closes as usual", async () => {
-				vi.spyOn(fonts, "add").mockImplementationOnce(() => {
-					throw new Error("font failed");
-				});
-				const remove = vi.spyOn(fonts, "delete");
-
-				await open();
-				close();
-
-				expect(viewerHost.isOpen).toBe(false);
-				expect(getHosts()).toHaveLength(0);
-				expect(remove).not.toHaveBeenCalled();
-			});
-
-			it("adds the font on the next open", async () => {
-				vi.spyOn(fonts, "add").mockImplementationOnce(() => {
-					throw new Error("font failed");
-				});
-
-				await open();
-				close();
-				await open();
-
-				expect(fonts.size).toBe(1);
-			});
+			expect(viewerHost.isOpen).toBe(true);
+			expect(getHosts()).toHaveLength(1);
+			expect(mocks.Viewer).toHaveBeenCalledOnce();
 		});
 	});
 

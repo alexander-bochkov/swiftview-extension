@@ -1,10 +1,10 @@
 import type { Decorator } from "@storybook/react-vite";
-import { FONT_FAMILY } from "../src/entrypoints/top-frame.content/viewer-host/fonts";
+import { ViewerFont } from "../src/entrypoints/top-frame.content/viewer-host/viewer-font";
 
 // The font the viewer host gives the viewer on a page. The modal of the overlay
 // inherits it too, as the top layer keeps the inheritance of the DOM.
 export const withViewerFont: Decorator = (Story) => (
-	<div style={{ fontFamily: `"${FONT_FAMILY}", sans-serif` }}>
+	<div style={{ fontFamily: ViewerFont.fontFamily }}>
 		<Story />
 	</div>
 );
