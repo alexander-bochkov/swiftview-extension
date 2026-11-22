@@ -5,6 +5,14 @@ run-name: "Pull Request #${{ github.event.pull_request.number }} (${{ github.eve
 on:
   pull_request:
 
+# A new push to the pull request cancels the run of the previous one.
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+
+permissions:
+  contents: read
+
 jobs:
   quality:
     name: Code Quality
