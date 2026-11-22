@@ -1,6 +1,6 @@
-import { act, cleanup, renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import type { MouseEvent, PointerEvent } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { ImageViewerStore } from "../../use-image-viewer-store";
 import { useImageDrag } from "./use-image-drag";
 
@@ -24,12 +24,6 @@ type PointerInit = Partial<
 describe("useImageDrag", () => {
 	const dispatch = vi.fn();
 	const setPointerCapture = vi.fn();
-
-	// Vitest globals are off, so Testing Library can't register this itself.
-	afterEach(() => {
-		cleanup();
-		vi.clearAllMocks();
-	});
 
 	const createStore = (isBlocked = false) =>
 		({

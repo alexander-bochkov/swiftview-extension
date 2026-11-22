@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { offerReload } from "./offer-reload";
 
 type Injection = Readonly<{
@@ -27,11 +27,6 @@ const executeScript = vi
 beforeEach(() => {
 	vi.stubGlobal("confirm", confirm);
 	vi.stubGlobal("location", { reload });
-});
-
-afterEach(() => {
-	vi.clearAllMocks();
-	vi.unstubAllGlobals();
 });
 
 describe("offerReload", () => {

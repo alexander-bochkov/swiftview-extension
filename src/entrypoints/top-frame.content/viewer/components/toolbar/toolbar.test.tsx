@@ -1,6 +1,6 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Toolbar } from "./toolbar";
 
 // The buttons contain only an icon, so render its name to make them queryable.
@@ -11,12 +11,6 @@ vi.mock("../icon", async (importOriginal) => ({
 
 describe("Toolbar", () => {
 	const onClose = vi.fn();
-
-	// Vitest globals are off, so Testing Library can't register this itself.
-	afterEach(() => {
-		cleanup();
-		vi.clearAllMocks();
-	});
 
 	const getButtonNames = () =>
 		screen.getAllByRole("button").map((button) => button.textContent);

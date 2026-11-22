@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
 import { findMediaCandidates } from "./find-media-candidates";
 
@@ -18,10 +18,6 @@ const PHOTO = { type: MEDIA_TYPE.IMAGE, url: PHOTO_URL };
 
 beforeEach(() => {
 	mocks.sendMessage.mockResolvedValue([LARGE, PHOTO]);
-});
-
-afterEach(() => {
-	vi.clearAllMocks();
 });
 
 describe("findMediaCandidates", () => {

@@ -62,7 +62,6 @@ beforeEach(() => {
 
 afterEach(() => {
 	mocks.point = null;
-	vi.clearAllMocks();
 });
 
 describe("on load", () => {

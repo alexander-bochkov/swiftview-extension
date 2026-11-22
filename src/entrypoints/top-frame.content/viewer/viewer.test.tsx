@@ -1,6 +1,6 @@
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate } from "@/shared/types";
 import type { MediaProbe } from "./use-media-probe";
@@ -54,12 +54,6 @@ describe("Viewer", () => {
 			this.open = false;
 		};
 		HTMLDialogElement.prototype.getAnimations = () => [];
-	});
-
-	// Vitest globals are off, so Testing Library can't register this itself.
-	afterEach(() => {
-		cleanup();
-		vi.clearAllMocks();
 	});
 
 	const renderViewer = (

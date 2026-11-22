@@ -1,6 +1,6 @@
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { createRef, type ReactElement } from "react";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Icon, type IconName } from "./icon";
 
 // The source of every icon file, to check what each name renders against.
@@ -24,9 +24,6 @@ const describeSvg = (svg: Element) => ({
 });
 
 describe("Icon", () => {
-	// Vitest globals are off, so Testing Library can't register this itself.
-	afterEach(cleanup);
-
 	const renderIcon = (element: ReactElement) => {
 		const { container } = render(element);
 		return container.querySelector("svg");

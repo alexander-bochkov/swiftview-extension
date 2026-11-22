@@ -48,7 +48,6 @@ describe("ViewerFont", () => {
 
 	afterEach(() => {
 		Reflect.deleteProperty(document, "fonts");
-		vi.unstubAllGlobals();
 		consoleError.mockRestore();
 	});
 

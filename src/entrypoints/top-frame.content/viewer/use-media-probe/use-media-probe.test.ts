@@ -1,4 +1,4 @@
-import { act, cleanup, renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate, MediaElement } from "@/shared/types";
@@ -45,9 +45,7 @@ describe("useMediaProbe", () => {
 	const image = document.createElement("img");
 	const video = document.createElement("video");
 
-	// Vitest globals are off, so Testing Library can't register this itself.
 	afterEach(() => {
-		cleanup();
 		vi.resetAllMocks();
 	});
 

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
 import { collectMediaCandidates } from "./collect-media-candidates";
 
@@ -33,10 +33,6 @@ const PHOTO = { type: MEDIA_TYPE.IMAGE, url: PHOTO_URL };
 
 const image = document.createElement("img");
 const video = document.createElement("video");
-
-afterEach(() => {
-	vi.clearAllMocks();
-});
 
 describe("collectMediaCandidates", () => {
 	describe("of an image", () => {

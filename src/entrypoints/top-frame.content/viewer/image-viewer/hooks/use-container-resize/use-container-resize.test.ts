@@ -1,6 +1,6 @@
-import { act, cleanup, renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import type { RefObject } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ImageViewerStore } from "../use-image-viewer-store";
 import { useContainerResize } from "./use-container-resize";
 
@@ -27,13 +27,6 @@ describe("useContainerResize", () => {
 				disconnect = disconnect;
 			},
 		);
-	});
-
-	// Vitest globals are off, so Testing Library can't register this itself.
-	afterEach(() => {
-		cleanup();
-		vi.unstubAllGlobals();
-		vi.clearAllMocks();
 	});
 
 	const renderResize = (

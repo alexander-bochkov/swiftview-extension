@@ -1,6 +1,6 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { VideoViewer } from "./video-viewer";
 
 // The buttons contain only an icon, so render its name to make them queryable.
@@ -11,12 +11,6 @@ vi.mock("../components/icon", async (importOriginal) => ({
 
 describe("VideoViewer", () => {
 	const onClose = vi.fn();
-
-	// Vitest globals are off, so Testing Library can't register this itself.
-	afterEach(() => {
-		cleanup();
-		vi.clearAllMocks();
-	});
 
 	const renderViewer = (
 		playVideo: (video: HTMLVideoElement) => Promise<void> = () =>
