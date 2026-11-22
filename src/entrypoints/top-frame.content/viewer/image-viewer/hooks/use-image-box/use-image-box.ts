@@ -6,17 +6,17 @@ import {
 } from "react";
 import type { Nullable } from "@/shared/types";
 import {
+	type ImageViewerStore,
 	selectImageTranslate,
 	selectIsReady,
-	type ViewerStore,
-} from "../use-viewer-store";
+} from "../use-image-viewer-store";
 import { useBlockingTransition } from "./use-blocking-transition";
 import { useImageDrag } from "./use-image-drag";
 import { useImageZoom } from "./use-image-zoom";
 
 type UseImageBoxOptions = {
 	containerRef: RefObject<Nullable<HTMLElement>>;
-	store: ViewerStore;
+	store: ImageViewerStore;
 };
 
 // The props of the box of the image: the transform moves the box, and the

@@ -1,5 +1,5 @@
 import type { Point } from "@/shared/types";
-import type { ViewerState } from "../types";
+import type { ImageViewerState } from "../types";
 import {
 	clampOffset,
 	getRotatedSize,
@@ -8,7 +8,10 @@ import {
 	zoomOffset,
 } from "../utils";
 
-export const toggleZoom = (state: ViewerState, point: Point): ViewerState => {
+export const toggleZoom = (
+	state: ImageViewerState,
+	point: Point,
+): ImageViewerState => {
 	if (!state.containerSize) return state;
 
 	const imageSize = getRotatedSize(state.naturalSize, state.rotation);

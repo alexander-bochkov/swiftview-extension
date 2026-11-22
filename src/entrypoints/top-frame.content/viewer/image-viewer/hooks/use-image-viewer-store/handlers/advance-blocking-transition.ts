@@ -1,7 +1,9 @@
-import type { ViewerState } from "../types";
+import type { ImageViewerState } from "../types";
 import { rotate } from "./rotate";
 
-export const advanceBlockingTransition = (state: ViewerState): ViewerState => {
+export const advanceBlockingTransition = (
+	state: ImageViewerState,
+): ImageViewerState => {
 	const transition = state.blockingTransition;
 	if (!transition) return state;
 

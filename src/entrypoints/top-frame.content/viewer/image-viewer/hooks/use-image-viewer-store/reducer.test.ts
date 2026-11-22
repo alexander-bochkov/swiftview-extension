@@ -1,10 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { reducer } from "./reducer";
-import type { BlockingTransition, ViewerAction, ViewerState } from "./types";
+import type {
+	BlockingTransition,
+	ImageViewerAction,
+	ImageViewerState,
+} from "./types";
 
 // An image of 400x200 in a container of 500x100 fits at 50%, limited by its
 // height. At 100% it's larger on the y axis only and moves up to 50 px.
-const createState = (state: Partial<ViewerState> = {}): ViewerState => ({
+const createState = (
+	state: Partial<ImageViewerState> = {},
+): ImageViewerState => ({
 	blockingTransition: null,
 	containerSize: { height: 100, width: 500 },
 	flip: { x: 1, y: 1 },
@@ -64,7 +70,7 @@ describe("reducer", () => {
 	});
 
 	describe("during the transitions of a toolbar action", () => {
-		it.each<[string, Partial<ViewerState>]>([
+		it.each<[string, Partial<ImageViewerState>]>([
 			["the return to the fitted size", { blockingTransition: FITTING }],
 			["the settling", { blockingTransition: SETTLING, scale: 1 }],
 		])("ignores the image actions during %s", (_, state) => {
@@ -76,7 +82,7 @@ describe("reducer", () => {
 				{ payload: "left", type: "ROTATE" },
 				{ payload: { x: 0, y: 0 }, type: "TOGGLE_ZOOM" },
 				{ payload: { factor: 2, point: { x: 0, y: 0 } }, type: "ZOOM" },
-			] satisfies ViewerAction[]) {
+			] satisfies ImageViewerAction[]) {
 				expect(reducer(blocked, action)).toBe(blocked);
 			}
 		});
@@ -92,7 +98,7 @@ describe("reducer", () => {
 	});
 
 	describe("mouse actions", () => {
-		it.each<[string, ViewerAction]>([
+		it.each<[string, ImageViewerAction]>([
 			["MOVE_BY", { payload: { x: 0, y: -30 }, type: "MOVE_BY" }],
 			["TOGGLE_ZOOM", { payload: { x: 0, y: 0 }, type: "TOGGLE_ZOOM" }],
 			["ZOOM", { payload: { factor: 2, point: { x: 0, y: 0 } }, type: "ZOOM" }],

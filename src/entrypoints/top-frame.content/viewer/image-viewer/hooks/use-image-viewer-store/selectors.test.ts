@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { selectImageTranslate, selectIsReady } from "./selectors";
-import type { ViewerState } from "./types";
+import type { ImageViewerState } from "./types";
 
 // An image of 400x200 in a container of 500x100 fits at 50%.
-const createState = (state: Partial<ViewerState> = {}): ViewerState => ({
+const createState = (
+	state: Partial<ImageViewerState> = {},
+): ImageViewerState => ({
 	blockingTransition: null,
 	containerSize: { height: 100, width: 500 },
 	flip: { x: 1, y: 1 },
@@ -28,7 +30,7 @@ describe("selectImageTranslate", () => {
 	// The layout box of the image is at 0, 0 in the natural size of 400x200,
 	// and the transform scales and turns it around its center.
 	const getVisibleEdges = (
-		state: ViewerState,
+		state: ImageViewerState,
 		displayed: { height: number; width: number },
 	) => {
 		const { x, y } = selectImageTranslate(state);

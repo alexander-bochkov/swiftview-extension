@@ -1,8 +1,11 @@
 import type { Point } from "@/shared/types";
-import type { ViewerState } from "../types";
+import type { ImageViewerState } from "../types";
 import { clampOffset, getRotatedSize, scaleSize } from "../utils";
 
-export const moveBy = (state: ViewerState, delta: Point): ViewerState => {
+export const moveBy = (
+	state: ImageViewerState,
+	delta: Point,
+): ImageViewerState => {
 	if (!state.containerSize) return state;
 
 	const visualSize = scaleSize(

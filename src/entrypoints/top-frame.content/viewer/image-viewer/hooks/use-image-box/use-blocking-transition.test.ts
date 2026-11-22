@@ -1,7 +1,10 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Nullable } from "@/shared/types";
-import type { BlockingTransition, ViewerStore } from "../use-viewer-store";
+import type {
+	BlockingTransition,
+	ImageViewerStore,
+} from "../use-image-viewer-store";
 import { useBlockingTransition } from "./use-blocking-transition";
 
 // A transition of the property whose end the test controls.
@@ -41,7 +44,7 @@ describe("useBlockingTransition", () => {
 		({
 			dispatch,
 			state: { blockingTransition },
-		}) as unknown as ViewerStore;
+		}) as unknown as ImageViewerStore;
 
 	const renderTransition = (
 		blockingTransition: Nullable<BlockingTransition> = FITTING,

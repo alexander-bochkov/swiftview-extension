@@ -1,8 +1,11 @@
 import { ZERO_POINT } from "../constants";
-import type { Size, ViewerState } from "../types";
+import type { ImageViewerState, Size } from "../types";
 import { getFitScale, getRotatedSize, normalizeSize } from "../utils";
 
-export const resize = (state: ViewerState, size: Size): ViewerState => {
+export const resize = (
+	state: ImageViewerState,
+	size: Size,
+): ImageViewerState => {
 	const containerSize = normalizeSize(size);
 
 	if (!containerSize) return { ...state, containerSize };

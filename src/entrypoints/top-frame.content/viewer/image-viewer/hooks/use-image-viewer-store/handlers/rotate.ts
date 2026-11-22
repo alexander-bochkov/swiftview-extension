@@ -1,14 +1,14 @@
 import type { RotateDirection } from "../../../types";
 import { ZERO_POINT } from "../constants";
-import type { ViewerState } from "../types";
+import type { ImageViewerState } from "../types";
 import { getFitScale, getRotatedSize } from "../utils";
 
 const QUARTER_TURN = 90;
 
 export const rotate = (
-	state: ViewerState,
+	state: ImageViewerState,
 	direction: RotateDirection,
-): ViewerState => {
+): ImageViewerState => {
 	if (!state.containerSize) return state;
 
 	const fitScale = getFitScale(

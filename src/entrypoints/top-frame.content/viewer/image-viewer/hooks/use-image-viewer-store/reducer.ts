@@ -8,9 +8,9 @@ import {
 	toggleZoom,
 	zoom,
 } from "./handlers";
-import type { ViewerAction, ViewerState } from "./types";
+import type { ImageViewerAction, ImageViewerState } from "./types";
 
-const BLOCKED_ACTIONS: readonly ViewerAction["type"][] = [
+const BLOCKED_ACTIONS: readonly ImageViewerAction["type"][] = [
 	"FLIP",
 	"MOVE_BY",
 	"ROTATE",
@@ -18,7 +18,10 @@ const BLOCKED_ACTIONS: readonly ViewerAction["type"][] = [
 	"ZOOM",
 ];
 
-export const reducer: Reducer<ViewerState, ViewerAction> = (state, action) => {
+export const reducer: Reducer<ImageViewerState, ImageViewerAction> = (
+	state,
+	action,
+) => {
 	if (state.blockingTransition && BLOCKED_ACTIONS.includes(action.type)) {
 		return state;
 	}

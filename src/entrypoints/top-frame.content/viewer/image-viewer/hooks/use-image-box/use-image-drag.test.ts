@@ -1,7 +1,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import type { MouseEvent, PointerEvent } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ViewerStore } from "../use-viewer-store";
+import type { ImageViewerStore } from "../use-image-viewer-store";
 import { useImageDrag } from "./use-image-drag";
 
 type PointerInit = Partial<
@@ -37,7 +37,7 @@ describe("useImageDrag", () => {
 			state: {
 				blockingTransition: isBlocked ? { phase: "settling" } : null,
 			},
-		}) as unknown as ViewerStore;
+		}) as unknown as ImageViewerStore;
 
 	const renderBlockedDrag = () =>
 		renderHook(({ store }) => useImageDrag({ store }), {

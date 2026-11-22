@@ -1,15 +1,15 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { useViewerStore } from "./use-viewer-store";
+import { useImageViewerStore } from "./use-image-viewer-store";
 
-describe("useViewerStore", () => {
+describe("useImageViewerStore", () => {
 	// Vitest globals are off, so Testing Library can't register this itself.
 	afterEach(cleanup);
 
 	const NATURAL_SIZE = { height: 200, width: 400 };
 
 	it("starts with the natural size, without the container size, flips, rotation and zoom", () => {
-		const { result } = renderHook(() => useViewerStore(NATURAL_SIZE));
+		const { result } = renderHook(() => useImageViewerStore(NATURAL_SIZE));
 
 		expect(result.current.state).toEqual({
 			blockingTransition: null,
@@ -23,7 +23,7 @@ describe("useViewerStore", () => {
 	});
 
 	it("applies the dispatched actions", () => {
-		const { result } = renderHook(() => useViewerStore(NATURAL_SIZE));
+		const { result } = renderHook(() => useImageViewerStore(NATURAL_SIZE));
 
 		act(() => {
 			result.current.dispatch({
@@ -36,7 +36,7 @@ describe("useViewerStore", () => {
 	});
 
 	it("returns the same store when an action changes nothing", () => {
-		const { result } = renderHook(() => useViewerStore(NATURAL_SIZE));
+		const { result } = renderHook(() => useImageViewerStore(NATURAL_SIZE));
 		const first = result.current;
 
 		act(() =>
@@ -47,7 +47,9 @@ describe("useViewerStore", () => {
 	});
 
 	it("returns the same store while the state does not change", () => {
-		const { rerender, result } = renderHook(() => useViewerStore(NATURAL_SIZE));
+		const { rerender, result } = renderHook(() =>
+			useImageViewerStore(NATURAL_SIZE),
+		);
 		const first = result.current;
 
 		rerender();

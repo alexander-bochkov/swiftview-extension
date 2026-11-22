@@ -1,7 +1,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import type { RefObject } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ViewerStore } from "../use-viewer-store";
+import type { ImageViewerStore } from "../use-image-viewer-store";
 import { useContainerResize } from "./use-container-resize";
 
 type Size = { height: number; width: number };
@@ -41,7 +41,7 @@ describe("useContainerResize", () => {
 			current: document.createElement("div"),
 		},
 	) => {
-		const store = { dispatch } as unknown as ViewerStore;
+		const store = { dispatch } as unknown as ImageViewerStore;
 
 		return renderHook(() => useContainerResize({ containerRef, store }));
 	};
