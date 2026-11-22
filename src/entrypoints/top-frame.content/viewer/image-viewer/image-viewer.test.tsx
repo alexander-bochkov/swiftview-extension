@@ -89,10 +89,10 @@ describe("ImageViewer", () => {
 		return image;
 	};
 
-	// The box of the image, which the transform moves: the parent of the slot
-	// the image is put in.
+	// The box of the image, which the transform moves: the wrapper the image is
+	// put in.
 	const getBox = (image: HTMLImageElement): HTMLElement => {
-		const box = image.parentElement?.parentElement;
+		const box = image.parentElement;
 		if (!box) throw new Error("The image is not in a box");
 
 		return box;

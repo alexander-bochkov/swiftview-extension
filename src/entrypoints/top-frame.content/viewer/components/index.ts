@@ -1,5 +1,5 @@
 export * from "./button";
-export * from "./element-slot";
+export * from "./external-element";
 export * from "./icon";
 export * from "./loader";
 export * from "./media-error";

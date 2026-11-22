@@ -1,6 +1,6 @@
 import type { RefObject } from "react";
 import type { Nullable, Point } from "@/shared/types";
-import { ElementSlot, Toolbar } from "../components";
+import { ExternalElement, Toolbar } from "../components";
 import {
 	selectIsReady,
 	useContainerResize,
@@ -63,9 +63,7 @@ export const ImageViewer = ({
 					)
 				}
 			/>
-			<div {...boxProps} className={styles.box}>
-				<ElementSlot className={styles.slot} element={image} />
-			</div>
+			<ExternalElement {...boxProps} className={styles.box} element={image} />
 		</>
 	);
 };
