@@ -1,6 +1,6 @@
-/* Fills the overlay to center the video, but lets the clicks around the video
-	through to the overlay, which closes on them. */
-.slot {
+/* The box of the video. Fills the overlay to center the video, but lets the
+	clicks around the video through to the overlay, which closes on them. */
+.box {
 	position: absolute;
 	inset: 0;
 	display: flex;
