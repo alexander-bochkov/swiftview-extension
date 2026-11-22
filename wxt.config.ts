@@ -3,6 +3,14 @@ import svgr from "vite-plugin-svgr";
 import { defineConfig } from "wxt";
 
 export default defineConfig({
+	hooks: {
+		"build:publicAssets": (wxt, files) => {
+			files.push({
+				absoluteSrc: `${wxt.config.root}/LICENSE`,
+				relativeDest: "LICENSE",
+			});
+		},
+	},
 	manifest: {
 		default_locale: "en",
 		description: "__MSG_extension@description__",
