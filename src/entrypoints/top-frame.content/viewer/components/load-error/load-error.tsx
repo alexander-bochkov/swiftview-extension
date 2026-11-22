@@ -1,8 +1,8 @@
 import { Icon } from "../icon";
-import styles from "./media-error.module.css";
+import styles from "./load-error.module.css";
 
-export const MediaError = () => (
-	<div className={styles.mediaError}>
+export const LoadError = () => (
+	<div className={styles.loadError}>
 		<Icon className={styles.icon} name="no-symbol" />
 		<p className={styles.message}>
 			{browser.i18n.getMessage("viewer@load_error")}

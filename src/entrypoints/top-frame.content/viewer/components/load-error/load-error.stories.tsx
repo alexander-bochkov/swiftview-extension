@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { withViewerBackdrop } from "../../../../../../.storybook/decorators";
-import { MediaError } from "./media-error";
+import { LoadError } from "./load-error";
 
-type Metadata = Meta<typeof MediaError>;
+type Metadata = Meta<typeof LoadError>;
 type Story = StoryObj<Metadata>;
 
 export default {
-	component: MediaError,
+	component: LoadError,
 	decorators: [withViewerBackdrop],
-	title: "MediaError",
+	title: "LoadError",
 } satisfies Metadata;
 
 export const Default: Story = {};
