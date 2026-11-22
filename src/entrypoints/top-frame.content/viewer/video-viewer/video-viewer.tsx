@@ -1,5 +1,5 @@
 import { useLayoutEffect } from "react";
-import { ElementSlot, Toolbar } from "../components";
+import { ExternalElement, Toolbar } from "../components";
 import styles from "./video-viewer.module.css";
 
 type VideoViewerProps = {
@@ -26,7 +26,7 @@ export const VideoViewer = ({ onClose, video }: VideoViewerProps) => {
 	return (
 		<>
 			<Toolbar onClose={onClose} />
-			<ElementSlot className={styles.slot} element={video} />
+			<ExternalElement className={styles.slot} element={video} />
 		</>
 	);
 };

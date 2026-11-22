@@ -1,8 +1,9 @@
 import { cleanup, render } from "@testing-library/react";
+import { createRef } from "react";
 import { afterEach, describe, expect, it } from "vitest";
-import { ElementSlot } from "./element-slot";
+import { ExternalElement } from "./external-element";
 
-describe("ElementSlot", () => {
+describe("ExternalElement", () => {
 	// Vitest globals are off, so Testing Library can't register this itself.
 	afterEach(cleanup);
 
@@ -16,25 +17,34 @@ describe("ElementSlot", () => {
 	it("shows the element", () => {
 		const element = createElement("photo");
 
-		const { container } = render(<ElementSlot element={element} />);
+		const { container } = render(<ExternalElement element={element} />);
 
 		expect(container.querySelector("#photo")).toBe(element);
 	});
 
-	it("passes the other props to the slot", () => {
+	it("passes the other props to the wrapper", () => {
 		const { container } = render(
-			<ElementSlot className="slot" element={createElement("photo")} />,
+			<ExternalElement className="wrapper" element={createElement("photo")} />,
 		);
 
-		expect(container.querySelector(".slot > #photo")).not.toBeNull();
+		expect(container.querySelector(".wrapper > #photo")).not.toBeNull();
+	});
+
+	it("gives the wrapper to the ref", () => {
+		const ref = createRef<HTMLDivElement>();
+		const element = createElement("photo");
+
+		render(<ExternalElement element={element} ref={ref} />);
+
+		expect(ref.current).toBe(element.parentElement);
 	});
 
 	it("replaces the element with the next one", () => {
 		const first = createElement("first");
 		const second = createElement("second");
 
-		const { container, rerender } = render(<ElementSlot element={first} />);
-		rerender(<ElementSlot element={second} />);
+		const { container, rerender } = render(<ExternalElement element={first} />);
+		rerender(<ExternalElement element={second} />);
 
 		expect(container.querySelector("#first")).toBeNull();
 		expect(container.querySelector("#second")).toBe(second);
@@ -43,9 +53,9 @@ describe("ElementSlot", () => {
 	it("keeps the element in place on a rerender with the same one", () => {
 		const element = createElement("photo");
 
-		const { rerender } = render(<ElementSlot element={element} />);
+		const { rerender } = render(<ExternalElement element={element} />);
 		const parent = element.parentElement;
-		rerender(<ElementSlot className="slot" element={element} />);
+		rerender(<ExternalElement className="wrapper" element={element} />);
 
 		expect(element.parentElement).toBe(parent);
 	});
@@ -53,7 +63,7 @@ describe("ElementSlot", () => {
 	it("removes the element on unmount", () => {
 		const element = createElement("photo");
 
-		const { unmount } = render(<ElementSlot element={element} />);
+		const { unmount } = render(<ExternalElement element={element} />);
 		unmount();
 
 		expect(element.isConnected).toBe(false);

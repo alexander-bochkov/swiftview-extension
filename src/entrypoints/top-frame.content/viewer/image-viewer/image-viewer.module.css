@@ -14,8 +14,3 @@
 		height: 100%;
 	}
 }
-
-/* No box of its own, so the image is laid out in the box. */
-.slot {
-	display: contents;
-}
