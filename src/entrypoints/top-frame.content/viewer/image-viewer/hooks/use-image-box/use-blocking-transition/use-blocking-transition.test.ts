@@ -4,7 +4,7 @@ import type { Nullable } from "@/shared/types";
 import type {
 	BlockingTransition,
 	ImageViewerStore,
-} from "../use-image-viewer-store";
+} from "../../use-image-viewer-store";
 import { useBlockingTransition } from "./use-blocking-transition";
 
 // A transition of the property whose end the test controls.

@@ -1,7 +1,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import type { MouseEvent, PointerEvent } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ImageViewerStore } from "../use-image-viewer-store";
+import type { ImageViewerStore } from "../../use-image-viewer-store";
 import { useImageDrag } from "./use-image-drag";
 
 type PointerInit = Partial<

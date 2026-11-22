@@ -1,6 +1,6 @@
 import { type RefObject, useLayoutEffect } from "react";
 import type { Nullable } from "@/shared/types";
-import type { ImageViewerStore } from "../use-image-viewer-store";
+import type { ImageViewerStore } from "../../use-image-viewer-store";
 
 type UseBlockingTransitionOptions = {
 	boxRef: RefObject<Nullable<HTMLElement>>;
