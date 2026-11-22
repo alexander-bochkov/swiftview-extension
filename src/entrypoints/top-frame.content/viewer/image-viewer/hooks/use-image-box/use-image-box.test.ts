@@ -1,9 +1,9 @@
 import { cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ViewerStore } from "../use-viewer-store";
-import { useImage } from "./use-image";
+import { useImageBox } from "./use-image-box";
 
-describe("useImage", () => {
+describe("useImageBox", () => {
 	const dispatch = vi.fn();
 
 	// Vitest globals are off, so Testing Library can't register this itself.
@@ -12,7 +12,7 @@ describe("useImage", () => {
 		vi.clearAllMocks();
 	});
 
-	const renderImage = (state: Partial<ViewerStore["state"]> = {}) => {
+	const renderBox = (state: Partial<ViewerStore["state"]> = {}) => {
 		const store: ViewerStore = {
 			dispatch,
 			state: {
@@ -28,29 +28,21 @@ describe("useImage", () => {
 		};
 
 		const containerRef = { current: document.createElement("div") };
-		const image = document.createElement("img");
 
 		return {
-			image,
-			result: renderHook(() => useImage({ containerRef, image, store })).result,
+			result: renderHook(() => useImageBox({ containerRef, store })).result,
 		};
 	};
 
-	it("keeps the image from being dragged natively", () => {
-		const { image } = renderImage();
-
-		expect(image.draggable).toBe(false);
-	});
-
 	it("sizes the layout box to the natural size", () => {
-		const { result } = renderImage();
+		const { result } = renderBox();
 
 		expect(result.current.style).toMatchObject({ height: 200, width: 400 });
 	});
 
 	it("centers the image from the top left corner of the container", () => {
 		// The image of 400x200 in the container of 500x100.
-		const { result } = renderImage();
+		const { result } = renderBox();
 
 		expect(result.current.style?.transform).toBe(
 			"translate(50px, -50px) scale(1, 1) rotate(0deg)",
@@ -58,7 +50,7 @@ describe("useImage", () => {
 	});
 
 	it("applies the offset, the scale, the flips and the rotation", () => {
-		const { result } = renderImage({
+		const { result } = renderBox({
 			flip: { x: -1, y: 1 },
 			offset: { x: 10, y: -20 },
 			rotation: 90,
@@ -73,19 +65,19 @@ describe("useImage", () => {
 	});
 
 	it("hides the image until the container size is known", () => {
-		const { result } = renderImage({ containerSize: null });
+		const { result } = renderBox({ containerSize: null });
 
 		expect(result.current.style?.display).toBe("none");
 	});
 
 	it("shows the image once the container size is known", () => {
-		const { result } = renderImage();
+		const { result } = renderBox();
 
 		expect(result.current.style?.display).toBeUndefined();
 	});
 
 	it("returns the ref of the box and the handlers of the drag and the zoom", () => {
-		const { result } = renderImage();
+		const { result } = renderBox();
 
 		expect(result.current).toMatchObject({
 			onClick: expect.any(Function),
