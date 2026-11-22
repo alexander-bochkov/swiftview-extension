@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate } from "@/shared/types";
 import background from "./index";
@@ -102,10 +102,6 @@ const onUpdated = (
 beforeEach(() => {
 	fakeBrowser.reset();
 	background.main();
-});
-
-afterEach(() => {
-	vi.clearAllMocks();
 });
 
 describe("on install", () => {

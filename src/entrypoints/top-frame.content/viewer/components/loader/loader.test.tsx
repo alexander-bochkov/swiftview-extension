@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { Loader } from "./loader";
 
 // Render the icon's name to make it queryable.
@@ -9,9 +9,6 @@ vi.mock("../icon", async (importOriginal) => ({
 }));
 
 describe("Loader", () => {
-	// Vitest globals are off, so Testing Library can't register this itself.
-	afterEach(cleanup);
-
 	it("shows the spinner icon", () => {
 		render(<Loader />);
 

@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createRef, StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -43,8 +43,6 @@ describe("Overlay", () => {
 	});
 
 	afterEach(() => {
-		// Vitest globals are off, so Testing Library can't register this itself.
-		cleanup();
 		// Also drops the transitions a test set, so the next one starts without.
 		vi.resetAllMocks();
 	});

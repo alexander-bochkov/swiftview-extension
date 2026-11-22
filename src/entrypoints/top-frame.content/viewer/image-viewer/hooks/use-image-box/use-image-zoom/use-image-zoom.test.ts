@@ -1,6 +1,6 @@
-import { act, cleanup, renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import type { MouseEvent, RefObject } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ImageViewerStore } from "../../use-image-viewer-store";
 import { useImageZoom } from "./use-image-zoom";
 
@@ -18,12 +18,6 @@ describe("useImageZoom", () => {
 			top: 0,
 			width: 500,
 		} as DOMRect);
-	});
-
-	// Vitest globals are off, so Testing Library can't register this itself.
-	afterEach(() => {
-		cleanup();
-		vi.clearAllMocks();
 	});
 
 	const renderZoom = (

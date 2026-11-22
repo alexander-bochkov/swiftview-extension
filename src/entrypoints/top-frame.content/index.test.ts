@@ -50,7 +50,6 @@ beforeEach(() => {
 
 afterEach(() => {
 	mocks.isOpen = false;
-	vi.clearAllMocks();
 });
 
 describe("on load", () => {
@@ -93,10 +92,6 @@ describe("on message", () => {
 			vi.stubGlobal("alert", mocks.alert);
 		});
 
-		afterEach(() => {
-			vi.unstubAllGlobals();
-		});
-
 		it("doesn't open the viewer again", () => {
 			openViewer(PHOTO);
 
@@ -122,6 +117,5 @@ describe("on message", () => {
 		openViewer(PHOTO);
 
 		expect(mocks.alert).not.toHaveBeenCalled();
-		vi.unstubAllGlobals();
 	});
 });

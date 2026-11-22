@@ -18,7 +18,6 @@ describe("exitElementFullscreen", () => {
 	afterEach(() => {
 		Reflect.deleteProperty(document, "fullscreenElement");
 		Reflect.deleteProperty(document, "exitFullscreen");
-		exitFullscreen.mockClear();
 	});
 
 	it("exits the fullscreen of a page element", async () => {

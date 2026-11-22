@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
 import { openViewer } from "./open-viewer";
 
@@ -15,10 +15,6 @@ const CANDIDATES = [{ type: MEDIA_TYPE.IMAGE, url: PHOTO_URL }];
 
 beforeEach(() => {
 	mocks.sendMessage.mockResolvedValue(true);
-});
-
-afterEach(() => {
-	vi.clearAllMocks();
 });
 
 describe("openViewer", () => {

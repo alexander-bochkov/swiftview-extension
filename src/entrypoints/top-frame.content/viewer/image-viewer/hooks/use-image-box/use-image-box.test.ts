@@ -1,16 +1,10 @@
-import { cleanup, renderHook } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { renderHook } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import type { ImageViewerStore } from "../use-image-viewer-store";
 import { useImageBox } from "./use-image-box";
 
 describe("useImageBox", () => {
 	const dispatch = vi.fn();
-
-	// Vitest globals are off, so Testing Library can't register this itself.
-	afterEach(() => {
-		cleanup();
-		vi.clearAllMocks();
-	});
 
 	const renderBox = (state: Partial<ImageViewerStore["state"]> = {}) => {
 		const store: ImageViewerStore = {

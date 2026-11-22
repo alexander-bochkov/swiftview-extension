@@ -1,11 +1,8 @@
-import { act, cleanup, renderHook } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { act, renderHook } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import { useImageViewerStore } from "./use-image-viewer-store";
 
 describe("useImageViewerStore", () => {
-	// Vitest globals are off, so Testing Library can't register this itself.
-	afterEach(cleanup);
-
 	const NATURAL_SIZE = { height: 200, width: 400 };
 
 	it("starts with the natural size, without the container size, flips, rotation and zoom", () => {

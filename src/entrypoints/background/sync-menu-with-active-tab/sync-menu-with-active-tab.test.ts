@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { syncMenuWithActiveTab } from "./sync-menu-with-active-tab";
 
 const FILE_URL = "file:///C:/photos/index.html";
@@ -33,10 +33,6 @@ vi.spyOn(fakeBrowser.scripting, "executeScript").mockImplementation(
 	executeScript,
 );
 vi.spyOn(fakeBrowser.tabs, "query").mockImplementation(query);
-
-afterEach(() => {
-	vi.clearAllMocks();
-});
 
 describe("syncMenuWithActiveTab", () => {
 	it("checks the active tab of the last focused window", async () => {

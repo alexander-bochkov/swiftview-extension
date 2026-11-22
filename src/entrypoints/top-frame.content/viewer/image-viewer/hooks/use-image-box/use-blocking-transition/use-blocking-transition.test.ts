@@ -1,4 +1,4 @@
-import { act, cleanup, renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Nullable } from "@/shared/types";
 import type {
@@ -34,9 +34,7 @@ describe("useBlockingTransition", () => {
 		image.getAnimations = getAnimations;
 	});
 
-	// Vitest globals are off, so Testing Library can't register this itself.
 	afterEach(() => {
-		cleanup();
 		vi.resetAllMocks();
 	});
 

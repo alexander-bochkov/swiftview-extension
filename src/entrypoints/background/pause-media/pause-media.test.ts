@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { pauseMedia } from "./pause-media";
 
 const mocks = vi.hoisted(() => ({
@@ -11,10 +11,6 @@ vi.mock("@/shared/messaging", () => ({ sendMessage: mocks.sendMessage }));
 
 const FRAME_ID = 5;
 const TAB_ID = 7;
-
-afterEach(() => {
-	vi.clearAllMocks();
-});
 
 describe("pauseMedia", () => {
 	it("tells the frame of the menu to pause its media", async () => {

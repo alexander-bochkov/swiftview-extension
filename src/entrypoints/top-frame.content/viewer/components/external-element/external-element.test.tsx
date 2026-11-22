@@ -1,12 +1,9 @@
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { createRef } from "react";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { ExternalElement } from "./external-element";
 
 describe("ExternalElement", () => {
-	// Vitest globals are off, so Testing Library can't register this itself.
-	afterEach(cleanup);
-
 	const createElement = (id: string) => {
 		const element = document.createElement("img");
 		element.id = id;

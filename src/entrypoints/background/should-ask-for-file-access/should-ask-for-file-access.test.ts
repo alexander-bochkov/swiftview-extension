@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { shouldAskForFileAccess } from "./should-ask-for-file-access";
 
 const FILE_URL = "file:///C:/photos/photo.png";
@@ -11,10 +11,6 @@ const isAllowedFileSchemeAccess = vi.fn(() => Promise.resolve(true));
 vi.spyOn(fakeBrowser.extension, "isAllowedFileSchemeAccess").mockImplementation(
 	isAllowedFileSchemeAccess,
 );
-
-afterEach(() => {
-	vi.clearAllMocks();
-});
 
 describe("shouldAskForFileAccess", () => {
 	it("is true for a local file the extension can't access", async () => {

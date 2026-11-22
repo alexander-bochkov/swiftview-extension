@@ -1,10 +1,4 @@
-import {
-	act,
-	cleanup,
-	fireEvent,
-	render,
-	screen,
-} from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -69,10 +63,7 @@ describe("ImageViewer", () => {
 		HTMLDivElement.prototype.getAnimations = getBoxAnimations;
 	});
 
-	// Vitest globals are off, so Testing Library can't register this itself.
 	afterEach(() => {
-		cleanup();
-		vi.unstubAllGlobals();
 		// Also drops a transition a failed test didn't use.
 		vi.resetAllMocks();
 	});

@@ -173,8 +173,6 @@ describe("ViewerHost", () => {
 		for (const host of getHosts()) host.remove();
 
 		Reflect.deleteProperty(document, "fonts");
-		vi.unstubAllGlobals();
-		vi.clearAllMocks();
 		consoleError.mockRestore();
 	});
 
