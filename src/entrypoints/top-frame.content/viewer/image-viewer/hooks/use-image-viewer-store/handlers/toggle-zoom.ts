@@ -14,16 +14,16 @@ export const toggleZoom = (
 ): ImageViewerState => {
 	if (!state.containerSize) return state;
 
-	const imageSize = getRotatedSize(state.naturalSize, state.rotation);
+	const rotatedSize = getRotatedSize(state.naturalSize, state.rotation);
 
-	const scale = getToggledScale(state.scale, imageSize, state.containerSize);
-	const visualSize = scaleSize(imageSize, scale);
+	const scale = getToggledScale(state.scale, rotatedSize, state.containerSize);
+	const displayedSize = scaleSize(rotatedSize, scale);
 
 	const offset = zoomOffset(state.offset, point, scale / state.scale);
 
 	return {
 		...state,
-		offset: clampOffset(offset, visualSize, state.containerSize),
+		offset: clampOffset(offset, displayedSize, state.containerSize),
 		scale,
 	};
 };

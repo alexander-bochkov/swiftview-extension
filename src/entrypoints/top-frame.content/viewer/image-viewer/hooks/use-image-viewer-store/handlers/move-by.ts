@@ -8,14 +8,14 @@ export const moveBy = (
 ): ImageViewerState => {
 	if (!state.containerSize) return state;
 
-	const visualSize = scaleSize(
+	const displayedSize = scaleSize(
 		getRotatedSize(state.naturalSize, state.rotation),
 		state.scale,
 	);
 
 	const clamped = clampOffset(
 		{ x: state.offset.x + delta.x, y: state.offset.y + delta.y },
-		visualSize,
+		displayedSize,
 		state.containerSize,
 	);
 

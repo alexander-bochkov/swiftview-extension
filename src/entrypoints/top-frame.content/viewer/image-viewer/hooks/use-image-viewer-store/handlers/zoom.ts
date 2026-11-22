@@ -14,9 +14,9 @@ export const zoom = (
 ): ImageViewerState => {
 	if (!state.containerSize) return state;
 
-	const imageSize = getRotatedSize(state.naturalSize, state.rotation);
+	const rotatedSize = getRotatedSize(state.naturalSize, state.rotation);
 
-	const fitScale = getFitScale(imageSize, state.containerSize);
+	const fitScale = getFitScale(rotatedSize, state.containerSize);
 	const scale = Math.min(Math.max(fitScale, state.scale * factor), MAX_SCALE);
 
 	if (scale === state.scale) return state;
@@ -27,7 +27,7 @@ export const zoom = (
 		...state,
 		offset: clampOffset(
 			offset,
-			scaleSize(imageSize, scale),
+			scaleSize(rotatedSize, scale),
 			state.containerSize,
 		),
 		scale,
