@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
+import { CLIP, CLIP_URL, PHOTO, PHOTO_URL } from "@/shared/test-utils";
 import { collectMediaCandidates } from "./collect-media-candidates";
 
 const mocks = vi.hoisted(() => ({
@@ -17,19 +18,15 @@ vi.mock("./find-linked-media", () => ({
 	findLinkedMedia: mocks.findLinkedMedia,
 }));
 
-const CLIP_URL = "https://example.com/clip.mp4";
 const FULL_URL = "https://example.com/clip-full.mp4";
 const LARGE_URL = "https://example.com/photo-large.png";
 const LINK_URL = "https://example.com/photo-full.png";
 const MEDIUM_URL = "https://example.com/photo-medium.png";
-const PHOTO_URL = "https://example.com/photo.png";
 
-const CLIP = { type: MEDIA_TYPE.VIDEO, url: CLIP_URL };
 const FULL = { type: MEDIA_TYPE.VIDEO, url: FULL_URL };
 const LARGE = { type: MEDIA_TYPE.IMAGE, url: LARGE_URL };
 const LINK = { type: MEDIA_TYPE.IMAGE, url: LINK_URL };
 const MEDIUM = { type: MEDIA_TYPE.IMAGE, url: MEDIUM_URL };
-const PHOTO = { type: MEDIA_TYPE.IMAGE, url: PHOTO_URL };
 
 const image = document.createElement("img");
 const video = document.createElement("video");

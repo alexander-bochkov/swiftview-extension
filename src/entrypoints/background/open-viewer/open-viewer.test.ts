@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MEDIA_TYPE } from "@/shared/constants";
+import { PHOTO } from "@/shared/test-utils";
 import { openViewer } from "./open-viewer";
 
 const mocks = vi.hoisted(() => ({
@@ -8,10 +8,9 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/shared/messaging", () => ({ sendMessage: mocks.sendMessage }));
 
-const PHOTO_URL = "https://example.com/photo.png";
 const TAB_ID = 7;
 
-const CANDIDATES = [{ type: MEDIA_TYPE.IMAGE, url: PHOTO_URL }];
+const CANDIDATES = [PHOTO];
 
 beforeEach(() => {
 	mocks.sendMessage.mockResolvedValue(true);

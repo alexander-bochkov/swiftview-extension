@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ContentScriptContext } from "wxt/utils/content-script-context";
-import { MEDIA_TYPE } from "@/shared/constants";
+import { CLIP, PHOTO } from "@/shared/test-utils";
 import contentScript from "./index";
 
 const mocks = vi.hoisted(() => ({
@@ -29,12 +29,6 @@ vi.mock("./viewer-host", () => ({
 		open = mocks.open;
 	},
 }));
-
-const CLIP_URL = "https://example.com/clip.mp4";
-const PHOTO_URL = "https://example.com/photo.png";
-
-const CLIP = { type: MEDIA_TYPE.VIDEO, url: CLIP_URL };
-const PHOTO = { type: MEDIA_TYPE.IMAGE, url: PHOTO_URL };
 
 // Calls the listener the script registered, as the message would.
 const openViewer = (...candidates: object[]) =>
