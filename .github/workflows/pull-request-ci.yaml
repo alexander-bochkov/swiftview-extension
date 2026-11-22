@@ -50,3 +50,5 @@ jobs:
         run: npx --no -- tsc
       - name: Build
         run: npx --no -- wxt build
+      - name: Build Storybook
+        run: npx --no -- storybook build --quiet
