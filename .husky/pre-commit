@@ -1,3 +1,3 @@
 npx --no -- biome check --no-errors-on-unmatched --staged
 npx --no -- tsc
-npx --no -- vitest run
+npx --no -- vitest run --changed
