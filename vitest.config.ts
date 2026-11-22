@@ -9,6 +9,11 @@ export default defineConfig({
 		environment: "jsdom",
 		// Snapshots of earlier code, kept for reference and not maintained.
 		exclude: [...configDefaults.exclude, ".experiments/**"],
+		forceRerunTriggers: [
+			...configDefaults.forceRerunTriggers,
+			"**/package-lock.json",
+			"**/wxt.config.*",
+		],
 		setupFiles: ["vitest.setup.ts"],
 		unstubGlobals: true,
 	},
