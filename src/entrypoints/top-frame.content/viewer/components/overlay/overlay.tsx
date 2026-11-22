@@ -1,6 +1,7 @@
 import clsx from "clsx/lite";
 import { type ReactNode, type RefObject, useEffect, useRef } from "react";
 import { KEY_CODE } from "@/shared/constants";
+import type { Nullable } from "@/shared/types";
 import styles from "./overlay.module.css";
 
 type OverlayChildrenProps = {
@@ -11,7 +12,7 @@ type OverlayProps = {
 	children?: (props: OverlayChildrenProps) => ReactNode;
 	className?: string;
 	onClose: () => void;
-	ref: RefObject<HTMLDialogElement | null>;
+	ref: RefObject<Nullable<HTMLDialogElement>>;
 };
 
 export const Overlay = ({
