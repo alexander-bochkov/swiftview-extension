@@ -14,7 +14,7 @@ const TAB_ID = 7;
 const CANDIDATES = [{ type: MEDIA_TYPE.IMAGE, url: PHOTO_URL }];
 
 beforeEach(() => {
-	mocks.sendMessage.mockResolvedValue(undefined);
+	mocks.sendMessage.mockResolvedValue(true);
 });
 
 afterEach(() => {
@@ -32,13 +32,19 @@ describe("openViewer", () => {
 		);
 	});
 
-	it("returns true once the top frame gets the message", async () => {
-		expect(await openViewer(TAB_ID, CANDIDATES)).toBe(true);
+	it("tells that the viewer opened", async () => {
+		expect(await openViewer(TAB_ID, CANDIDATES)).toBe("opened");
 	});
 
-	it("returns false without a script in the top frame", async () => {
+	it("tells that the viewer is already open", async () => {
+		mocks.sendMessage.mockResolvedValueOnce(false);
+
+		expect(await openViewer(TAB_ID, CANDIDATES)).toBe("already-open");
+	});
+
+	it("tells that there's no script in the top frame", async () => {
 		mocks.sendMessage.mockRejectedValueOnce(new Error("No receiving end"));
 
-		expect(await openViewer(TAB_ID, CANDIDATES)).toBe(false);
+		expect(await openViewer(TAB_ID, CANDIDATES)).toBe("unreachable");
 	});
 });

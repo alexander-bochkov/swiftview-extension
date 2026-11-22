@@ -43,10 +43,14 @@ const CANDIDATES = [
 	{ type: MEDIA_TYPE.IMAGE, url: PHOTO_URL },
 ];
 
-// Calls the listener the script registered, as the message would, and returns
-// its answer.
-const findMediaCandidates = () =>
-	mocks.onMessage.mock.lastCall?.[1]({ data: PHOTO_URL });
+// Calls the listener the script registered for the message, as the message
+// would, and returns its answer.
+const send = (type: string, data?: unknown) =>
+	mocks.onMessage.mock.calls.find(([name]) => name === type)?.[1]({ data });
+
+const findMediaCandidates = () => send("FIND_MEDIA_CANDIDATES", PHOTO_URL);
+
+const pauseMedia = () => send("PAUSE_MEDIA");
 
 // The script doesn't use its context.
 const ctx = undefined as unknown as ContentScriptContext;
@@ -66,9 +70,14 @@ describe("on load", () => {
 		expect(mocks.init).toHaveBeenCalledOnce();
 	});
 
-	it("listens for the message to find the candidates", () => {
-		expect(mocks.onMessage).toHaveBeenCalledExactlyOnceWith(
+	it("listens for the messages to find the candidates and pause the media", () => {
+		expect(mocks.onMessage).toHaveBeenCalledTimes(2);
+		expect(mocks.onMessage).toHaveBeenCalledWith(
 			"FIND_MEDIA_CANDIDATES",
+			expect.any(Function),
+		);
+		expect(mocks.onMessage).toHaveBeenCalledWith(
+			"PAUSE_MEDIA",
 			expect.any(Function),
 		);
 	});
@@ -118,5 +127,48 @@ describe("on message", () => {
 	it("answers null without the media of the menu", () => {
 		expect(findMediaCandidates()).toBeNull();
 		expect(mocks.collectMediaCandidates).not.toHaveBeenCalled();
+	});
+});
+
+describe("on pause", () => {
+	const findVideo = () => {
+		const video = document.createElement("video");
+		const pause = vi.spyOn(video, "pause").mockImplementation(() => {});
+
+		mocks.point = POINT;
+		mocks.findMediaElement.mockReturnValueOnce(video);
+		findMediaCandidates();
+
+		return pause;
+	};
+
+	it("pauses the video of the menu", () => {
+		const pause = findVideo();
+
+		pauseMedia();
+
+		expect(pause).toHaveBeenCalledOnce();
+	});
+
+	it("leaves an image of the menu", () => {
+		mocks.point = POINT;
+		mocks.findMediaElement.mockReturnValueOnce(document.createElement("img"));
+		findMediaCandidates();
+
+		expect(() => pauseMedia()).not.toThrow();
+	});
+
+	it("does nothing before a media is found", () => {
+		expect(() => pauseMedia()).not.toThrow();
+	});
+
+	// The menu opened on another spot of the frame in the meantime.
+	it("leaves the video of an earlier menu", () => {
+		const pause = findVideo();
+		findMediaCandidates();
+
+		pauseMedia();
+
+		expect(pause).not.toHaveBeenCalled();
 	});
 });

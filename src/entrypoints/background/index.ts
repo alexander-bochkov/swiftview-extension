@@ -5,6 +5,7 @@ import { isMediaType } from "./is-media-type";
 import { offerReload } from "./offer-reload";
 import { openExtensionSettings } from "./open-extension-settings";
 import { openViewer } from "./open-viewer";
+import { pauseMedia } from "./pause-media";
 import { shouldAskForFileAccess } from "./should-ask-for-file-access";
 import { syncMenuWithActiveTab } from "./sync-menu-with-active-tab";
 
@@ -43,9 +44,10 @@ export default defineBackground({
 					type: mediaType,
 					url: srcUrl,
 				});
-				const opened = await openViewer(tab.id, candidates);
+				const result = await openViewer(tab.id, candidates);
 
-				if (!opened) await offerReload(tab.id);
+				if (result === "opened") await pauseMedia(tab.id, frameId);
+				if (result === "unreachable") await offerReload(tab.id);
 			},
 		);
 

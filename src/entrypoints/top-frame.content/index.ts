@@ -10,10 +10,11 @@ export default defineContentScript({
 		onMessage("OPEN_VIEWER", ({ data: candidates }) => {
 			if (viewerHost.isOpen) {
 				alert(browser.i18n.getMessage("alert_dialog@already_open"));
-				return;
+				return false;
 			}
 
 			viewerHost.open(candidates);
+			return true;
 		});
 	},
 	matchAboutBlank: true,
