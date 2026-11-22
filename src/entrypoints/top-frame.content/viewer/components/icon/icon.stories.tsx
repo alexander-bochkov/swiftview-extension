@@ -4,15 +4,10 @@ import { Icon, type IconName } from "./icon";
 type Metadata = Meta<typeof Icon>;
 type Story = StoryObj<Metadata>;
 
-const ICON_NAMES: IconName[] = [
-	"flip-horizontal",
-	"flip-vertical",
-	"no-symbol",
-	"rotate-left",
-	"rotate-right",
-	"spinner",
-	"x-mark",
-];
+// Found from the files, so a new icon shows up without a change here.
+const ICON_NAMES = Object.keys(import.meta.glob("./icons/*.svg")).map(
+	(path) => path.replace("./icons/", "").replace(".svg", "") as IconName,
+);
 
 export default {
 	component: Icon,
