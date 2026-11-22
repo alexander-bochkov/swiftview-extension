@@ -1,9 +1,9 @@
 import type { Point } from "@/shared/types";
 import { ZERO_POINT } from "./constants";
-import type { ViewerState } from "./types";
+import type { ImageViewerState } from "./types";
 import { getRotatedSize, scaleSize } from "./utils";
 
-export const selectIsReady = ({ containerSize }: ViewerState): boolean =>
+export const selectIsReady = ({ containerSize }: ImageViewerState): boolean =>
 	containerSize !== null;
 
 // Returns how far the image must move along one axis for its visible edge to
@@ -41,7 +41,7 @@ export const selectImageTranslate = ({
 	offset,
 	rotation,
 	scale,
-}: ViewerState): Point => {
+}: ImageViewerState): Point => {
 	if (!containerSize) return ZERO_POINT;
 
 	const displayed = scaleSize(getRotatedSize(naturalSize, rotation), scale);

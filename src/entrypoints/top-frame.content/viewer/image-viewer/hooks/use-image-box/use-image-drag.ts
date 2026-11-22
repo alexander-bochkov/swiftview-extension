@@ -1,10 +1,10 @@
 import { type ComponentProps, useRef } from "react";
 import { POINTER_BUTTON } from "@/shared/constants";
 import type { Nullable, Point } from "@/shared/types";
-import type { ViewerStore } from "../use-viewer-store";
+import type { ImageViewerStore } from "../use-image-viewer-store";
 import { hasModifierKey } from "./utils";
 
-type UseImageDragOptions = { store: ViewerStore };
+type UseImageDragOptions = { store: ImageViewerStore };
 
 type UseImageDragReturn = Pick<
 	ComponentProps<"div">,

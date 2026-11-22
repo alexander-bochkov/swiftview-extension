@@ -1,10 +1,10 @@
 import { type RefObject, useLayoutEffect } from "react";
 import type { Nullable } from "@/shared/types";
-import type { ViewerStore } from "../use-viewer-store";
+import type { ImageViewerStore } from "../use-image-viewer-store";
 
 type UseBlockingTransitionOptions = {
 	boxRef: RefObject<Nullable<HTMLElement>>;
-	store: ViewerStore;
+	store: ImageViewerStore;
 };
 
 // Only the transform moves the box of the image. Another animation, such as

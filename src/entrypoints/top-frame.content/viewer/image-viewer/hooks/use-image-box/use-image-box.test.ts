@@ -1,6 +1,6 @@
 import { cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ViewerStore } from "../use-viewer-store";
+import type { ImageViewerStore } from "../use-image-viewer-store";
 import { useImageBox } from "./use-image-box";
 
 describe("useImageBox", () => {
@@ -12,8 +12,8 @@ describe("useImageBox", () => {
 		vi.clearAllMocks();
 	});
 
-	const renderBox = (state: Partial<ViewerStore["state"]> = {}) => {
-		const store: ViewerStore = {
+	const renderBox = (state: Partial<ImageViewerStore["state"]> = {}) => {
+		const store: ImageViewerStore = {
 			dispatch,
 			state: {
 				blockingTransition: null,

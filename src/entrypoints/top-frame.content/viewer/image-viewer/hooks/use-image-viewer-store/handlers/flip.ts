@@ -1,15 +1,15 @@
 import type { FlipDirection } from "../../../types";
-import type { ViewerState } from "../types";
+import type { ImageViewerState } from "../types";
 
 const AXIS = {
 	horizontal: "x",
 	vertical: "y",
-} as const satisfies Record<FlipDirection, keyof ViewerState["flip"]>;
+} as const satisfies Record<FlipDirection, keyof ImageViewerState["flip"]>;
 
 export const flip = (
-	state: ViewerState,
+	state: ImageViewerState,
 	direction: FlipDirection,
-): ViewerState => {
+): ImageViewerState => {
 	const axis = AXIS[direction];
 
 	return {

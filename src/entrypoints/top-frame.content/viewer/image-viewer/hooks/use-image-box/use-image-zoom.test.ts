@@ -1,7 +1,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import type { MouseEvent, RefObject } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ViewerStore } from "../use-viewer-store";
+import type { ImageViewerStore } from "../use-image-viewer-store";
 import { useImageZoom } from "./use-image-zoom";
 
 describe("useImageZoom", () => {
@@ -29,7 +29,7 @@ describe("useImageZoom", () => {
 	const renderZoom = (
 		containerRef: RefObject<HTMLElement | null> = { current: element },
 	) => {
-		const store = { dispatch } as unknown as ViewerStore;
+		const store = { dispatch } as unknown as ImageViewerStore;
 
 		return renderHook(() => useImageZoom({ containerRef, store }));
 	};

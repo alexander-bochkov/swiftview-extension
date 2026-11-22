@@ -1,10 +1,10 @@
 import { type RefObject, useEffect } from "react";
 import type { Nullable } from "@/shared/types";
-import type { ViewerStore } from "../use-viewer-store";
+import type { ImageViewerStore } from "../use-image-viewer-store";
 
 type UseContainerResizeOptions = {
 	containerRef: RefObject<Nullable<HTMLElement>>;
-	store: ViewerStore;
+	store: ImageViewerStore;
 };
 
 export const useContainerResize = ({

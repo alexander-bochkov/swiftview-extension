@@ -5,7 +5,7 @@ import {
 	selectIsReady,
 	useContainerResize,
 	useImageBox,
-	useViewerStore,
+	useImageViewerStore,
 } from "./hooks";
 import { ImageTools } from "./image-tools";
 import styles from "./image-viewer.module.css";
@@ -26,7 +26,7 @@ export const ImageViewer = ({
 	image,
 	onClose,
 }: ImageViewerProps) => {
-	const store = useViewerStore({
+	const store = useImageViewerStore({
 		height: image.naturalHeight,
 		width: image.naturalWidth,
 	});

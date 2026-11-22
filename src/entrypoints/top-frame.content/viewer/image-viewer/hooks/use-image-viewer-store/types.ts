@@ -12,7 +12,7 @@ export type ZoomPayload = Readonly<{
 	point: Point;
 }>;
 
-export type ViewerAction =
+export type ImageViewerAction =
 	| { type: "ADVANCE_BLOCKING_TRANSITION" }
 	| { type: "FLIP"; payload: FlipDirection }
 	| { type: "MOVE_BY"; payload: Point }
@@ -25,7 +25,7 @@ export type BlockingTransition =
 	| Readonly<{ direction: RotateDirection; phase: "fitting" }>
 	| Readonly<{ phase: "settling" }>;
 
-export type ViewerState = Readonly<{
+export type ImageViewerState = Readonly<{
 	blockingTransition: Nullable<BlockingTransition>;
 	containerSize: Nullable<Size>;
 	flip: Readonly<{ x: 1 | -1; y: 1 | -1 }>;
@@ -35,7 +35,7 @@ export type ViewerState = Readonly<{
 	scale: number;
 }>;
 
-export type ViewerStore = {
-	dispatch: ActionDispatch<[ViewerAction]>;
-	state: ViewerState;
+export type ImageViewerStore = {
+	dispatch: ActionDispatch<[ImageViewerAction]>;
+	state: ImageViewerState;
 };
