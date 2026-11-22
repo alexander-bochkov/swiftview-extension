@@ -1,0 +1,14 @@
+name: Setup
+description: Installs Node.js and the dependencies. Runs after the checkout, which brings this action.
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v7
+      with:
+        cache: npm
+        node-version-file: package.json
+    - name: Install Dependencies
+      run: npm ci
+      shell: bash
