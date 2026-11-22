@@ -2,66 +2,13 @@ import { describe, expect, it } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
 import { findLinkedMedia } from "./find-linked-media";
 
-const IMAGE_FORMATS = [
-	"apng",
-	"avif",
-	"avifs",
-	"bmp",
-	"cur",
-	"gif",
-	"ico",
-	"jfif",
-	"jpe",
-	"jpeg",
-	"jpg",
-	"jps",
-	"jxl",
-	"mpo",
-	"pjp",
-	"pjpeg",
-	"png",
-	"svg",
-	"webp",
-];
+const IMAGE_FORMATS = ["gif", "jpeg", "jpg", "png", "webp"];
 
-const VIDEO_FORMATS = [
-	"3g2",
-	"3gp",
-	"m3u8",
-	"m4v",
-	"mkv",
-	"mov",
-	"mp4",
-	"ogv",
-	"webm",
-];
+const VIDEO_FORMATS = ["mp4", "webm"];
 
-const IMAGE_MIME_TYPES = [
-	"image/apng",
-	"image/avif",
-	"image/bmp",
-	"image/gif",
-	"image/jpeg",
-	"image/jxl",
-	"image/png",
-	"image/svg+xml",
-	"image/vnd.microsoft.icon",
-	"image/webp",
-	"image/x-icon",
-];
+const IMAGE_MIME_TYPES = ["image/gif", "image/jpeg", "image/png", "image/webp"];
 
-const VIDEO_MIME_TYPES = [
-	"application/vnd.apple.mpegurl",
-	"application/x-mpegurl",
-	"video/3gpp",
-	"video/3gpp2",
-	"video/mp4",
-	"video/ogg",
-	"video/quicktime",
-	"video/webm",
-	"video/x-m4v",
-	"video/x-matroska",
-];
+const VIDEO_MIME_TYPES = ["video/mp4", "video/webm"];
 
 const createAnchor = (href?: string, ...children: Element[]) => {
 	const anchor = document.createElement("a");
@@ -177,11 +124,9 @@ describe("findLinkedMedia", () => {
 			});
 		});
 
-		it("accepts svg+xml with and without parameters", () => {
-			const plain = createLinkedImage("data:image/svg+xml,%3Csvg%3E%3C/svg%3E");
-			const encoded = createLinkedImage(
-				"data:image/svg+xml;utf8,%3Csvg%3E%3C/svg%3E",
-			);
+		it("accepts the MIME type with and without parameters", () => {
+			const plain = createLinkedImage("data:image/png,AAAA");
+			const encoded = createLinkedImage("data:image/png;base64,AAAA");
 
 			expect(findLinkedMedia(plain)?.type).toBe(MEDIA_TYPE.IMAGE);
 			expect(findLinkedMedia(encoded)?.type).toBe(MEDIA_TYPE.IMAGE);

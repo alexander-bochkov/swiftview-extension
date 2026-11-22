@@ -1,6 +1,6 @@
 # Linked media formats
 
-## Formats we could support
+## Formats Chrome could support
 
 Formats Chrome opens, see the test results below, with their extensions and
 MIME types. `FORMATS` has only the most common of them. The list is what
