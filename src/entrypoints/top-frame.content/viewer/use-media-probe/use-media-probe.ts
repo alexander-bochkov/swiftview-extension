@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { MediaCandidate, MediaElement } from "@/shared/types";
-import { probeMedia } from "./probe-media";
+import { probeFirst } from "./probe-first";
 
 export type MediaProbe =
 	| Readonly<{ status: "failed" }>
@@ -15,25 +15,15 @@ export const useMediaProbe = (candidates: MediaCandidate[]): MediaProbe => {
 
 	useEffect(() => {
 		const controller = new AbortController();
-		const { signal } = controller;
-
-		const run = async (): Promise<void> => {
-			for (const candidate of candidates) {
-				try {
-					const element = await probeMedia(candidate, signal);
-					setProbe({ element, status: "loaded" });
-
-					return;
-				} catch {
-					if (signal.aborted) return;
-				}
-			}
-
-			setProbe(FAILED);
-		};
 
 		setProbe(LOADING);
-		run();
+		probeFirst(candidates, controller.signal).then(
+			(element) => setProbe({ element, status: "loaded" }),
+			() => {
+				// Aborted by the cleanup, which isn't a failure.
+				if (!controller.signal.aborted) setProbe(FAILED);
+			},
+		);
 
 		return () => controller.abort();
 	}, [candidates]);
