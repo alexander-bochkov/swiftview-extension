@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate, MediaElement } from "@/shared/types";
-import { PROBE_TIMEOUT_MS, probeMedia } from "./probe-media";
+import { probeMedia } from "./probe-media";
+
+const PROBE_TIMEOUT = 20_000;
 
 const CLIP: MediaCandidate = {
 	type: MEDIA_TYPE.VIDEO,
@@ -127,7 +129,7 @@ describe("probeMedia", () => {
 		it("rejects and drops the url after the timeout", async () => {
 			const { element, promise } = probe(PHOTO);
 
-			vi.advanceTimersByTime(PROBE_TIMEOUT_MS);
+			vi.advanceTimersByTime(PROBE_TIMEOUT);
 
 			await expect(promise).rejects.toThrow(/timed out/i);
 			expect(element.hasAttribute("src")).toBe(false);
@@ -136,7 +138,7 @@ describe("probeMedia", () => {
 		it("keeps loading until the timeout", async () => {
 			const { element, promise } = probe(PHOTO);
 
-			vi.advanceTimersByTime(PROBE_TIMEOUT_MS - 1);
+			vi.advanceTimersByTime(PROBE_TIMEOUT - 1);
 			loadImage(element);
 
 			await expect(promise).resolves.toBe(element);
@@ -169,7 +171,7 @@ describe("probeMedia", () => {
 			await promise;
 
 			element.dispatchEvent(new Event("error"));
-			vi.advanceTimersByTime(PROBE_TIMEOUT_MS);
+			vi.advanceTimersByTime(PROBE_TIMEOUT);
 
 			expect(element.src).toBe(PHOTO.url);
 		});

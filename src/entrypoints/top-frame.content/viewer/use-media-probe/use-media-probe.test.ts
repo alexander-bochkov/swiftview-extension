@@ -48,7 +48,7 @@ describe("useMediaProbe", () => {
 		vi.resetAllMocks();
 	});
 
-	const renderProbe = (candidates: readonly MediaCandidate[] = CANDIDATES) => {
+	const renderProbe = (candidates: MediaCandidate[] = CANDIDATES) => {
 		const probes = candidates.map(() => defer());
 		let index = 0;
 

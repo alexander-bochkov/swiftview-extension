@@ -1,7 +1,7 @@
 import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate, MediaElement, MediaType } from "@/shared/types";
 
-export const PROBE_TIMEOUT_MS = 20_000;
+const PROBE_TIMEOUT = 20_000;
 
 const createElement = (type: MediaType): MediaElement => {
 	if (type === MEDIA_TYPE.VIDEO) {
@@ -54,7 +54,7 @@ export const probeMedia = (
 
 		const timer = setTimeout(
 			() => fail(new Error(`Timed out loading ${url}`)),
-			PROBE_TIMEOUT_MS,
+			PROBE_TIMEOUT,
 		);
 
 		element.addEventListener(

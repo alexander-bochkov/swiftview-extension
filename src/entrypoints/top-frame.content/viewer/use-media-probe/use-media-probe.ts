@@ -10,9 +10,7 @@ export type MediaProbe =
 const FAILED: MediaProbe = { status: "failed" };
 const LOADING: MediaProbe = { status: "loading" };
 
-export const useMediaProbe = (
-	candidates: readonly MediaCandidate[],
-): MediaProbe => {
+export const useMediaProbe = (candidates: MediaCandidate[]): MediaProbe => {
 	const [probe, setProbe] = useState<MediaProbe>(LOADING);
 
 	useEffect(() => {
