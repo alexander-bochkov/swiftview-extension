@@ -1,6 +1,6 @@
+import { withViewerBackdrop } from "@@/.storybook/decorators";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { withViewerBackdrop } from "../../../../../../.storybook/decorators";
 import { Toolbar } from "../../components";
 import { ImageTools } from "./image-tools";
 

@@ -1,5 +1,5 @@
+import { withViewerBackdrop } from "@@/.storybook/decorators";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { withViewerBackdrop } from "../../../../../../.storybook/decorators";
 import { LoadError } from "./load-error";
 
 type Metadata = Meta<typeof LoadError>;
