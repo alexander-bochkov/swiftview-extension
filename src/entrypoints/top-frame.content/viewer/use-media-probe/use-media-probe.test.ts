@@ -28,17 +28,10 @@ const PHOTO: MediaCandidate = {
 // A probe the test settles itself, which rejects when its signal aborts, as
 // the real one does.
 const defer = (signal: AbortSignal) => {
-	let resolve!: (element: MediaElement) => void;
-	let reject!: (reason: unknown) => void;
+	const probe = Promise.withResolvers<MediaElement>();
+	signal.addEventListener("abort", () => probe.reject(signal.reason));
 
-	const promise = new Promise<MediaElement>((res, rej) => {
-		resolve = res;
-		reject = rej;
-	});
-
-	signal.addEventListener("abort", () => reject(signal.reason));
-
-	return { promise, reject, resolve };
+	return probe;
 };
 
 describe("useMediaProbe", () => {
