@@ -1,10 +1,10 @@
-import type { RefObject } from "react";
+import { type RefObject, useLayoutEffect } from "react";
 import type { Nullable, Point } from "@/shared/types";
 import { ExternalElement, Toolbar } from "../components";
 import {
 	selectIsReady,
 	useContainerResize,
-	useImage,
+	useImageBox,
 	useViewerStore,
 } from "./hooks";
 import { ImageTools } from "./image-tools";
@@ -21,8 +21,6 @@ type ImageViewerProps = {
 // move to stay within its bounds.
 const CONTAINER_CENTER: Point = { x: 0, y: 0 };
 
-// Shows a loaded image fitted into the container, with the tools to zoom,
-// pan, rotate and flip it.
 export const ImageViewer = ({
 	containerRef,
 	image,
@@ -35,7 +33,12 @@ export const ImageViewer = ({
 	const { scale } = store.state;
 
 	useContainerResize({ containerRef, store });
-	const boxProps = useImage({ containerRef, image, store });
+	const boxProps = useImageBox({ containerRef, store });
+
+	// A native drag of the image would compete with the drag of the box.
+	useLayoutEffect(() => {
+		image.draggable = false;
+	}, [image]);
 
 	const isReady = selectIsReady(store.state);
 

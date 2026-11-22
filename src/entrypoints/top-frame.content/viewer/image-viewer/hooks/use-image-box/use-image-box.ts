@@ -14,23 +14,21 @@ import { useBlockingTransition } from "./use-blocking-transition";
 import { useImageDrag } from "./use-image-drag";
 import { useImageZoom } from "./use-image-zoom";
 
-type UseImageOptions = {
+type UseImageBoxOptions = {
 	containerRef: RefObject<Nullable<HTMLElement>>;
-	image: HTMLImageElement;
 	store: ViewerStore;
 };
 
 // The props of the box of the image: the transform moves the box, and the
 // pointer handlers listen on it.
-type UseImageReturn = ReturnType<typeof useImageDrag> &
+type UseImageBoxReturn = ReturnType<typeof useImageDrag> &
 	ReturnType<typeof useImageZoom> &
 	Pick<ComponentProps<"div">, "ref" | "style" | "tabIndex">;
 
-export const useImage = ({
+export const useImageBox = ({
 	containerRef,
-	image,
 	store,
-}: UseImageOptions): UseImageReturn => {
+}: UseImageBoxOptions): UseImageBoxReturn => {
 	const boxRef = useRef<HTMLDivElement>(null);
 
 	useBlockingTransition({ boxRef, store });
@@ -39,11 +37,6 @@ export const useImage = ({
 	const zoomProps = useImageZoom({ containerRef, store });
 
 	const { flip, naturalSize, rotation, scale } = store.state;
-
-	// A native drag of the image would compete with the drag of the box.
-	useLayoutEffect(() => {
-		image.draggable = false;
-	}, [image]);
 
 	const isReady = selectIsReady(store.state);
 
