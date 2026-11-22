@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import type { ViewerProps } from "../types";
-import { Loader, MediaError, Overlay, Toolbar } from "./components";
+import { LoadError, Loader, Overlay, Toolbar } from "./components";
 import { ImageViewer } from "./image-viewer";
 import { useMediaProbe } from "./use-media-probe";
 import { VideoViewer } from "./video-viewer";
@@ -28,7 +28,7 @@ export const Viewer = ({ candidates, onClose }: ViewerProps) => {
 				return (
 					<>
 						<Toolbar onClose={onRequestClose} />
-						{probe.status === "loading" ? <Loader /> : <MediaError />}
+						{probe.status === "loading" ? <Loader /> : <LoadError />}
 					</>
 				);
 			}}
