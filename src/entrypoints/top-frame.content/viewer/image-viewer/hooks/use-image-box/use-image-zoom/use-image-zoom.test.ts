@@ -1,7 +1,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import type { MouseEvent, RefObject } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ImageViewerStore } from "../use-image-viewer-store";
+import type { ImageViewerStore } from "../../use-image-viewer-store";
 import { useImageZoom } from "./use-image-zoom";
 
 describe("useImageZoom", () => {
