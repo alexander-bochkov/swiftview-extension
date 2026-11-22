@@ -23,6 +23,16 @@ const mocks = vi.hoisted(() => ({
 	Viewer: vi.fn(),
 }));
 
+// The real one, so a test can make it fail once.
+vi.mock("wxt/utils/content-script-ui/shadow-root", async (importOriginal) => {
+	const actual =
+		await importOriginal<
+			typeof import("wxt/utils/content-script-ui/shadow-root")
+		>();
+
+	return { ...actual, createShadowRootUi: vi.fn(actual.createShadowRootUi) };
+});
+
 const PHOTO: MediaCandidate = {
 	type: MEDIA_TYPE.IMAGE,
 	url: "https://example.com/photo.png",
@@ -397,6 +407,27 @@ describe("ViewerHost", () => {
 
 			expect(getHosts()).toHaveLength(1);
 		});
+
+		// The first open fails after the second one has shown the viewer.
+		it("keeps the viewer of a newer open when an older one fails", async () => {
+			let fail = (_: Error) => {};
+			exitFullscreen.mockImplementationOnce(
+				() =>
+					new Promise<void>((_, reject) => {
+						fail = reject;
+					}),
+			);
+			setFullscreen(document.createElement("video"));
+
+			const first = viewerHost.open([PHOTO]);
+			await open([CLIP]);
+			fail(new Error("fullscreen failed"));
+			await act(() => first);
+
+			expect(viewerHost.isOpen).toBe(true);
+			expect(getHosts()).toHaveLength(1);
+			expect(consoleError).not.toHaveBeenCalled();
+		});
 	});
 
 	describe("close", () => {
@@ -677,6 +708,23 @@ describe("ViewerHost", () => {
 			expect(viewerHost.isOpen).toBe(false);
 			expect(getHosts()).toHaveLength(0);
 			await expectPageUnlocked();
+		});
+
+		// E.g. the styles of the extension fail to load.
+		it("logs and creates the UI again when it can't be created", async () => {
+			const error = new Error("creation failed");
+			vi.mocked(createShadowRootUi).mockRejectedValueOnce(error);
+
+			await open();
+
+			expect(consoleError).toHaveBeenCalledWith(error);
+			expect(viewerHost.isOpen).toBe(false);
+
+			await open();
+
+			expect(createShadowRootUi).toHaveBeenCalledTimes(2);
+			expect(viewerHost.isOpen).toBe(true);
+			expect(getHosts()).toHaveLength(1);
 		});
 
 		it("can open again after a failure", async () => {
