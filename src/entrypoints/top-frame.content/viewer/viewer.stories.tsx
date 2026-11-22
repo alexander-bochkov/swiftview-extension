@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { MEDIA_TYPE } from "@/shared/constants";
-import { MediaViewer } from "./media-viewer";
+import { Viewer } from "./viewer";
 
-type Metadata = Meta<typeof MediaViewer>;
+type Metadata = Meta<typeof Viewer>;
 type Story = StoryObj<Metadata>;
 
 const IMAGE_URL =
@@ -19,8 +19,8 @@ export default {
 	args: {
 		onClose: fn(),
 	},
-	component: MediaViewer,
-	title: "MediaViewer",
+	component: Viewer,
+	title: "Viewer",
 } satisfies Metadata;
 
 export const Image: Story = {

@@ -1,11 +1,11 @@
 import { onMessage } from "@/shared/messaging";
-import { MediaViewer } from "./media-viewer";
+import { Viewer } from "./viewer";
 import { ViewerHost } from "./viewer-host";
 
 export default defineContentScript({
 	cssInjectionMode: "ui",
 	main(ctx) {
-		const viewerHost = new ViewerHost(ctx, MediaViewer);
+		const viewerHost = new ViewerHost(ctx, Viewer);
 
 		onMessage("OPEN_VIEWER", ({ data: candidates }) => {
 			if (viewerHost.isOpen) {
