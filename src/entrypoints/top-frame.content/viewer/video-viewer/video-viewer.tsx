@@ -26,7 +26,7 @@ export const VideoViewer = ({ onClose, video }: VideoViewerProps) => {
 	return (
 		<>
 			<Toolbar onClose={onClose} />
-			<ExternalElement className={styles.slot} element={video} />
+			<ExternalElement className={styles.box} element={video} />
 		</>
 	);
 };
