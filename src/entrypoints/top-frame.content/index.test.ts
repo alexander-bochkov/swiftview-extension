@@ -76,6 +76,10 @@ describe("on message", () => {
 		expect(mocks.open).toHaveBeenCalledExactlyOnceWith([CLIP, PHOTO]);
 	});
 
+	it("answers that the viewer opened", () => {
+		expect(openViewer(PHOTO)).toBe(true);
+	});
+
 	// The viewer tells that it has nothing to show.
 	it("opens the viewer even without candidates", () => {
 		openViewer();
@@ -97,6 +101,10 @@ describe("on message", () => {
 			openViewer(PHOTO);
 
 			expect(mocks.open).not.toHaveBeenCalled();
+		});
+
+		it("answers that the viewer didn't open", () => {
+			expect(openViewer(PHOTO)).toBe(false);
 		});
 
 		it("tells that the media is already open", () => {

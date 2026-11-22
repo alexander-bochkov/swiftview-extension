@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate } from "@/shared/types";
 import background from "./index";
+import type { OpenResult } from "./open-viewer";
 
 type ClickedListener = (
 	info: Partial<Browser.contextMenus.OnClickData>,
@@ -14,7 +15,8 @@ const mocks = vi.hoisted(() => ({
 	),
 	offerReload: vi.fn(() => Promise.resolve()),
 	openExtensionSettings: vi.fn(() => Promise.resolve()),
-	openViewer: vi.fn<() => Promise<boolean>>(() => Promise.resolve(true)),
+	openViewer: vi.fn<() => Promise<OpenResult>>(() => Promise.resolve("opened")),
+	pauseMedia: vi.fn(() => Promise.resolve()),
 	shouldAskForFileAccess: vi.fn(() => Promise.resolve(false)),
 	syncMenuWithActiveTab: vi.fn(() => Promise.resolve()),
 }));
@@ -28,6 +30,7 @@ vi.mock("./open-extension-settings", () => ({
 	openExtensionSettings: mocks.openExtensionSettings,
 }));
 vi.mock("./open-viewer", () => ({ openViewer: mocks.openViewer }));
+vi.mock("./pause-media", () => ({ pauseMedia: mocks.pauseMedia }));
 vi.mock("./should-ask-for-file-access", () => ({
 	shouldAskForFileAccess: mocks.shouldAskForFileAccess,
 }));
@@ -184,11 +187,29 @@ describe("on menu item click", () => {
 	});
 
 	it("offers to reload the page without a content script", async () => {
-		mocks.openViewer.mockResolvedValueOnce(false);
+		mocks.openViewer.mockResolvedValueOnce("unreachable");
 
 		await onClicked(PHOTO_CLICK, { id: TAB_ID });
 
 		expect(mocks.offerReload).toHaveBeenCalledExactlyOnceWith(TAB_ID);
+		expect(mocks.pauseMedia).not.toHaveBeenCalled();
+	});
+
+	it("pauses the media in the frame of the menu once the viewer opens", async () => {
+		await onClicked({ ...PHOTO_CLICK, frameId: IFRAME_ID }, { id: TAB_ID });
+
+		expect(mocks.openViewer).toHaveBeenCalledBefore(mocks.pauseMedia);
+		expect(mocks.pauseMedia).toHaveBeenCalledExactlyOnceWith(TAB_ID, IFRAME_ID);
+	});
+
+	// E.g. the menu of the video of the viewer itself.
+	it("leaves the media while the viewer is already open", async () => {
+		mocks.openViewer.mockResolvedValueOnce("already-open");
+
+		await onClicked(PHOTO_CLICK, { id: TAB_ID });
+
+		expect(mocks.pauseMedia).not.toHaveBeenCalled();
+		expect(mocks.offerReload).not.toHaveBeenCalled();
 	});
 
 	it("opens the extension settings on a local file the extension can't access", async () => {
