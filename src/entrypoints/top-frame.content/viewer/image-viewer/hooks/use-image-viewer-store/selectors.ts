@@ -44,19 +44,19 @@ export const selectImageTranslate = ({
 }: ImageViewerState): Point => {
 	if (!containerSize) return ZERO_POINT;
 
-	const displayed = scaleSize(getRotatedSize(naturalSize, rotation), scale);
+	const displayedSize = scaleSize(getRotatedSize(naturalSize, rotation), scale);
 
 	return {
 		x: getAxisTranslate(
 			containerSize.width,
 			naturalSize.width,
-			displayed.width,
+			displayedSize.width,
 			offset.x,
 		),
 		y: getAxisTranslate(
 			containerSize.height,
 			naturalSize.height,
-			displayed.height,
+			displayedSize.height,
 			offset.y,
 		),
 	};
