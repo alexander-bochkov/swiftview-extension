@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
+import { CLIP, CLIP_URL, PHOTO, PHOTO_URL } from "@/shared/test-utils";
 import type { MediaCandidate } from "@/shared/types";
 import background from "./index";
 import type { OpenResult } from "./open-viewer";
@@ -38,19 +39,15 @@ vi.mock("./sync-menu-with-active-tab", () => ({
 	syncMenuWithActiveTab: mocks.syncMenuWithActiveTab,
 }));
 
-const CLIP_URL = "https://example.com/clip.mp4";
 const FILE_URL = "file:///C:/photos/index.html";
 const IFRAME_ID = 5;
 const LARGE_URL = "https://example.com/photo-large.png";
 const MENU_ITEM_ID = "media";
-const PHOTO_URL = "https://example.com/photo.png";
 const TAB_ID = 7;
 const WINDOW_ID = 3;
 const WINDOW_ID_NONE = -1;
 
-const CLIP = { type: MEDIA_TYPE.VIDEO, url: CLIP_URL };
 const LARGE = { type: MEDIA_TYPE.IMAGE, url: LARGE_URL };
-const PHOTO = { type: MEDIA_TYPE.IMAGE, url: PHOTO_URL };
 
 const PHOTO_CLICK = {
 	frameId: 0,

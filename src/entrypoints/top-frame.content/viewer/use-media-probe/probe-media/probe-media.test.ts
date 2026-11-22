@@ -1,18 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MEDIA_TYPE } from "@/shared/constants";
+import { CLIP, PHOTO } from "@/shared/test-utils";
 import type { MediaCandidate, MediaElement } from "@/shared/types";
 import { probeMedia } from "./probe-media";
 
 const PROBE_TIMEOUT = 20_000;
-
-const CLIP: MediaCandidate = {
-	type: MEDIA_TYPE.VIDEO,
-	url: "https://example.com/clip.mp4",
-};
-const PHOTO: MediaCandidate = {
-	type: MEDIA_TYPE.IMAGE,
-	url: "https://example.com/photo.png",
-};
 
 describe("probeMedia", () => {
 	let controller: AbortController;

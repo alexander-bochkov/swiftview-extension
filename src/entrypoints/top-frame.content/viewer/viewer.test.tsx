@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MEDIA_TYPE } from "@/shared/constants";
+import { CLIP, PHOTO } from "@/shared/test-utils";
 import type { MediaCandidate } from "@/shared/types";
 import type { MediaProbe } from "./use-media-probe";
 import { Viewer } from "./viewer";
@@ -32,15 +32,6 @@ vi.mock("./components/icon", async (importOriginal) => ({
 	...(await importOriginal<typeof import("./components/icon")>()),
 	Icon: ({ name }: { name: string }) => name,
 }));
-
-const CLIP: MediaCandidate = {
-	type: MEDIA_TYPE.VIDEO,
-	url: "https://example.com/clip.mp4",
-};
-const PHOTO: MediaCandidate = {
-	type: MEDIA_TYPE.IMAGE,
-	url: "https://example.com/photo.png",
-};
 
 describe("Viewer", () => {
 	const onClose = vi.fn();

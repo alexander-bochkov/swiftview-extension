@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MEDIA_TYPE } from "@/shared/constants";
+import { CLIP, PHOTO } from "@/shared/test-utils";
 import type { MediaCandidate, MediaElement } from "@/shared/types";
 import { useMediaProbe } from "./use-media-probe";
 
@@ -15,15 +15,6 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("./probe-first", () => ({ probeFirst: mocks.probeFirst }));
-
-const CLIP: MediaCandidate = {
-	type: MEDIA_TYPE.VIDEO,
-	url: "https://example.com/clip.mp4",
-};
-const PHOTO: MediaCandidate = {
-	type: MEDIA_TYPE.IMAGE,
-	url: "https://example.com/photo.png",
-};
 
 // A probe the test settles itself, which rejects when its signal aborts, as
 // the real one does.

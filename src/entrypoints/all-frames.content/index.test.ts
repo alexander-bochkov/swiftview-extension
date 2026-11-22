@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ContentScriptContext } from "wxt/utils/content-script-context";
 import { MEDIA_TYPE } from "@/shared/constants";
+import { PHOTO, PHOTO_URL } from "@/shared/test-utils";
 import type { MediaCandidate } from "@/shared/types";
 import contentScript from "./index";
 
@@ -35,13 +36,9 @@ vi.mock("./find-media-element", () => ({
 }));
 
 const LARGE_URL = "https://example.com/photo-large.png";
-const PHOTO_URL = "https://example.com/photo.png";
 const POINT = { x: 10, y: 20 };
 
-const CANDIDATES = [
-	{ type: MEDIA_TYPE.IMAGE, url: LARGE_URL },
-	{ type: MEDIA_TYPE.IMAGE, url: PHOTO_URL },
-];
+const CANDIDATES = [{ type: MEDIA_TYPE.IMAGE, url: LARGE_URL }, PHOTO];
 
 // Calls the listener the script registered for the message, as the message
 // would, and returns its answer.

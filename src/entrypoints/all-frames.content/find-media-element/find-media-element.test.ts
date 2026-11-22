@@ -1,9 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { CLIP_URL, PHOTO_URL } from "@/shared/test-utils";
 import { findMediaElement } from "./find-media-element";
 
-const CLIP_URL = "https://example.com/clip.mp4";
 const OTHER_URL = "https://example.com/other.png";
-const PHOTO_URL = "https://example.com/photo.png";
 const POINT = { x: 10, y: 20 };
 
 const createImage = (src: string): HTMLImageElement => {

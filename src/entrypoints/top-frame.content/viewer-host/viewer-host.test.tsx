@@ -12,7 +12,7 @@ import {
 	vi,
 } from "vitest";
 import { ContentScriptContext } from "wxt/utils/content-script-context";
-import { MEDIA_TYPE } from "@/shared/constants";
+import { CLIP, PHOTO } from "@/shared/test-utils";
 import type { MediaCandidate } from "@/shared/types";
 import type { ViewerProps } from "../types";
 import { ScrollbarHider } from "./scrollbar-hider";
@@ -32,15 +32,6 @@ vi.mock("wxt/utils/content-script-ui/shadow-root", async (importOriginal) => {
 
 	return { ...actual, createShadowRootUi: vi.fn(actual.createShadowRootUi) };
 });
-
-const PHOTO: MediaCandidate = {
-	type: MEDIA_TYPE.IMAGE,
-	url: "https://example.com/photo.png",
-};
-const CLIP: MediaCandidate = {
-	type: MEDIA_TYPE.VIDEO,
-	url: "https://example.com/clip.mp4",
-};
 
 // Reports the unmount through the cleanup of an effect.
 const FakeViewer = (): null => {
