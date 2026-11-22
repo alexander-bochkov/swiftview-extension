@@ -1,17 +1,20 @@
-import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
+import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate, MediaElement } from "@/shared/types";
 import { useMediaProbe } from "./use-media-probe";
 
 const mocks = vi.hoisted(() => ({
-	probeMedia:
+	probeFirst:
 		vi.fn<
-			(candidate: MediaCandidate, signal: AbortSignal) => Promise<MediaElement>
+			(
+				candidates: MediaCandidate[],
+				signal: AbortSignal,
+			) => Promise<MediaElement>
 		>(),
 }));
 
-vi.mock("./probe-media", () => ({ probeMedia: mocks.probeMedia }));
+vi.mock("./probe-first", () => ({ probeFirst: mocks.probeFirst }));
 
 const CLIP: MediaCandidate = {
 	type: MEDIA_TYPE.VIDEO,
@@ -22,11 +25,9 @@ const PHOTO: MediaCandidate = {
 	url: "https://example.com/photo.png",
 };
 
-const CANDIDATES = [CLIP, PHOTO];
-
 // A probe the test settles itself, which rejects when its signal aborts, as
 // the real one does.
-const defer = () => {
+const defer = (signal: AbortSignal) => {
 	let resolve!: (element: MediaElement) => void;
 	let reject!: (reason: unknown) => void;
 
@@ -34,6 +35,8 @@ const defer = () => {
 		resolve = res;
 		reject = rej;
 	});
+
+	signal.addEventListener("abort", () => reject(signal.reason));
 
 	return { promise, reject, resolve };
 };
@@ -48,25 +51,26 @@ describe("useMediaProbe", () => {
 		vi.resetAllMocks();
 	});
 
-	const renderProbe = (candidates: MediaCandidate[] = CANDIDATES) => {
-		const probes = candidates.map(() => defer());
-		let index = 0;
+	const renderProbe = (candidates = [CLIP]) => {
+		const probes: ReturnType<typeof defer>[] = [];
 
-		mocks.probeMedia.mockImplementation((_, signal) => {
-			const probe = probes[index++] ?? defer();
-			signal.addEventListener("abort", () => probe.reject(signal.reason));
+		mocks.probeFirst.mockImplementation((_, signal) => {
+			const probe = defer(signal);
+			probes.push(probe);
 
 			return probe.promise;
 		});
 
-		const rendered = renderHook(() => useMediaProbe(candidates));
+		const rendered = renderHook((props) => useMediaProbe(props), {
+			initialProps: candidates,
+		});
 
 		return { ...rendered, probes };
 	};
 
 	const getSignal = (call = 0): AbortSignal => {
-		const signal = mocks.probeMedia.mock.calls[call]?.[1];
-		if (!signal) throw new Error("probeMedia was not called");
+		const signal = mocks.probeFirst.mock.calls[call]?.[1];
+		if (!signal) throw new Error("probeFirst was not called");
 
 		return signal;
 	};
@@ -77,81 +81,82 @@ describe("useMediaProbe", () => {
 		expect(result.current).toEqual({ status: "loading" });
 	});
 
-	it("probes the first candidate only", () => {
-		renderProbe();
+	it("probes the candidates", () => {
+		const candidates = [CLIP, PHOTO];
 
-		expect(mocks.probeMedia).toHaveBeenCalledExactlyOnceWith(
-			CLIP,
+		renderProbe(candidates);
+
+		expect(mocks.probeFirst).toHaveBeenCalledExactlyOnceWith(
+			candidates,
 			expect.any(AbortSignal),
 		);
 	});
 
-	it("is loaded with the element of the first candidate that loads", async () => {
+	it("is loaded with the element the probe gives", async () => {
 		const { probes, result } = renderProbe();
 
 		await act(async () => probes[0]?.resolve(video));
 
 		expect(result.current).toEqual({ element: video, status: "loaded" });
-		expect(mocks.probeMedia).toHaveBeenCalledOnce();
 	});
 
-	it("probes the next candidate after a failure", async () => {
+	it("has failed when the probe rejects", async () => {
 		const { probes, result } = renderProbe();
 
 		await act(async () => probes[0]?.reject(new Error("failed")));
 
-		expect(mocks.probeMedia).toHaveBeenLastCalledWith(
-			PHOTO,
-			expect.any(AbortSignal),
-		);
-		expect(result.current).toEqual({ status: "loading" });
-
-		await act(async () => probes[1]?.resolve(image));
-
-		expect(result.current).toEqual({ element: image, status: "loaded" });
+		expect(result.current).toEqual({ status: "failed" });
 	});
 
-	it("has failed once the last candidate failed", async () => {
-		const { probes, result } = renderProbe();
+	it("aborts the probe on unmount", () => {
+		const { unmount } = renderProbe();
 
-		await act(async () => probes[0]?.reject(new Error("failed")));
-		await act(async () => probes[1]?.reject(new Error("failed")));
+		unmount();
 
-		await waitFor(() => expect(result.current).toEqual({ status: "failed" }));
+		expect(getSignal().aborted).toBe(true);
 	});
 
-	it("has failed without candidates", async () => {
-		const { result } = renderProbe([]);
+	describe("on new candidates", () => {
+		it("aborts the probe of the old ones", () => {
+			const { rerender } = renderProbe();
 
-		await waitFor(() => expect(result.current).toEqual({ status: "failed" }));
-		expect(mocks.probeMedia).not.toHaveBeenCalled();
-	});
-
-	it("probes every candidate with the same signal", async () => {
-		const { probes } = renderProbe();
-
-		await act(async () => probes[0]?.reject(new Error("failed")));
-
-		expect(getSignal(1)).toBe(getSignal(0));
-	});
-
-	describe("on unmount", () => {
-		it("aborts the probe", () => {
-			const { unmount } = renderProbe();
-
-			unmount();
+			rerender([PHOTO]);
 
 			expect(getSignal().aborted).toBe(true);
 		});
 
-		it("doesn't probe the next candidate", async () => {
-			const { unmount } = renderProbe();
+		it("probes the new ones", () => {
+			const { rerender } = renderProbe();
 
-			unmount();
+			rerender([PHOTO]);
+
+			expect(mocks.probeFirst).toHaveBeenLastCalledWith(
+				[PHOTO],
+				expect.any(AbortSignal),
+			);
+		});
+
+		it("is loading again", async () => {
+			const { probes, rerender, result } = renderProbe();
+			await act(async () => probes[0]?.resolve(video));
+
+			rerender([PHOTO]);
+
+			expect(result.current).toEqual({ status: "loading" });
+		});
+
+		it("doesn't fail when the old probe is aborted", async () => {
+			const { probes, rerender, result } = renderProbe();
+
+			rerender([PHOTO]);
 			// Lets the rejection of the aborted probe settle.
 			await act(async () => {});
 
-			expect(mocks.probeMedia).toHaveBeenCalledOnce();
+			expect(result.current).toEqual({ status: "loading" });
+
+			await act(async () => probes[1]?.resolve(image));
+
+			expect(result.current).toEqual({ element: image, status: "loaded" });
 		});
 	});
 });
