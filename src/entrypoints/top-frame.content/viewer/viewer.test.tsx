@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MEDIA_TYPE } from "@/shared/constants";
 import type { MediaCandidate } from "@/shared/types";
-import { MediaViewer } from "./media-viewer";
 import type { MediaProbe } from "./use-media-probe";
+import { Viewer } from "./viewer";
 
 type ImageViewerProps = {
 	readonly containerRef: { readonly current: HTMLElement | null };
@@ -23,13 +23,13 @@ const mocks = vi.hoisted(() => ({
 	VideoViewer: vi.fn<(props: VideoViewerProps) => string>(() => "video viewer"),
 }));
 
-vi.mock("../image-viewer", () => ({ ImageViewer: mocks.ImageViewer }));
-vi.mock("../video-viewer", () => ({ VideoViewer: mocks.VideoViewer }));
+vi.mock("./image-viewer", () => ({ ImageViewer: mocks.ImageViewer }));
+vi.mock("./video-viewer", () => ({ VideoViewer: mocks.VideoViewer }));
 vi.mock("./use-media-probe", () => ({ useMediaProbe: mocks.useMediaProbe }));
 
 // The buttons contain only an icon, so render its name to make them queryable.
-vi.mock("../components/icon", async (importOriginal) => ({
-	...(await importOriginal<typeof import("../components/icon")>()),
+vi.mock("./components/icon", async (importOriginal) => ({
+	...(await importOriginal<typeof import("./components/icon")>()),
 	Icon: ({ name }: { name: string }) => name,
 }));
 
@@ -42,7 +42,7 @@ const PHOTO: MediaCandidate = {
 	url: "https://example.com/photo.png",
 };
 
-describe("MediaViewer", () => {
+describe("Viewer", () => {
 	const onClose = vi.fn();
 
 	beforeEach(() => {
@@ -68,7 +68,7 @@ describe("MediaViewer", () => {
 	) => {
 		mocks.useMediaProbe.mockReturnValue(probe);
 
-		return render(<MediaViewer candidates={candidates} onClose={onClose} />);
+		return render(<Viewer candidates={candidates} onClose={onClose} />);
 	};
 
 	const getImageViewerProps = (): ImageViewerProps => {

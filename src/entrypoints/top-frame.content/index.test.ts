@@ -7,14 +7,14 @@ const mocks = vi.hoisted(() => ({
 	alert: vi.fn(),
 	createViewerHost: vi.fn(),
 	isOpen: false,
-	MediaViewer: vi.fn(),
 	onMessage: vi.fn(),
 	open: vi.fn(),
+	Viewer: vi.fn(),
 }));
 
 vi.mock("@/shared/messaging", () => ({ onMessage: mocks.onMessage }));
 
-vi.mock("./media-viewer", () => ({ MediaViewer: mocks.MediaViewer }));
+vi.mock("./viewer", () => ({ Viewer: mocks.Viewer }));
 
 vi.mock("./viewer-host", () => ({
 	ViewerHost: class {
@@ -54,10 +54,10 @@ afterEach(() => {
 });
 
 describe("on load", () => {
-	it("creates the viewer host with the context and the media viewer", () => {
+	it("creates the viewer host with the context and the viewer", () => {
 		expect(mocks.createViewerHost).toHaveBeenCalledExactlyOnceWith(
 			ctx,
-			mocks.MediaViewer,
+			mocks.Viewer,
 		);
 	});
 

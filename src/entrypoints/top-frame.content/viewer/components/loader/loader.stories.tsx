@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { withViewerBackdrop } from "../../../../../.storybook/decorators";
+import { withViewerBackdrop } from "../../../../../../.storybook/decorators";
 import { Loader } from "./loader";
 
 type Metadata = Meta<typeof Loader>;
