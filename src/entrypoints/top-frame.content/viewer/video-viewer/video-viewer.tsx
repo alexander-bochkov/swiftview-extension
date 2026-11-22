@@ -7,19 +7,16 @@ type VideoViewerProps = {
 	video: HTMLVideoElement;
 };
 
-// Shows a loaded video fitted into the container, with the controls of the
-// browser.
 export const VideoViewer = ({ onClose, video }: VideoViewerProps) => {
-	// Focused for the keys of the controls: Space plays, the arrows seek and
-	// change the volume.
 	useLayoutEffect(() => {
 		video.controls = true;
 		video.loop = true;
 		video.muted = true;
 
+		// Focused for the keys of the controls.
 		video.focus();
 		video.play().catch(() => {
-			// Blocked or interrupted
+			// Blocked or interrupted.
 		});
 	}, [video]);
 
