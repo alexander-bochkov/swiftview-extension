@@ -1,1 +1,45 @@
-# swiftview-extension
+# SwiftView
+
+Open an image or a video in a viewer on top of the page, right from its context menu. Zoom, pan, rotate and flip images, and watch videos with the browser's own controls.
+
+## Features
+
+- Opens over the page in the same tab, also for images and videos inside iframes and shadow roots.
+- Opens a larger version of the image when the page has one (see "Larger versions" below).
+- Images: zoom up to 400%, pan, rotate left or right, and flip horizontally or vertically.
+- Videos: the browser's own controls and keys. The video on the page pauses when the viewer opens.
+- Keeps the page still: while the viewer is open, the page doesn't scroll and doesn't react to the keys, the wheel or the clicks.
+- Local files: offers to allow access to file URLs when SwiftView doesn't have it yet.
+
+## How to use
+
+- Open: right-click an image or a video and choose "Open with SwiftView".
+- Zoom: scroll the mouse wheel. The image zooms toward the pointer.
+- Fit or 100%: click the image, or the zoom percentage.
+- Pan: drag the image.
+- Rotate and flip: the buttons on the right.
+- Close: press Esc, click the close button, or click outside the image.
+
+## Larger versions
+
+SwiftView tries these in order and opens the first one that loads:
+
+1. The file the image or video links to, when it's wrapped in a link to an image or a video:
+   - images: .gif, .jpeg, .jpg, .png, .webp;
+   - videos: .mp4, .webm;
+   - data URLs: image/gif, image/jpeg, image/png, image/webp, video/mp4, video/webm.
+2. The largest image in the srcset of the image, with width (800w) or density (2x) descriptors. For an image inside a picture element, the srcset of the source the browser picked for the page.
+3. The image or video itself.
+
+## Permissions and privacy
+
+- Context menus: to add "Open with SwiftView" to the menu of images and videos.
+- Scripting: to check whether SwiftView can run on the current page, and disable the menu item where it can't, such as the browser's own pages.
+- Tabs: to read the URL of the current tab, to tell a local file SwiftView can't access apart from other pages.
+- Access to all sites: to find the image or video and show the viewer on any page.
+
+SwiftView collects no data and sends nothing anywhere. The only requests it makes are for the image or video you open.
+
+## License
+
+[MIT](LICENSE). The Inter font is licensed under the [SIL Open Font License 1.1](public/fonts/OFL.txt).
