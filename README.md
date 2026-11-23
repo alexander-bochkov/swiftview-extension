@@ -34,11 +34,11 @@ SwiftView tries these in order and opens the first one that loads:
 ## Permissions and privacy
 
 - Context menus: to add "Open with SwiftView" to the menu of images and videos.
-- Scripting: to check whether SwiftView can run on the current page, and disable the menu item where it can't, such as the browser's own pages.
+- Scripting: to check whether SwiftView can run on the current page, and disable the menu item where it can't, such as the browser's own pages. Also to ask you to reload a page that was open before SwiftView was installed or updated.
 - Tabs: to read the URL of the current tab, to tell a local file SwiftView can't access apart from other pages.
 - Access to all sites: to find the image or video and show the viewer on any page.
 
-SwiftView collects no data and sends nothing anywhere. The only requests it makes are for the image or video you open.
+SwiftView collects no data and sends nothing anywhere. The only requests it makes are for the image or video you open, and for its larger versions that the page links to or lists in srcset.
 
 ## License
 
