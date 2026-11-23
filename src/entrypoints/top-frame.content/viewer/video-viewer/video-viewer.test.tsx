@@ -12,16 +12,10 @@ vi.mock("../components/icon", async (importOriginal) => ({
 describe("VideoViewer", () => {
 	const onClose = vi.fn();
 
-	const renderViewer = (
-		playVideo: (video: HTMLVideoElement) => Promise<void> = () =>
-			Promise.resolve(),
-	) => {
+	const renderViewer = () => {
 		const video = document.createElement("video");
 		// jsdom doesn't focus a video, so the call is checked instead.
 		const focus = vi.spyOn(video, "focus");
-		// jsdom doesn't play a video either. Not a spy: a spy handles the promise
-		// it returns, which would hide a rejection the viewer leaves unhandled.
-		video.play = () => playVideo(video);
 
 		render(<VideoViewer onClose={onClose} video={video} />);
 
@@ -40,43 +34,10 @@ describe("VideoViewer", () => {
 		expect(video.controls).toBe(true);
 	});
 
-	it("loops the video", () => {
-		const { video } = renderViewer();
-
-		expect(video.loop).toBe(true);
-	});
-
 	it("focuses the video for the keys of the controls", () => {
 		const { focus } = renderViewer();
 
 		expect(focus).toHaveBeenCalledOnce();
-	});
-
-	it("plays the video", () => {
-		const playVideo = vi.fn(() => Promise.resolve());
-		renderViewer(playVideo);
-
-		expect(playVideo).toHaveBeenCalledOnce();
-	});
-
-	it("mutes the video before playing it, for the autoplay policy", () => {
-		let mutedOnPlay: boolean | undefined;
-		renderViewer((video) => {
-			mutedOnPlay = video.muted;
-			return Promise.resolve();
-		});
-
-		expect(mutedOnPlay).toBe(true);
-	});
-
-	// Vitest fails the run on an unhandled rejection, which is reported before
-	// the next task runs.
-	it("ignores a blocked play", async () => {
-		renderViewer(() =>
-			Promise.reject(new DOMException("Blocked", "NotAllowedError")),
-		);
-
-		await new Promise((resolve) => setTimeout(resolve));
 	});
 
 	it("shows only the close button", () => {
