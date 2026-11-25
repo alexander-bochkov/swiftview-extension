@@ -25,7 +25,7 @@
 		"@testing-library/dom": "10.4.2",
 		"@testing-library/react": "16.3.3",
 		"@testing-library/user-event": "14.6.13",
-		"@types/react": "19.3.2",
+		"@types/react": "19.3.3",
 		"@types/react-dom": "19.3.0",
 		"@vitejs/plugin-react": "6.3.0",
 		"husky": "9.1.7",
@@ -33,7 +33,7 @@
 		"storybook": "10.6.9",
 		"typescript": "7.0.2",
 		"vite-plugin-svgr": "5.2.0",
-		"vitest": "5.1.1",
+		"vitest": "5.1.2",
 		"web-ext": "10.8.0",
 		"wxt": "0.21.5"
 	},
