@@ -24,7 +24,7 @@ export default defineConfig({
 		},
 		minimum_chrome_version: "148",
 		name: "__MSG_extension@name__",
-		permissions: ["contextMenus", "scripting", "tabs"],
+		permissions: ["contextMenus", "scripting", "storage", "tabs"],
 		short_name: "SwiftView",
 		web_accessible_resources: [
 			{

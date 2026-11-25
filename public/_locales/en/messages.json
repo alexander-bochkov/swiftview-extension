@@ -27,6 +27,22 @@
 		"description": "Extension name in the Chrome Web Store and on the extensions page.",
 		"message": "SwiftView - Image & Video Viewer"
 	},
+	"options_video@autoplay": {
+		"description": "Checkbox on the options page. When checked, a video starts playing as soon as it opens in the viewer.",
+		"message": "Autoplay"
+	},
+	"options_video@loop": {
+		"description": "Checkbox on the options page. When checked, a video opened in the viewer starts again from the beginning when it ends.",
+		"message": "Loop"
+	},
+	"options_video@muted": {
+		"description": "Checkbox on the options page. When checked, a video opens in the viewer without sound.",
+		"message": "Muted"
+	},
+	"options_video@title": {
+		"description": "Heading of the group of video options on the options page.",
+		"message": "Video"
+	},
 	"viewer@load_error": {
 		"description": "Shown in the viewer when it has nothing to show: every image or video it tried failed to load, or it had nothing to try.",
 		"message": "Couldn't open the image or video"
