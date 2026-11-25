@@ -1,0 +1,11 @@
+.video {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	border-radius: 10px;
+}
+
+.option {
+	display: flex;
+	align-items: center;
+}
