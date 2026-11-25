@@ -8,6 +8,7 @@ Open an image or a video in a viewer on top of the page, right from its context 
 - Opens a larger version of the image when the page has one (see "Larger versions" below).
 - Images: zoom up to 400%, pan, rotate left or right, and flip horizontally or vertically.
 - Videos: the browser's own controls and keys. The video on the page pauses when the viewer opens.
+- Video options: choose whether videos start playing, loop and open muted. Right-click the SwiftView icon in the toolbar and choose "Options".
 - Keeps the page still: while the viewer is open, the page doesn't scroll and doesn't react to the keys, the wheel or the clicks.
 - Local files: offers to allow access to file URLs when SwiftView doesn't have it yet.
 
@@ -35,6 +36,7 @@ SwiftView tries these in order and opens the first one that loads:
 
 - Context menus: to add "Open with SwiftView" to the menu of images and videos.
 - Scripting: to check whether SwiftView can run on the current page, and disable the menu item where it can't, such as the browser's own pages. Also to ask you to reload a page that was open before SwiftView was installed or updated.
+- Storage: to save your video options (autoplay, loop and muted). When sync is on in Chrome, Chrome syncs them to your other devices.
 - Tabs: to read the URL of the current tab, to tell a local file SwiftView can't access apart from other pages.
 - Access to all sites: to find the image or video and show the viewer on any page.
 
