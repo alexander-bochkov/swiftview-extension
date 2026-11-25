@@ -43,6 +43,30 @@
 		"description": "Heading of the group of video options on the options page.",
 		"message": "Video"
 	},
+	"viewer_toolbar@close": {
+		"description": "Tooltip of the button in the viewer's toolbar that closes the viewer.",
+		"message": "Close"
+	},
+	"viewer_toolbar@flip_horizontal": {
+		"description": "Tooltip of the button in the viewer's toolbar that mirrors the image left to right.",
+		"message": "Flip horizontally"
+	},
+	"viewer_toolbar@flip_vertical": {
+		"description": "Tooltip of the button in the viewer's toolbar that mirrors the image top to bottom.",
+		"message": "Flip vertically"
+	},
+	"viewer_toolbar@rotate_left": {
+		"description": "Tooltip of the button in the viewer's toolbar that rotates the image 90 degrees counterclockwise.",
+		"message": "Rotate left"
+	},
+	"viewer_toolbar@rotate_right": {
+		"description": "Tooltip of the button in the viewer's toolbar that rotates the image 90 degrees clockwise.",
+		"message": "Rotate right"
+	},
+	"viewer_toolbar@toggle_zoom": {
+		"description": "Tooltip of the button in the viewer's toolbar that shows the zoom percentage. Switches the image between fitting the screen and its actual size (100%).",
+		"message": "Fit or 100%"
+	},
 	"viewer@load_error": {
 		"description": "Shown in the viewer when it has nothing to show: every image or video it tried failed to load, or it had nothing to try.",
 		"message": "Couldn't open the image or video"

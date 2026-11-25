@@ -24,6 +24,12 @@ describe("Toolbar", () => {
 		expect(onClose).toHaveBeenCalledOnce();
 	});
 
+	it("names the close button in its tooltip", () => {
+		render(<Toolbar onClose={onClose} />);
+
+		expect(screen.getByRole("button", { name: "x-mark" }).title).toBe("Close");
+	});
+
 	it("shows the tools after the close button", () => {
 		render(
 			<Toolbar onClose={onClose} tools={<button type="button">tool</button>} />,

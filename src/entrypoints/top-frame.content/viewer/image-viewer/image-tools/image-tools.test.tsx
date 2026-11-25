@@ -46,6 +46,18 @@ describe("ImageTools", () => {
 	});
 
 	it.each([
+		["rotate-right", "Rotate right"],
+		["rotate-left", "Rotate left"],
+		["flip-horizontal", "Flip horizontally"],
+		["flip-vertical", "Flip vertically"],
+		["100%", "Fit or 100%"],
+	])("names the %s button in its tooltip", (name, title) => {
+		renderTools();
+
+		expect(screen.getByRole("button", { name }).title).toBe(title);
+	});
+
+	it.each([
 		["rotate-right", "right"],
 		["rotate-left", "left"],
 	])("rotates on the %s button", async (name, direction) => {
