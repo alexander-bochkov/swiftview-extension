@@ -14,6 +14,7 @@ How to use
 - Pan: drag the image.
 - Rotate and flip: the buttons on the right.
 - Close: press Esc, click the close button, or click outside the image.
+- Options: right-click the SwiftView icon in the toolbar and choose "Options".
 
 Larger versions
 
