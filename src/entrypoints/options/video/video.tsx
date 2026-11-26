@@ -1,22 +1,26 @@
-import { type ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { videoOptions } from "@/shared/storage";
 import type { VideoOptions } from "@/shared/types";
 import styles from "./video.module.css";
+
+const OPTION_KEYS = [
+	"autoplay",
+	"loop",
+	"muted",
+] as const satisfies ReadonlyArray<keyof VideoOptions>;
 
 export const Video = () => {
 	const [options, setOptions] = useState<VideoOptions>();
 
 	useEffect(() => {
-		videoOptions.getValue().then(setOptions);
+		videoOptions.getValue().then(setOptions, console.error);
 		return videoOptions.watch(setOptions);
 	}, []);
 
-	const handleChange = ({
-		target: { checked, id },
-	}: ChangeEvent<HTMLInputElement>): void => {
+	const handleChange = (key: keyof VideoOptions, checked: boolean): void => {
 		if (!options) return;
 
-		const nextOptions = { ...options, [id]: checked };
+		const nextOptions: VideoOptions = { ...options, [key]: checked };
 
 		// Updated before saving, so a quick second click builds on this change.
 		setOptions(nextOptions);
@@ -32,39 +36,19 @@ export const Video = () => {
 		options && (
 			<fieldset className={styles.video}>
 				<legend>{browser.i18n.getMessage("options_video@title")}</legend>
-				<div className={styles.option}>
-					<input
-						checked={options.autoplay}
-						id="autoplay"
-						onChange={handleChange}
-						type="checkbox"
-					/>
-					<label htmlFor="autoplay">
-						{browser.i18n.getMessage("options_video@autoplay")}
-					</label>
-				</div>
-				<div className={styles.option}>
-					<input
-						checked={options.loop}
-						id="loop"
-						onChange={handleChange}
-						type="checkbox"
-					/>
-					<label htmlFor="loop">
-						{browser.i18n.getMessage("options_video@loop")}
-					</label>
-				</div>
-				<div className={styles.option}>
-					<input
-						checked={options.muted}
-						id="muted"
-						onChange={handleChange}
-						type="checkbox"
-					/>
-					<label htmlFor="muted">
-						{browser.i18n.getMessage("options_video@muted")}
-					</label>
-				</div>
+				{OPTION_KEYS.map((key) => (
+					<div className={styles.option} key={key}>
+						<input
+							checked={options[key]}
+							id={key}
+							onChange={({ target }) => handleChange(key, target.checked)}
+							type="checkbox"
+						/>
+						<label htmlFor={key}>
+							{browser.i18n.getMessage(`options_video@${key}`)}
+						</label>
+					</div>
+				))}
 			</fieldset>
 		)
 	);
