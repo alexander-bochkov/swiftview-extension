@@ -13,7 +13,7 @@ How to use
 - Fit or 100%: click the image, or the zoom percentage.
 - Pan: drag the image.
 - Rotate and flip: the buttons on the right.
-- Close: press Esc, click the close button, or click outside the image.
+- Close: press Esc, click the close button, or click outside the image or video.
 - Options: right-click the SwiftView icon in the toolbar and choose "Options".
 
 Larger versions
