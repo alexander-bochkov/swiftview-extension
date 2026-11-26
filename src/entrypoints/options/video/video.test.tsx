@@ -89,6 +89,19 @@ describe("Video", () => {
 		await waitFor(() => expect(muted.checked).toBe(true));
 	});
 
+	it("logs an error when the options can't be loaded", async () => {
+		const error = new Error("Storage unavailable.");
+		const consoleError = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+		vi.spyOn(videoOptions, "getValue").mockRejectedValueOnce(error);
+
+		render(<Video />);
+
+		await waitFor(() => expect(consoleError).toHaveBeenCalledWith(error));
+		expect(screen.queryByRole("checkbox")).toBeNull();
+	});
+
 	it("goes back to the saved options when a save fails", async () => {
 		const error = new Error("Quota exceeded.");
 		const consoleError = vi
