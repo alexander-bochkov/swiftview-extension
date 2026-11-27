@@ -1,0 +1,36 @@
+{
+	"alert_dialog": {
+		"already_open": "This image or video is already open in SwiftView."
+	},
+	"confirm_dialog": {
+		"reload_page": "SwiftView can't open images or videos on this page until it's reloaded. Reload now?"
+	},
+	"context_menu": {
+		"allow_file_access": "Allow SwiftView access to file URLs",
+		"not_available_on_page": "SwiftView isn't available on this page",
+		"open_with_swiftview": "Open with SwiftView"
+	},
+	"extension": {
+		"description": "Opens images and videos from the context menu in a viewer over the page, picking a larger version when the page has one.",
+		"name": "SwiftView - Image & Video Viewer"
+	},
+	"options": {
+		"video": {
+			"autoplay": "Autoplay",
+			"loop": "Loop",
+			"muted": "Muted",
+			"title": "Video"
+		}
+	},
+	"viewer": {
+		"load_error": "Couldn't open the image or video",
+		"toolbar": {
+			"close": "Close",
+			"flip_horizontal": "Flip horizontally",
+			"flip_vertical": "Flip vertically",
+			"rotate_left": "Rotate left",
+			"rotate_right": "Rotate right",
+			"toggle_zoom": "Fit or 100%"
+		}
+	}
+}

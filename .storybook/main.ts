@@ -6,8 +6,8 @@ export default {
 		disableTelemetry: true,
 	},
 	framework: "@storybook/react-vite",
-	// Served by Storybook, not by Vite: Vite warns about the import of a public
-	// file, and the fake browser imports the messages from public/_locales.
+	// The files of the extension, such as the font, served from the root, as
+	// they are in the extension.
 	staticDirs: ["../public"],
 	stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
 	// WXT keeps its Vite config to itself, so the parts the components need are
@@ -15,7 +15,6 @@ export default {
 	viteFinal: (config) => ({
 		...config,
 		plugins: [...(config.plugins ?? []), svgr()],
-		publicDir: false,
 		resolve: { ...config.resolve, tsconfigPaths: true },
 	}),
 } satisfies StorybookConfig;

@@ -13,7 +13,7 @@ export default defineConfig({
 	},
 	manifest: {
 		default_locale: "en",
-		description: "__MSG_extension@description__",
+		description: "__MSG_extension_description__",
 		homepage_url: "https://github.com/alexander-bochkov/swiftview-extension",
 		host_permissions: ["<all_urls>"],
 		icons: {
@@ -23,7 +23,7 @@ export default defineConfig({
 			"128": "icons/icon-128.png",
 		},
 		minimum_chrome_version: "148",
-		name: "__MSG_extension@name__",
+		name: "__MSG_extension_name__",
 		permissions: ["contextMenus", "scripting", "storage", "tabs"],
 		short_name: "SwiftView",
 		web_accessible_resources: [
@@ -34,6 +34,7 @@ export default defineConfig({
 			},
 		],
 	},
+	modules: ["@wxt-dev/i18n/module"],
 	srcDir: "src",
 	vite: () => ({
 		build: {
