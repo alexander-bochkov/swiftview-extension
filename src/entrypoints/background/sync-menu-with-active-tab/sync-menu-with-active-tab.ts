@@ -25,7 +25,7 @@ const getMenuItemState = async (
 	if (await shouldAskForFileAccess(url)) {
 		return {
 			enabled: true,
-			title: browser.i18n.getMessage("context_menu@allow_file_access"),
+			title: i18n.t("context_menu.allow_file_access"),
 		};
 	}
 
@@ -33,10 +33,10 @@ const getMenuItemState = async (
 
 	return {
 		enabled,
-		title: browser.i18n.getMessage(
+		title: i18n.t(
 			enabled
-				? "context_menu@open_with_swiftview"
-				: "context_menu@not_available_on_page",
+				? "context_menu.open_with_swiftview"
+				: "context_menu.not_available_on_page",
 		),
 	};
 };

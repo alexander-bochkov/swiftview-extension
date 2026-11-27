@@ -35,7 +35,7 @@ export const Video = () => {
 	return (
 		options && (
 			<fieldset className={styles.video}>
-				<legend>{browser.i18n.getMessage("options_video@title")}</legend>
+				<legend>{i18n.t("options.video.title")}</legend>
 				{OPTION_KEYS.map((key) => (
 					<div className={styles.option} key={key}>
 						<input
@@ -44,9 +44,7 @@ export const Video = () => {
 							onChange={({ target }) => handleChange(key, target.checked)}
 							type="checkbox"
 						/>
-						<label htmlFor={key}>
-							{browser.i18n.getMessage(`options_video@${key}`)}
-						</label>
+						<label htmlFor={key}>{i18n.t(`options.video.${key}`)}</label>
 					</div>
 				))}
 			</fieldset>

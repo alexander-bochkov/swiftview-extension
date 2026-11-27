@@ -18,7 +18,7 @@ export default defineBackground({
 				{
 					contexts: [MEDIA_TYPE.IMAGE, MEDIA_TYPE.VIDEO],
 					id: MENU_ITEM_ID,
-					title: browser.i18n.getMessage("context_menu@open_with_swiftview"),
+					title: i18n.t("context_menu.open_with_swiftview"),
 				},
 				syncMenuWithActiveTab,
 			);

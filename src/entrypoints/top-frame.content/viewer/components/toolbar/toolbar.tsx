@@ -10,10 +10,7 @@ type ToolbarProps = {
 
 export const Toolbar = ({ onClose, tools }: ToolbarProps) => (
 	<div className={styles.toolbar}>
-		<Button
-			onClick={onClose}
-			title={browser.i18n.getMessage("viewer_toolbar@close")}
-		>
+		<Button onClick={onClose} title={i18n.t("viewer.toolbar.close")}>
 			<Icon name="x-mark" />
 		</Button>
 		{tools && <div className={styles.tools}>{tools}</div>}

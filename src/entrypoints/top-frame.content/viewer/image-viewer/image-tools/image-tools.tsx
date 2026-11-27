@@ -27,32 +27,32 @@ export const ImageTools = ({
 	<>
 		<Button
 			onClick={() => onRotate("right")}
-			title={browser.i18n.getMessage("viewer_toolbar@rotate_right")}
+			title={i18n.t("viewer.toolbar.rotate_right")}
 		>
 			<Icon name="rotate-right" />
 		</Button>
 		<Button
 			onClick={() => onRotate("left")}
-			title={browser.i18n.getMessage("viewer_toolbar@rotate_left")}
+			title={i18n.t("viewer.toolbar.rotate_left")}
 		>
 			<Icon name="rotate-left" />
 		</Button>
 		<Button
 			onClick={() => onFlip("horizontal")}
-			title={browser.i18n.getMessage("viewer_toolbar@flip_horizontal")}
+			title={i18n.t("viewer.toolbar.flip_horizontal")}
 		>
 			<Icon name="flip-horizontal" />
 		</Button>
 		<Button
 			onClick={() => onFlip("vertical")}
-			title={browser.i18n.getMessage("viewer_toolbar@flip_vertical")}
+			title={i18n.t("viewer.toolbar.flip_vertical")}
 		>
 			<Icon name="flip-vertical" />
 		</Button>
 		<Button
 			className={styles.zoom}
 			onClick={onToggleZoom}
-			title={browser.i18n.getMessage("viewer_toolbar@toggle_zoom")}
+			title={i18n.t("viewer.toolbar.toggle_zoom")}
 		>
 			{formatZoom(scale)}
 		</Button>
