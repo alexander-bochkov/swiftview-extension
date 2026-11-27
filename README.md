@@ -34,7 +34,7 @@ A manually installed copy doesn't update on its own. To update it, replace the c
 - **Pan:** drag the image.
 - **Rotate and flip:** the buttons on the right.
 - **Close:** press Esc, click the close button, or click outside the image or video.
-- **Options:** right-click the SwiftView icon in the toolbar and choose "Options".
+- **Options:** open the Extensions menu (the puzzle icon in the toolbar), click ⋮ next to SwiftView and choose "Options".
 
 ## Larger versions
 
