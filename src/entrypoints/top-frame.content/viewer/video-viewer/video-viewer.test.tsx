@@ -131,6 +131,41 @@ describe("VideoViewer", () => {
 		expect(video.muted).toBe(false);
 	});
 
+	it("shows the controls when the options fail to load", async () => {
+		const error = new Error("Storage unavailable.");
+		const consoleError = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+		vi.spyOn(videoOptions, "getValue").mockRejectedValueOnce(error);
+
+		const { focus, play, video } = renderViewer();
+
+		await waitFor(() => expect(consoleError).toHaveBeenCalledWith(error));
+		expect(video.controls).toBe(true);
+		expect(focus).toHaveBeenCalledOnce();
+		expect(play).not.toHaveBeenCalled();
+	});
+
+	it("leaves the video alone when closed before the load fails", async () => {
+		let rejectOptions = (_error: Error) => {};
+		const options = new Promise<VideoOptions>((_resolve, reject) => {
+			rejectOptions = reject;
+		});
+		const consoleError = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+		vi.spyOn(videoOptions, "getValue").mockReturnValueOnce(options);
+		const { focus, unmount, video } = renderViewer();
+
+		unmount();
+		rejectOptions(new Error("Storage unavailable."));
+		await options.catch(() => {});
+
+		expect(consoleError).toHaveBeenCalledOnce();
+		expect(video.controls).toBe(false);
+		expect(focus).not.toHaveBeenCalled();
+	});
+
 	it("shows only the close button", () => {
 		renderViewer();
 

@@ -12,23 +12,34 @@ export const VideoViewer = ({ onClose, video }: VideoViewerProps) => {
 	useEffect(() => {
 		let shouldApplyOptions = true;
 
-		videoOptions.getValue().then(({ autoplay, loop, muted }) => {
-			// Viewer was closed before the options loaded, so the video mustn't play.
-			if (!shouldApplyOptions) return;
-
-			video.loop = loop;
-			video.muted = muted;
-			// After the options, so they don't undo the user's changes.
+		const showControls = (): void => {
 			video.controls = true;
 			// Focused for the keys of the controls.
 			video.focus();
+		};
 
-			if (autoplay) {
-				video.play().catch(() => {
-					// Blocked or interrupted.
-				});
-			}
-		});
+		videoOptions.getValue().then(
+			({ autoplay, loop, muted }) => {
+				// Viewer closed before the options loaded, so the video mustn't play.
+				if (!shouldApplyOptions) return;
+
+				video.loop = loop;
+				video.muted = muted;
+				// After the options, so they don't undo the user's changes.
+				showControls();
+
+				if (autoplay) {
+					video.play().catch(() => {
+						// Blocked or interrupted.
+					});
+				}
+			},
+			(error: unknown) => {
+				console.error(error);
+				// Without the options, the video still gets its controls.
+				if (shouldApplyOptions) showControls();
+			},
+		);
 
 		return () => {
 			shouldApplyOptions = false;
