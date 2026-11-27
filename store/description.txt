@@ -34,4 +34,4 @@ Permissions and privacy
 - Tabs: to detect a page opened from a local file and offer to grant access to file URLs.
 - Access to all sites: to work on any site and load the images and videos the viewer opens.
 
-SwiftView collects no data and sends nothing anywhere. The only requests it makes are for the opened image or video and for its larger versions that the page links to or lists in srcset.
+SwiftView collects no data and sends nothing anywhere. The only requests it makes are for the opened image or video and for its larger versions that the page links to or lists in srcset. The options are saved in Chrome, and Chrome syncs them through the Google account when sync is on.
