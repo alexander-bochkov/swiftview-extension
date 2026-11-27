@@ -16,7 +16,7 @@ SwiftView requires Google Chrome 148 or later.
 
 ### Chrome Web Store
 
-Install SwiftView from its [Chrome Web Store page](https://example.com).
+Install SwiftView from its [Chrome Web Store page](https://chromewebstore.google.com/detail/elnineelkpfahckihmbnlibdpjdlliic).
 
 ### Manually
 
